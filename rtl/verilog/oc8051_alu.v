@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.16  2003/06/03 17:15:06  simont
+// sub_result output added.
+//
 // Revision 1.15  2003/05/07 12:31:53  simont
 // add wire sub_result, conect it to des_acc and des1.
 //
@@ -136,7 +139,7 @@ reg enable_div;
 //
 //da
 //
-reg da_tmp;
+reg da_tmp, da_tmp1;
 //reg [8:0] da1;
 
 //
@@ -244,12 +247,12 @@ begin
       if (srcAc==1'b1 | src1[3:0]>4'b1001) {da_tmp, des_acc[3:0]} = {1'b0, src1[3:0]}+ 5'b00110;
       else {da_tmp, des_acc[3:0]} = {1'b0, src1[3:0]};
 
-      if (srcCy==1'b1 | src1[7:4]>4'b1001)
-        {desCy, des_acc[7:4]} = {srcCy, src1[7:4]}+ 5'b00110 + {4'b0, da_tmp};
-      else {desCy, des_acc[7:4]} = {srcCy, src1[7:4]} + {4'b0, da_tmp};
+      if (srcCy | da_tmp | src1[7:4]>4'b1001)
+        {da_tmp1, des_acc[7:4]} = {srcCy, src1[7:4]}+ 5'b00110 + {4'b0, da_tmp};
+      else {da_tmp1, des_acc[7:4]} = {srcCy, src1[7:4]} + {4'b0, da_tmp};
 
+      desCy = da_tmp | da_tmp1;
       des1 = src1;
-
       des2 = 8'h00;
       desAc = 1'b0;
       desOv = 1'b0;
