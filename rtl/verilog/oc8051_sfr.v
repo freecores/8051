@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.11  2003/04/25 17:15:51  simont
+// change branch instruction execution (reduse needed clock periods).
+//
 // Revision 1.10  2003/04/10 12:43:19  simont
 // defines for pherypherals added
 //
@@ -562,7 +565,9 @@ begin
   end else if (
       (((wr_sfr==`OC8051_WRS_ACC1) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
       ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) |	//write to dpl
-      (adr1[7] & (adr1==adr0) & we & !wr_bit_r)) & !wait_data) begin	//write and read same address
+      (adr1[7] & (adr1==adr0) & we & !wr_bit_r) |			//write and read same address
+      (adr1[7] & (adr1[7:3]==adr0[7:3]) & (~&adr0[2:0]) &  we & wr_bit_r) //write bit addressable to read address
+      ) & !wait_data) begin
     wait_data <= #1 1'b1;
 
   end else if ((

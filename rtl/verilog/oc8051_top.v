@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.25  2003/04/25 17:15:51  simont
+// change branch instruction execution (reduse needed clock periods).
+//
 // Revision 1.24  2003/04/11 10:05:59  simont
 // deifne OC8051_ROM added
 //
@@ -370,7 +373,7 @@ oc8051_alu oc8051_alu1(.rst(wb_rst_i),
 
 //
 //data ram
-oc8051_ram_top oc8051_ram_top1(.clk(wb_clk_i), 
+oc8051_ram_top oc8051_ram_top1(.clk(wb_clk_i),
                                .rst(wb_rst_i), 
 			       .rd_addr(rd_addr), 
 			       .rd_data(ram_data),
@@ -412,7 +415,6 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
 			 .cy(cy),
 			 .acc(acc),
 			 .des(des1)
-//			 .comp_wait(comp_wait)
 			 );
 
 
@@ -446,11 +448,11 @@ oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_i),
 				    .rd_addr(rd_addr), 
 				    .wr_addr(wr_addr),
 				    .data_in(wr_dat), 
-				    .wr(wr_o), 
+				    .wr(wr_o),
 				    .wr_bit(bit_addr_o), 
 				    .rn_out(rn_mem),
 				    .ri_out(ri), 
-				    .sel(op1_cur), 
+				    .sel(op1_cur),
 				    .bank(bank_sel));
 
 
@@ -475,7 +477,7 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i),
 		       .in_ram(ram_data),
 		       .sfr(sfr_out), 
 		       .sfr_bit(sfr_bit), 
-		       .bit_out(bit_out), 
+		       .bit_out(bit_out),
 		       .iram_out(ram_out),
 
 // external instrauction rom
@@ -500,8 +502,8 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i),
 // from decoder
                        .rd_sel(ram_rd_sel), 
 		       .wr_sel(ram_wr_sel), 
-		       .rn({bank_sel, op1_n[2:0]}),
-                       .rd_ind(rd_ind), 
+		       .rn({bank_sel, op1_cur}),
+		       .rd_ind(rd_ind),
 		       .rd(rd),
 		       .mem_act(mem_act), 
 		       .mem_wait(mem_wait),
@@ -550,8 +552,8 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 		       .we(wr_o && !wr_ind), 
 		       .bit_in(desCy),
 		       .bit_out(sfr_bit), 
-		       .wr_bit(bit_addr_o), 
-		       .ram_rd_sel(ram_rd_sel), 
+		       .wr_bit(bit_addr_o),
+		       .ram_rd_sel(ram_rd_sel),
 		       .ram_wr_sel(ram_wr_sel),
 		       .wr_sfr(wr_sfr),
 		       .comp_sel(comp_sel),
