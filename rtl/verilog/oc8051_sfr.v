@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.9  2003/04/09 16:24:03  simont
+// change wr_sft to 2 bit wire.
+//
 // Revision 1.8  2003/04/09 15:49:42  simont
 // Register oc8051_sfr dato output, add signal wait_data.
 //
@@ -77,124 +80,203 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_sfr (rst, clk, 
+module oc8051_sfr (rst, clk,
        adr0, adr1, dat0, 
-       dat1, dat2, 
-       we, bit_in, wr_bit,
+       dat1, dat2, bit_in,
+       we, wr_bit,
        bit_out,
-       wr_sfr, acc, ram_wr_sel, ram_rd_sel, sp, sp_w, bank_sel, desAc, desOv, psw_set, srcAc, cy, rmw,
-       p0_out, p1_out, p2_out, p3_out, p0_in, p1_in, p2_in, p3_in, rxd, txd, int_ack, intr, int0,
-       int1, reti, int_src, t0, t1, dptr_hi, dptr_lo, t2, t2ex,
+       wr_sfr, acc, 
+       ram_wr_sel, ram_rd_sel, 
+       sp, sp_w, 
+       bank_sel, 
+       desAc, desOv, 
+       srcAc, cy,
+       psw_set, rmw,
+
+`ifdef OC8051_PORTS
+
+  `ifdef OC8051_PORT0
+       p0_out,
+       p0_in,
+  `endif
+
+  `ifdef OC8051_PORT1
+       p1_out,
+       p1_in,
+  `endif
+
+  `ifdef OC8051_PORT2
+       p2_out,
+       p2_in,
+  `endif
+
+  `ifdef OC8051_PORT3
+       p3_out,
+       p3_in,
+  `endif
+
+`endif
+
+
+  `ifdef OC8051_UART
+       rxd, txd,
+  `endif
+
+       int_ack, intr,
+       int0, int1,
+       int_src,
+       reti,
+
+  `ifdef OC8051_TC01
+       t0, t1,
+  `endif
+
+  `ifdef OC8051_TC2
+       t2, t2ex,
+  `endif
+
+       dptr_hi, dptr_lo,
        wait_data);
-//
-// rst           (in)  reset - pin
-// clk           (in)  clock - pin
-// adr0, adr1    (in)  address input
-// dat0          (out) data output
-// dat1          (in)  data input
-// dat2
-// we            (in)  write enable
-// bit_in
-// bit_out
-// wr_bit
-// ram_rd_sel
-// ram_wr_sel
-// wr_sfr
-//////////
-//
-//  acc:
-// acc
-//////////
-//
-//  sp:
-// sp
-//////////
-//
-//  psw:
-// bank_sel
-// desAc
-// desOv
-// psw_set
-// srcAc
-// cy
-//////////
-//
-//  ports:
-// rmw
-// px_out
-// px_in
-//////////
-//
-//  serial interface:
-// rxd
-// txd
-//////////
-//
-//  interrupt interface:
-// int_ack
-// intr
-// int0, int1
-// reti
-// int_src
-//////////
-//
-//  timers/counters:
-// t0
-// t1
-// t2
-// t2ex
-//
-//////////
-//
-//  dptr:
-// dptr_hi
-// dptr_lo
-//
-//////////
-//
 
 
+input       rst,	// reset - pin
+	    clk,	// clock - pin
+            we,		// write enable
+	    bit_in,
+	    desAc,
+	    desOv,
+	    rmw;
+input       int_ack,
+            int0,
+	    int1,
+            reti,
+	    wr_bit;
+input [1:0] psw_set,
+            wr_sfr;
+input [2:0] ram_rd_sel,
+            ram_wr_sel;
+input [7:0] adr0, 	//address 0 input
+            adr1, 	//address 1 input
+	    dat1,	//data 1 input (des1)
+            dat2;	//data 2 input (des2)
 
-
-input rst, clk, we, bit_in, desAc, desOv, rmw, rxd, t2, t2ex;
-input int_ack, int0, int1, reti, wr_bit, t0, t1;
-input [1:0] psw_set, wr_sfr;
-input [2:0] ram_rd_sel, ram_wr_sel;
-input [7:0] adr0, adr1, dat1, dat2, p0_in, p1_in, p2_in, p3_in;
-
-output bit_out, txd, intr, srcAc, cy, wait_data;
+output       bit_out,
+             intr,
+             srcAc,
+	     cy,
+	     wait_data;
 output [1:0] bank_sel;
-output [7:0] dat0, p0_out, p1_out, p2_out, p3_out, int_src, dptr_hi, dptr_lo, acc;
-output [7:0] sp, sp_w;
+output [7:0] dat0,	//data output
+	     int_src,
+	     dptr_hi,
+	     dptr_lo,
+	     acc;
+output [7:0] sp,
+             sp_w;
+
+// ports
+`ifdef OC8051_PORTS
+
+`ifdef OC8051_PORT0
+input  [7:0] p0_in;
+output [7:0] p0_out;
+wire   [7:0] p0_data;
+`endif
+
+`ifdef OC8051_PORT1
+input  [7:0] p1_in;
+output [7:0] p1_out;
+wire   [7:0] p1_data;
+`endif
+
+`ifdef OC8051_PORT2
+input  [7:0] p2_in;
+output [7:0] p2_out;
+wire   [7:0] p2_data;
+`endif
+
+`ifdef OC8051_PORT3
+input  [7:0] p3_in;
+output [7:0] p3_out;
+wire   [7:0] p3_data;
+`endif
+
+`endif
 
 
-reg bit_out, wait_data;
-reg [7:0] dat0, adr0_r;
-
-reg wr_bit_r;
-reg [2:0] ram_wr_sel_r;
-
-//sfr's
-wire acc_bit, b_bit, psw_bit, port_bit, uart_bit, int_bit, tc2_bit;
-
-wire p, int_uart, tf0, tf1, tr0, tr1;
-wire rclk, tclk, brate2, tc2_int;
-
-wire [7:0] b_reg, psw,
-//ports
-          p0_data, p1_data, p2_data, p3_data,
-//interrupt control
-	  ie, tcon, ip,
-// t/c 2
-	  t2con, tl2, th2, rcap2l, rcap2h,
-// t/c 0,1
-	  tmod, tl0, th0, tl1, th1,
 // serial interface
-          scon, pcon, sbuf,
-// stack
-	  sp_out;
+`ifdef OC8051_UART
+input        rxd;
+output       txd;
+`endif
 
-wire pres_ow;
+// timer/counter 0,1
+`ifdef OC8051_TC01
+input	     t0, t1;
+`endif
+
+// timer/counter 2
+`ifdef OC8051_TC2
+input	     t2, t2ex;
+`endif
+
+reg        bit_out, 
+           wait_data;
+reg [7:0]  dat0,
+           adr0_r;
+
+reg        wr_bit_r;
+reg [2:0]  ram_wr_sel_r;
+
+
+wire       p,
+           uart_int,
+	   tf0,
+	   tf1,
+	   tr0,
+	   tr1,
+           rclk,
+           tclk,
+	   brate2,
+	   tc2_int;
+
+
+wire [7:0] b_reg, 
+           psw,
+
+`ifdef OC8051_TC2
+  // t/c 2
+	   t2con, 
+	   tl2, 
+	   th2, 
+	   rcap2l, 
+	   rcap2h,
+`endif
+
+`ifdef OC8051_TC01
+  // t/c 0,1
+	   tmod, 
+	   tl0, 
+	   th0, 
+	   tl1,
+	   th1,
+`endif
+
+  // serial interface
+`ifdef OC8051_UART
+           scon, 
+	   pcon, 
+	   sbuf,
+`endif
+
+  //interrupt control
+	   ie, 
+	   tcon, 
+	   ip;
+
+
+reg        pres_ow;
+reg [3:0]  prescaler;
 
 
 assign cy = psw[7];
@@ -205,87 +287,230 @@ assign srcAc = psw [6];
 //
 // accumulator
 // ACC
-oc8051_acc oc8051_acc1(.clk(clk), .rst(rst), .bit_in(bit_in), .data_in(dat1),
-           .data2_in(dat2), .wr(we), .wr_bit(wr_bit_r), .wr_sfr(wr_sfr),
-	   .wr_addr(adr1), .data_out(acc), .p(p));
+oc8051_acc oc8051_acc1(.clk(clk), 
+                       .rst(rst), 
+		       .bit_in(bit_in), 
+		       .data_in(dat1),
+		       .data2_in(dat2), 
+		       .wr(we), 
+		       .wr_bit(wr_bit_r), 
+		       .wr_sfr(wr_sfr),
+		       .wr_addr(adr1), 
+		       .data_out(acc), 
+		       .p(p));
 
 
 //
 // b register
 // B
-oc8051_b_register oc8051_b_register (.clk(clk), .rst(rst), .bit_in(bit_in),
-           .data_in(dat1), .wr(we), .wr_bit(wr_bit_r), .wr_addr(adr1),
-           .data_out(b_reg));
+oc8051_b_register oc8051_b_register (.clk(clk), 
+                                     .rst(rst), 
+				     .bit_in(bit_in),
+				     .data_in(dat1), 
+				     .wr(we), 
+				     .wr_bit(wr_bit_r), 
+				     .wr_addr(adr1),
+				     .data_out(b_reg));
 
 //
 //stack pointer
 // SP
-oc8051_sp oc8051_sp1(.clk(clk), .rst(rst), .ram_rd_sel(ram_rd_sel), .ram_wr_sel(ram_wr_sel),
-		 .wr_addr(adr1), .wr(we), .wr_bit(wr_bit_r), .data_in(dat1),
-		 .data_out(sp_out), .sp_out(sp), .sp_w(sp_w));
+oc8051_sp oc8051_sp1(.clk(clk), 
+                     .rst(rst), 
+		     .ram_rd_sel(ram_rd_sel), 
+		     .ram_wr_sel(ram_wr_sel), 
+		     .wr_addr(adr1), 
+		     .wr(we), 
+		     .wr_bit(wr_bit_r), 
+		     .data_in(dat1), 
+		     .sp_out(sp), 
+		     .sp_w(sp_w));
 
 //
 //data pointer
 // DPTR, DPH, DPL
-oc8051_dptr oc8051_dptr1(.clk(clk), .rst(rst), .addr(adr1), .data_in(dat1),
-		.data2_in(dat2), .wr(we), .wr_bit(wr_bit_r),
-		.data_hi(dptr_hi), .data_lo(dptr_lo), .wr_sfr(wr_sfr));
+oc8051_dptr oc8051_dptr1(.clk(clk), 
+                         .rst(rst), 
+			 .addr(adr1), 
+			 .data_in(dat1),
+			 .data2_in(dat2), 
+			 .wr(we), 
+			 .wr_bit(wr_bit_r),
+			 .data_hi(dptr_hi),
+			 .data_lo(dptr_lo), 
+			 .wr_sfr(wr_sfr));
 
 
 //
 //program status word
 // PSW
-oc8051_psw oc8051_psw1 (.clk(clk), .rst(rst), .wr_addr(adr1), .data_in(dat1),
-                .wr(we), .wr_bit(wr_bit_r), .data_out(psw), .p(p), .cy_in(bit_in),
-                .ac_in(desAc), .ov_in(desOv), .set(psw_set), .bank_sel(bank_sel));
+oc8051_psw oc8051_psw1 (.clk(clk), 
+                        .rst(rst), 
+			.wr_addr(adr1), 
+			.data_in(dat1),
+			.wr(we), 
+			.wr_bit(wr_bit_r), 
+			.data_out(psw), 
+			.p(p), 
+			.cy_in(bit_in),
+			.ac_in(desAc), 
+			.ov_in(desOv), 
+			.set(psw_set), 
+			.bank_sel(bank_sel));
 
 //
 // ports
 // P0, P1, P2, P3
-oc8051_ports oc8051_ports1(.clk(clk), .rst(rst), .bit_in(bit_in), .data_in(dat1), .wr(we),
-		 .wr_bit(wr_bit_r), .wr_addr(adr1), .rmw(rmw),
-		 .p0_out(p0_out), .p1_out(p1_out), .p2_out(p2_out), .p3_out(p3_out), 
-		 .p0_in(p0_in), .p1_in(p1_in), .p2_in(p2_in), .p3_in(p3_in),
-		 .p0_data(p0_data), .p1_data(p1_data), .p2_data(p2_data), .p3_data(p3_data));
+`ifdef OC8051_PORTS
+  oc8051_ports oc8051_ports1(.clk(clk),
+                           .rst(rst),
+			   .bit_in(bit_in),
+			   .data_in(dat1),
+			   .wr(we),
+			   .wr_bit(wr_bit_r),
+			   .wr_addr(adr1),
+
+		`ifdef OC8051_PORT0
+			   .p0_out(p0_out),
+			   .p0_in(p0_in),
+			   .p0_data(p0_data),
+		`endif
+
+		`ifdef OC8051_PORT1
+			   .p1_out(p1_out),
+			   .p1_in(p1_in),
+			   .p1_data(p1_data),
+		`endif
+
+		`ifdef OC8051_PORT2
+			   .p2_out(p2_out),
+			   .p2_in(p2_in),
+			   .p2_data(p2_data),
+		`endif
+
+		`ifdef OC8051_PORT3
+			   .p3_out(p3_out),
+			   .p3_in(p3_in),
+			   .p3_data(p3_data),
+		`endif
+
+			   .rmw(rmw));
+`endif
 
 //
 // serial interface
 // SCON, SBUF
-oc8051_uart oc8051_uatr1 (.clk(clk), .rst(rst), .bit_in(bit_in),
-		.data_in(dat1), .wr(we), .wr_bit(wr_bit_r), .wr_addr(adr1),
-		.rxd(rxd), .txd(txd), .intr(uart_int),
-		.rclk(rclk), .tclk(tclk), .brate2(brate2),
-		.t1_ow(tf1), .pres_ow(pres_ow),
-		.scon(scon), .pcon(pcon), .sbuf(sbuf));
+`ifdef OC8051_UART
+  oc8051_uart oc8051_uatr1 (.clk(clk), 
+                            .rst(rst), 
+			    .bit_in(bit_in),
+			    .data_in(dat1), 
+			    .wr(we), 
+			    .wr_bit(wr_bit_r), 
+			    .wr_addr(adr1),
+			    .rxd(rxd), 
+			    .txd(txd), 
+		// interrupt
+			    .intr(uart_int),
+		// baud rate sources
+			    .brate2(brate2),
+			    .t1_ow(tf1),
+			    .pres_ow(pres_ow),
+			    .rclk(rclk),
+			    .tclk(tclk),
+		//registers
+			    .scon(scon),
+			    .pcon(pcon),
+			    .sbuf(sbuf));
+`else
+  assign uart_int = 1'b0;
+`endif
 
 //
 // interrupt control
 // IP, IE, TCON
-oc8051_int oc8051_int1 (.clk(clk), .rst(rst), .wr_addr(adr1), .bit_in(bit_in),
-                .ack(int_ack), .data_in(dat1),
-		.wr(we), .wr_bit(wr_bit_r),
-		.tf0(tf0), .tf1(tf1), .t2_int(tc2_int), .tr0(tr0), .tr1(tr1),
-		.ie0(int0), .ie1(int1),
-		.uart_int(uart_int),
-		.reti(reti), .intr(intr), .int_vec(int_src),
-		.ie(ie), .tcon(tcon), .ip(ip));
+oc8051_int oc8051_int1 (.clk(clk), 
+                        .rst(rst), 
+			.wr_addr(adr1), 
+			.bit_in(bit_in),
+			.ack(int_ack), 
+			.data_in(dat1),
+			.wr(we), 
+			.wr_bit(wr_bit_r),
+			.tf0(tf0), 
+			.tf1(tf1), 
+			.t2_int(tc2_int), 
+			.tr0(tr0), 
+			.tr1(tr1),
+			.ie0(int0), 
+			.ie1(int1),
+			.uart_int(uart_int),
+			.reti(reti),
+			.intr(intr),
+			.int_vec(int_src),
+			.ie(ie),
+			.tcon(tcon), 
+			.ip(ip));
 
 
 //
 // timer/counter control
 // TH0, TH1, TL0, TH1, TMOD
-oc8051_tc oc8051_tc1(.clk(clk), .rst(rst), .wr_addr(adr1),
-		.data_in(dat1), .wr(we), .wr_bit(wr_bit_r), .ie0(int0), .ie1(int1), .tr0(tr0),
-		.tr1(tr1), .t0(t0), .t1(t1), .tf0(tf0), .tf1(tf1), .pres_ow(pres_ow),
-		.tmod(tmod), .tl0(tl0), .th0(th0), .tl1(tl1), .th1(th1));
+`ifdef OC8051_TC01
+  oc8051_tc oc8051_tc1(.clk(clk), 
+                       .rst(rst), 
+		       .wr_addr(adr1),
+		       .data_in(dat1), 
+		       .wr(we), 
+		       .wr_bit(wr_bit_r), 
+		       .ie0(int0), 
+		       .ie1(int1), 
+		       .tr0(tr0),
+		       .tr1(tr1), 
+		       .t0(t0), 
+		       .t1(t1), 
+		       .tf0(tf0), 
+		       .tf1(tf1), 
+		       .pres_ow(pres_ow),
+		       .tmod(tmod), 
+		       .tl0(tl0), 
+		       .th0(th0), 
+		       .tl1(tl1), 
+		       .th1(th1));
+`else
+  assign tf0 = 1'b0;
+  assign tf1 = 1'b0;
+`endif
 
 //
 // timer/counter 2
 // TH2, TL2, RCAPL2L, RCAPL2H, T2CON
-oc8051_tc2 oc8051_tc21(.clk(clk), .rst(rst), .wr_addr(adr1), .data_in(dat1), .wr(we),
-           .wr_bit(wr_bit_r), .bit_in(bit_in), .t2(t2), .t2ex(t2ex),
-           .rclk(rclk), .tclk(tclk), .brate2(brate2), .tc2_int(tc2_int), .pres_ow(pres_ow),
-	   .t2con(t2con), .tl2(tl2), .th2(th2), .rcap2l(rcap2l), .rcap2h(rcap2h));
+`ifdef OC8051_TC2
+  oc8051_tc2 oc8051_tc21(.clk(clk), 
+                         .rst(rst), 
+			 .wr_addr(adr1), 
+			 .data_in(dat1), 
+			 .wr(we),
+			 .wr_bit(wr_bit_r), 
+			 .bit_in(bit_in), 
+			 .t2(t2), 
+			 .t2ex(t2ex),
+			 .rclk(rclk), 
+			 .tclk(tclk), 
+			 .brate2(brate2), 
+			 .tc2_int(tc2_int), 
+			 .pres_ow(pres_ow),
+			 .t2con(t2con), 
+			 .tl2(tl2), 
+			 .th2(th2), 
+			 .rcap2l(rcap2l), 
+			 .rcap2h(rcap2h));
+`else
+  assign tc2_int = 1'b0;
+  assign rclk    = 1'b0;
+  assign tclk    = 1'b0;
+  assign brate2  = 1'b0;
+`endif
 
 
 
@@ -301,86 +526,6 @@ always @(posedge clk or posedge rst)
     wr_bit_r <= #1 wr_bit;
   end
 
-/*
-//
-//set output in case of address (byte)
-always @(adr0_r or psw or acc or dptr_hi or dptr_lo or b_reg or
-//ports
-          p0_data or p1_data or p2_data or p3_data or
-//interrupt control
-	  ie or tcon or ip or
-// t/c 2
-	  t2con or tl2 or th2 or rcap2l or rcap2h or
-// t/c 0,1
-	  tmod or tl0 or th0 or tl1 or th1 or
-// serial interface
-          scon or pcon or sbuf or
-// stack
-	  sp_out)
-begin
-    case (adr0_r)
-      `OC8051_SFR_ACC: 		dat0 = acc;
-      `OC8051_SFR_PSW: 		dat0 = psw;
-      `OC8051_SFR_P0: 		dat0 = p0_data;
-      `OC8051_SFR_P1: 		dat0 = p1_data;
-      `OC8051_SFR_P2: 		dat0 = p2_data;
-      `OC8051_SFR_P3: 		dat0 = p3_data;
-      `OC8051_SFR_SP: 		dat0 = sp_out;
-      `OC8051_SFR_B: 		dat0 = b_reg;
-      `OC8051_SFR_DPTR_HI: 	dat0 = dptr_hi;
-      `OC8051_SFR_DPTR_LO: 	dat0 = dptr_lo;
-      `OC8051_SFR_SCON: 	dat0 = scon;
-      `OC8051_SFR_SBUF: 	dat0 = sbuf;
-      `OC8051_SFR_PCON: 	dat0 = pcon;
-      `OC8051_SFR_TH0: 		dat0 = th0;
-      `OC8051_SFR_TH1: 		dat0 = th1;
-      `OC8051_SFR_TL0: 		dat0 = tl0;
-      `OC8051_SFR_TL1: 		dat0 = tl1;
-      `OC8051_SFR_TMOD: 	dat0 = tmod;
-      `OC8051_SFR_IP: 		dat0 = ip;
-      `OC8051_SFR_IE: 		dat0 = ie;
-      `OC8051_SFR_TCON: 	dat0 = tcon;
-      `OC8051_SFR_RCAP2H: 	dat0 = rcap2h;
-      `OC8051_SFR_RCAP2L: 	dat0 = rcap2l;
-      `OC8051_SFR_TH2:    	dat0 = th2;
-      `OC8051_SFR_TL2:    	dat0 = tl2;
-      `OC8051_SFR_T2CON:  	dat0 = t2con;
-      default: 			dat0 = 8'h00;
-    endcase
-end
-
-
-//
-//set output in case of address (bit)
-always @(adr0_r or psw or acc or b_reg or
-//ports
-          p0_data or p1_data or p2_data or p3_data or
-//interrupt control
-	  ie or tcon or ip or
-// t/c 2
-	  t2con or
-// serial interface
-          scon)
-begin
-    case (adr0_r[7:3])
-      `OC8051_SFR_B_ACC:   bit_out = acc[adr0_r[2:0]];
-      `OC8051_SFR_B_PSW:   bit_out = psw[adr0_r[2:0]];
-      `OC8051_SFR_B_P0:    bit_out = p0_data[adr0_r[2:0]];
-      `OC8051_SFR_B_P1:    bit_out = p1_data[adr0_r[2:0]];
-      `OC8051_SFR_B_P2:    bit_out = p2_data[adr0_r[2:0]];
-      `OC8051_SFR_B_P3:    bit_out = p3_data[adr0_r[2:0]];
-      `OC8051_SFR_B_B:     bit_out = b_reg[adr0_r[2:0]];
-      `OC8051_SFR_B_IP:    bit_out = ip[adr0_r[2:0]];
-      `OC8051_SFR_B_IE:    bit_out = ie[adr0_r[2:0]];
-      `OC8051_SFR_B_TCON:  bit_out = tcon[adr0_r[2:0]];
-      `OC8051_SFR_B_SCON:  bit_out = scon[adr0_r[2:0]];
-      `OC8051_SFR_B_T2CON: bit_out = t2con[adr0_r[2:0]];
-      default:             bit_out = 1'b0;
-    endcase
-end
-*/
-
-
 
 //
 //set output in case of address (byte)
@@ -389,63 +534,75 @@ begin
   if (rst) begin
     dat0 <= #1 8'h00;
     wait_data <= #1 1'b0;
-/*  end else if (((adr0==`OC8051_SFR_PSW) & (((adr1==`OC8051_SFR_ACC) & we & !wr_bit_r)) |
-                (({adr1[7:3], 3'b000}==adr0) & we & wr_bit_r)) & !wait_data) begin
-//    dat0 <= #1 {dat1[7:1], p};
-    wait_data <= #1 1'b1;
-  end else if ((adr0==`OC8051_SFR_PSW) & (adr1==adr0) & we & !wr_bit_r & !wait_data) begin
-//    dat0 <= #1 {dat1[7:1], p};
-    wait_data <= #1 1'b1;*/
   end else if ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) begin				//write and read same address
     dat0 <= #1 dat1;
     wait_data <= #1 1'b0;
   end else if (
-      (((wr_sfr==`OC8051_WRS_ACC1) & (adr0==`OC8051_SFR_ACC)) | 		//write to acc
+      (((wr_sfr==`OC8051_WRS_ACC1) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
       ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) |	//write to dpl
-//      ((wr_sfr==`OC8051_WRS_BA)   & (adr0==`OC8051_SFR_B)) |		//write to b
-      (adr1[7] & (adr1==adr0) & we & !wr_bit_r)) & !wait_data) begin				//write and read same address
-//    dat0 <= #1 dat1;
+      (adr1[7] & (adr1==adr0) & we & !wr_bit_r)) & !wait_data) begin	//write and read same address
     wait_data <= #1 1'b1;
 
   end else if (
       (((wr_sfr==`OC8051_WRS_ACC2) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
       ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_HI))	//write to dph
-//      ((wr_sfr==`OC8051_WRS_BA)   & (adr0==`OC8051_SFR_ACC))
-      ) & !wait_data) begin	//write to b
-//    dat0 <= #1 dat2;
+      ) & !wait_data) begin
     wait_data <= #1 1'b1;
 
-//  else if (({adr1[7:3], 3'b000}==adr0_r) & we & wr_bit_r)
-//    dat0 <= #1 dat1;
   end else begin
     case (adr0)
       `OC8051_SFR_ACC: 		dat0 <= #1 acc;
       `OC8051_SFR_PSW: 		dat0 <= #1 psw;
+
+`ifdef OC8051_PORTS
+  `ifdef OC8051_PORT0
       `OC8051_SFR_P0: 		dat0 <= #1 p0_data;
+  `endif
+
+  `ifdef OC8051_PORT1
       `OC8051_SFR_P1: 		dat0 <= #1 p1_data;
+  `endif
+
+  `ifdef OC8051_PORT2
       `OC8051_SFR_P2: 		dat0 <= #1 p2_data;
+  `endif
+
+  `ifdef OC8051_PORT3
       `OC8051_SFR_P3: 		dat0 <= #1 p3_data;
-//      `OC8051_SFR_SP: 		dat0 <= #1 sp_out;
+  `endif
+`endif
+
       `OC8051_SFR_SP: 		dat0 <= #1 sp;
       `OC8051_SFR_B: 		dat0 <= #1 b_reg;
       `OC8051_SFR_DPTR_HI: 	dat0 <= #1 dptr_hi;
       `OC8051_SFR_DPTR_LO: 	dat0 <= #1 dptr_lo;
+
+`ifdef OC8051_UART
       `OC8051_SFR_SCON: 	dat0 <= #1 scon;
       `OC8051_SFR_SBUF: 	dat0 <= #1 sbuf;
       `OC8051_SFR_PCON: 	dat0 <= #1 pcon;
+`endif
+
+`ifdef OC8051_TC01
       `OC8051_SFR_TH0: 		dat0 <= #1 th0;
       `OC8051_SFR_TH1: 		dat0 <= #1 th1;
       `OC8051_SFR_TL0: 		dat0 <= #1 tl0;
       `OC8051_SFR_TL1: 		dat0 <= #1 tl1;
       `OC8051_SFR_TMOD: 	dat0 <= #1 tmod;
+`endif
+
       `OC8051_SFR_IP: 		dat0 <= #1 ip;
       `OC8051_SFR_IE: 		dat0 <= #1 ie;
       `OC8051_SFR_TCON: 	dat0 <= #1 tcon;
+
+`ifdef OC8051_TC2
       `OC8051_SFR_RCAP2H: 	dat0 <= #1 rcap2h;
       `OC8051_SFR_RCAP2L: 	dat0 <= #1 rcap2l;
       `OC8051_SFR_TH2:    	dat0 <= #1 th2;
       `OC8051_SFR_TL2:    	dat0 <= #1 tl2;
       `OC8051_SFR_T2CON:  	dat0 <= #1 t2con;
+`endif
+
       default: 			dat0 <= #1 8'h00;
     endcase
     wait_data <= #1 1'b0;
@@ -462,8 +619,7 @@ begin
   else if (
           ((adr1[7:3]==adr0[7:3]) & (~&adr1[2:0]) &  we & !wr_bit_r) |
           ((wr_sfr==`OC8051_WRS_ACC1) & (adr0[7:3]==`OC8051_SFR_B_ACC)) 	//write to acc
-//          ((wr_sfr==`OC8051_WRS_BA)   & (adr0[7:3]==`OC8051_SFR_B_B))
-	  )		//write to b
+	  )
 
     bit_out <= #1 dat1[adr0[2:0]];
   else if ((adr1==adr0) & we & wr_bit_r)
@@ -472,19 +628,54 @@ begin
     case (adr0[7:3])
       `OC8051_SFR_B_ACC:   bit_out <= #1 acc[adr0[2:0]];
       `OC8051_SFR_B_PSW:   bit_out <= #1 psw[adr0[2:0]];
+
+`ifdef OC8051_PORTS
+  `ifdef OC8051_PORT0
       `OC8051_SFR_B_P0:    bit_out <= #1 p0_data[adr0[2:0]];
+  `endif
+
+  `ifdef OC8051_PORT1
       `OC8051_SFR_B_P1:    bit_out <= #1 p1_data[adr0[2:0]];
+  `endif
+
+  `ifdef OC8051_PORT2
       `OC8051_SFR_B_P2:    bit_out <= #1 p2_data[adr0[2:0]];
+  `endif
+
+  `ifdef OC8051_PORT3
       `OC8051_SFR_B_P3:    bit_out <= #1 p3_data[adr0[2:0]];
+  `endif
+`endif  
+
       `OC8051_SFR_B_B:     bit_out <= #1 b_reg[adr0[2:0]];
       `OC8051_SFR_B_IP:    bit_out <= #1 ip[adr0[2:0]];
       `OC8051_SFR_B_IE:    bit_out <= #1 ie[adr0[2:0]];
       `OC8051_SFR_B_TCON:  bit_out <= #1 tcon[adr0[2:0]];
+
+`ifdef OC8051_UART
       `OC8051_SFR_B_SCON:  bit_out <= #1 scon[adr0[2:0]];
+`endif
+
+`ifdef OC8051_TC2
       `OC8051_SFR_B_T2CON: bit_out <= #1 t2con[adr0[2:0]];
+`endif
+
       default:             bit_out <= #1 1'b0;
     endcase
 end
 
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    prescaler <= #1 4'h0;
+    pres_ow <= #1 1'b0;
+  end else if (prescaler==4'b1011) begin
+    prescaler <= #1 4'h0;
+    pres_ow <= #1 1'b1;
+  end else begin
+    prescaler <= #1 prescaler + 4'h1;
+    pres_ow <= #1 1'b0;
+  end
+end
 
 endmodule

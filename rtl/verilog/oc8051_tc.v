@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2003/04/07 14:58:02  simont
+// change sfr's interface.
+//
 // Revision 1.6  2003/04/04 10:34:13  simont
 // change timers to meet timing specifications (add divider with 12)
 //
@@ -86,22 +89,19 @@ input        clk,
 	     tr0,
 	     tr1,
 	     t0,
-	     t1;
-output [7:0] tmod, 
-             tl0, 
-	     th0, 
-	     tl1, 
+	     t1,
+	     pres_ow;
+output [7:0] tmod,
+             tl0,
+	     th0,
+	     tl1,
 	     th1;
 output       tf0,
-             tf1,
-	     pres_ow;
+             tf1;
 
 
 reg [7:0] tmod, tl0, th0, tl1, th1;
 reg tf0, tf1_0, tf1_1, t0_buff, t1_buff;
-
-reg pres_ow;
-reg [3:0] prescaler;
 
 wire tc0_add, tc1_add;
 
@@ -226,20 +226,6 @@ begin
  end
 end
 
-
-always @(posedge clk or posedge rst)
-begin
-  if (rst) begin
-    prescaler <= #1 4'h0;
-    pres_ow <= #1 1'b0;
-  end else if (prescaler==4'b1011) begin
-    prescaler <= #1 4'h0;
-    pres_ow <= #1 1'b1;
-  end else begin
-    prescaler <= #1 prescaler + 4'h1;
-    pres_ow <= #1 1'b0;
-  end
-end
 
 always @(posedge clk or posedge rst)
   if (rst) begin

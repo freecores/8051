@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.10  2003/04/03 19:20:55  simont
+// Remove instruction cache and wb_interface
+//
 // Revision 1.9  2003/04/02 15:08:59  simont
 // rename signals
 //
@@ -109,12 +112,43 @@ oc8051_top oc8051_top_1(.wb_rst_i(rst), .wb_clk_i(clk),
 	 .wbi_adr_o(iadr_o), .wbi_stb_o(istb_o), .wbi_ack_i(iack_i),
          .wbi_cyc_o(icyc_o), .wbi_dat_i(idat_i), .wbi_err_i(wbi_err_i),
 
-	 .p0_i(p0_in), .p1_i(p1_in), .p2_i(p2_in), .p3_i(p3_in),
-	 .p0_o(p0_out), .p1_o(p1_out), .p2_o(p2_out), .p3_o(p3_out),
+  `ifdef OC8051_PORTS
 
-	 .ea_in(ea[0]),
+   `ifdef OC8051_PORT0
+	 .p0_i(p0_in),
+	 .p0_o(p0_out),
+   `endif
+
+   `ifdef OC8051_PORT1
+	 .p1_i(p1_in),
+	 .p1_o(p1_out),
+   `endif
+
+   `ifdef OC8051_PORT2
+	 .p2_i(p2_in),
+	 .p2_o(p2_out),
+   `endif
+
+   `ifdef OC8051_PORT3
+	 .p3_i(p3_in),
+	 .p3_o(p3_out),
+   `endif
+  `endif
+
+
+   `ifdef OC8051_UART
 	 .rxd_i(rxd), .txd_o(txd),
-	 .t0_i(t0), .t1_i(t1), .t2_i(t2), .t2ex_i(t2ex));
+   `endif
+
+   `ifdef OC8051_TC01
+	 .t0_i(t0), .t1_i(t1),
+   `endif
+
+   `ifdef OC8051_TC2
+	 .t2_i(t2), .t2ex_i(t2ex),
+   `endif
+
+	 .ea_in(ea[0]));
 
 
 //
