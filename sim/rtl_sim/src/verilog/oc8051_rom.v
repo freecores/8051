@@ -44,11 +44,14 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2002/09/30 17:34:01  simont
+// prepared header
+//
 //
 
 module oc8051_rom (rst, clk, addr, ea_int, data1, data2, data3);
 
-parameter INT_ROM_WID= 15;
+//parameter INT_ROM_WID= 15;
 
 input rst, clk;
 input [15:0] addr;
@@ -62,14 +65,15 @@ integer i;
 
 wire ea;
 
-assign ea = | addr[15:INT_ROM_WID];
+//assign ea = | addr[15:INT_ROM_WID];
+assign ea = 1'b0;
 //assign ea_int = ! ea;
 
 initial
 begin
   for (i=0; i<65536; i=i+1)
     buff [i] = 8'h00;
-  $readmemh("../src/oc8051_rom.in", buff);
+  $readmemh("../../../asm/in/oc8051_rom.in", buff);
 end
 
 always @(posedge clk or posedge rst)
