@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.15  2003/05/07 12:31:53  simont
+// add wire sub_result, conect it to des_acc and des1.
+//
 // Revision 1.14  2003/05/05 15:46:36  simont
 // add aditional alu destination to solve critical path.
 //
@@ -75,7 +78,7 @@
 
 
 module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, 
-                  des1, des2, des_acc, desCy, desAc, desOv);
+                  des1, des2, des_acc, desCy, desAc, desOv, sub_result);
 //
 // op_code      (in)  operation code [oc8051_decoder.alu_op -r]
 // src1         (in)  first operand [oc8051_alu_src1_sel.des]
@@ -95,7 +98,7 @@ input        srcCy, srcAc, bit_in, clk, rst;
 input  [3:0] op_code;
 input  [7:0] src1, src2, src3;
 output       desCy, desAc, desOv;
-output [7:0] des1, des2, des_acc;
+output [7:0] des1, des2, des_acc, sub_result;
 
 reg desCy, desAc, desOv;
 reg [7:0] des1, des2, des_acc;
@@ -203,7 +206,8 @@ begin
 //operation subtract
     `OC8051_ALU_SUB: begin
       des_acc = sub_result;
-      des1 = sub_result;
+//      des1 = sub_result;
+      des1 = 8'h00;
       des2 = 8'h00;
       desCy = !subc[1];
       desAc = !sub4[4];
