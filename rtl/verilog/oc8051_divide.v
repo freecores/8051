@@ -71,36 +71,31 @@ output [7:0] des1, des2;
 
 // wires
 reg desOv;
-wire div0, div1, div2, div3;
-wire [7:0] rem1, rem2, rem3, rem4;
-wire [15:0] cmp0, cmp1, cmp2, cmp3;
+wire div0, div1;
+wire [7:0] rem1, rem2;
+wire [15:0] cmp0, cmp1;
 reg [7:0] div_out, rem_out;
 wire [7:0] div;
 
 // real registers
 reg cycle;
-reg [3:0] tmp_div;
+reg [5:0] tmp_div;
 reg [7:0] tmp_rem;
 
-/* This logic is very much redundant, but it should be optimized by
+/* This logic is very redundant, but it should be optimized by
    synthesizer */
-assign cmp3 = src2 << (cycle ? 3'h7 : 3'h3);
-assign cmp2 = src2 << (cycle ? 3'h6 : 3'h2);
-assign cmp1 = src2 << (cycle ? 3'h5 : 3'h1);
-assign cmp0 = src2 << (cycle ? 3'h4 : 3'h0);
+assign cmp1 = src2 << ({1'b0, cycle} * 3'h2 + 3'h1);
+assign cmp0 = src2 << ({1'b0, cycle} * 3'h2 + 3'h0);
 
-assign rem4 = cycle ? tmp_rem : src1;
-assign div3 = cmp3 <= rem4;
-assign rem3 = rem4 - (div3 ? cmp3[7:0] : 8'h0);
-assign div2 = cmp2 <= rem3;
-assign rem2 = rem3 - (div2 ? cmp2[7:0] : 8'h0);
+assign rem2 = cycle != 0 ? tmp_rem : src1;
 assign div1 = cmp1 <= rem2;
-assign rem1 = rem2 - (div1 ? cmp1[7:0] : 8'h0);
+assign rem1 = rem1 - (div1 ? cmp1[7:0] : 8'h0);
 assign div0 = cmp0 <= rem1;
+
 //
-// in clock cycle 0 we first calculate four MSB bits,
-// and four LSB in cycle 1
-always @(rem1 or div0 or div1 or div2 or div3 or cmp0 or tmp_div)
+// in clock cycle 0 we first calculate two MSB bits, ...
+// till finally in clock cycle 3 we calculate two LSB bits
+always @(rem1 or div0 or cmp0 or tmp_div or src2)
 begin
   if (src2 == 8'h0) begin
     desOv = 1'b1;
@@ -109,22 +104,22 @@ begin
   end else begin
     desOv = 1'b0;
     rem_out = rem1 - (div0 ? cmp0[7:0] : 8'h0);
-    div_out = {tmp_div, div3, div2, div1, div0};
+    div_out = {div1, div0, tmp_div};
   end
 end
 
 //
-// divider works in two clock cycles -- 0 and 1
+// divider works in four clock cycles -- 0, 1, 2 and 3
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
     cycle <= #1 1'b0;
-    tmp_div <= #1 4'h0;
+    tmp_div <= #1 6'h0;
     tmp_rem <= #1 8'h0;
   end else begin
     if (enable && !cycle) cycle <= #1 1'b1;
     else cycle <= #1 1'b0;
-    tmp_div <= #1 div_out[3:0];
+    tmp_div <= #1 div_out[7:2];
     tmp_rem <= #1 rem_out;
   end
 end
