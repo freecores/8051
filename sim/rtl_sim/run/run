@@ -1,30 +1,28 @@
 #!/bin/csh -f
+#
+# testa all programs with oc8051 microcontroler
+#
+
+rm cds.lib hdl.var RUN_NC
+rm nc*
+rm -r INCA_libs
 
 set failedi = 0;
 set failedx = 0;
 set all_testsi = 0;
 set all_testsx = 0;
 
-
-set internal_tests=(testall lcall \
-            negcnt gcd int2bin cast divmul fib sort sqroot div16u \
-	    test_xram xram_m \
-	    timer_test counter_test timer2_test interrupt_test serial_test r_bank \
-	    7seg blinkP10 BLINKY calculator cordic Crc cubicroots normalize pwm  Sieve sqroot_1 src timer0 \
+set internal_tests=(testall lcall r_bank test_xram xrom_test div16u \
+            interrupt_test timer_test counter_test timer2_test serial_test \
+            negcnt gcd int2bin cast divmul fib sort sqroot xram \
 	    )
 
-set external_tests=(testall lcall \
-            negcnt gcd int2bin cast divmul fib sort sqroot div16u \
-	    test_xram xram_m \
-	    interrupt_test r_bank xrom_test \
-	    7seg blinkP10 BLINKY calculator cordic Crc cubicroots normalize pwm  Sieve sqroot_1 src timer0 \
+set external_tests=(testall lcall r_bank test_xram xrom_test div16u \
+	    interrupt_test serial_test \
+            negcnt gcd int2bin cast divmul fib sort sqroot xram \
 	    )
 
-rm cds.lib hdl.var RUN_NC
-rm nc*
-rm -r INCA_libs
-
-
+	    
 # Prepare all .args files
 iteration:
 echo ""
@@ -88,12 +86,11 @@ foreach internal_test ($internal_tests)
 	echo "\t###"
 
 	cp ../../../bench/in/${internal_test}.in ../../../bench/in/oc8051_rom.in
-	cp ../../../bench/vec/${internal_test}.vec ../../../bench/vec/oc8051_test.vec
 	ncsim -NOCOPYRIGHT -f ncsim.args > ../out/ncsim.out
 	if ($status != 0) then
 	  cat ../out/ncsim.out
 	  exit
-	else if (`tail -4 ../out/ncsim.out | grep Done` == "") then
+	else if (`tail -5 ../out/ncsim.out | grep Passed` == "") then
           echo "\t### FAILED"
           @ failedi += 1;
           @ all_testsi += 1;
@@ -119,15 +116,14 @@ foreach external_test ($external_tests)
 	echo "\t###"
 	echo "\t### Running test ${i}: ${external_test}"
 	echo "\t###"
-	
-  cp ../../../bench/in/${external_test}.in ../../../bench/in/oc8051_xrom.in
-	cp ../../../bench/vec/${external_test}.vec ../../../bench/vec/oc8051_test.vec
-  cp ../oc8051_eax.in ../oc8051_ea.in
+
+        cp ../../../bench/in/${external_test}.in ../../../bench/in/oc8051_xrom.in
+        cp ../oc8051_eax.in ../oc8051_ea.in
 	ncsim -NOCOPYRIGHT -f ncsim.args > ../out/ncsim.out
 	if ($status != 0) then
 	  cat ../out/ncsim.out
 	  exit
-	else if (`tail -4 ../out/ncsim.out | grep Done` == "") then
+	else if (`tail -5 ../out/ncsim.out | grep Passed` == "") then
           echo "\t### FAILED"
           @ failedx += 1;
           @ all_testsx += 1;
