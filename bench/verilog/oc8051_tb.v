@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.13  2003/06/05 11:13:39  simont
+// add FREQ paremeter.
+//
 // Revision 1.12  2003/04/16 09:55:56  simont
 // add support for external rom from xilinx ramb4
 //
@@ -344,8 +347,6 @@ begin
   end
 end
 
-
-initial $dumpvars;
 
 
 endmodule
