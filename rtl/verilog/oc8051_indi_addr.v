@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2003/01/13 14:14:41  simont
+// replace some modules
+//
 // Revision 1.4  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -55,93 +58,62 @@
 // synopsys translate_on
 
 
-module oc8051_indi_addr (clk, rst, rd_addr, wr_addr, data_in, wr, wr_bit, rn_out, ri_out, sel, bank);
-//
-// clk          (in)  clock
-// rst          (in)  reset
-// addr         (in)  write address [oc8051_ram_wr_sel.out]
-// data_in      (in)  data input (alu destination1) [oc8051_alu.des1]
-// wr           (in)  write [oc8051_decoder.wr -r]
-// wr_bit       (in)  write bit addresable [oc8051_decoder.bit_addr -r]
-// data_out     (out) data output [oc8051_ram_rd_sel.ri, oc8051_ram_wr_sel.ri -r]
-// sel          (in)  select register [oc8051_op_select.op1_out[0] ]
-// bank         (in)  select register bank: [oc8051_psw.data_out[4:3] ]
+module oc8051_indi_addr (clk, rst, wr_addr, data_in, wr, wr_bit, ri_out, sel, bank);
 //
 
 
-input clk, rst, wr, wr_bit;
-input [1:0] bank;
-input [2:0] sel;
-input [7:0] data_in;
-input [7:0] rd_addr, wr_addr;
+input        clk,	// clock
+             rst,	// reset
+	     wr,	// write
+             sel,	// select register
+	     wr_bit;	// write bit addressable
+input  [1:0] bank;	// select register bank
+input  [7:0] data_in;	// data input
+input  [7:0] wr_addr;	// write address
 
-output [7:0] rn_out, ri_out;
+output [7:0] ri_out;
 
-reg [7:0] rn_out;
-
-reg [7:0] buff [31:0];
+//reg [7:0] buff [31:0];
 reg wr_bit_r;
-wire rd_ram, rd_ind;
 
 
-wire tmp;
-assign tmp = ~|wr_addr[7:5];
+reg [7:0] buff [0:7];
+
 //
 //write to buffer
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    buff[0] <= #1 8'h00;
-    buff[1] <= #1 8'h00;
-    buff[2] <= #1 8'h00;
-    buff[3] <= #1 8'h00;
-    buff[4] <= #1 8'h00;
-    buff[5] <= #1 8'h00;
-    buff[6] <= #1 8'h00;
-    buff[7] <= #1 8'h00;
-    buff[8] <= #1 8'h00;
-    buff[9] <= #1 8'h00;
-    buff[10] <= #1 8'h00;
-    buff[11] <= #1 8'h00;
-    buff[12] <= #1 8'h00;
-    buff[13] <= #1 8'h00;
-    buff[14] <= #1 8'h00;
-    buff[15] <= #1 8'h00;
-    buff[16] <= #1 8'h00;
-    buff[17] <= #1 8'h00;
-    buff[18] <= #1 8'h00;
-    buff[19] <= #1 8'h00;
-    buff[20] <= #1 8'h00;
-    buff[21] <= #1 8'h00;
-    buff[22] <= #1 8'h00;
-    buff[23] <= #1 8'h00;
-    buff[24] <= #1 8'h00;
-    buff[25] <= #1 8'h00;
-    buff[26] <= #1 8'h00;
-    buff[27] <= #1 8'h00;
-    buff[28] <= #1 8'h00;
-    buff[29] <= #1 8'h00;
-    buff[30] <= #1 8'h00;
-    buff[31] <= #1 8'h00;
-  end else if ((wr) && !(wr_bit_r) && (tmp)) begin
-    buff[wr_addr[4:0]] <= #1 data_in;
+    buff[3'b000] <= #1 8'h00;
+    buff[3'b001] <= #1 8'h00;
+    buff[3'b010] <= #1 8'h00;
+    buff[3'b011] <= #1 8'h00;
+    buff[3'b100] <= #1 8'h00;
+    buff[3'b101] <= #1 8'h00;
+    buff[3'b110] <= #1 8'h00;
+    buff[3'b111] <= #1 8'h00;
+  end else begin
+    if ((wr) & !(wr_bit_r)) begin
+      case (wr_addr)
+        8'h00: buff[3'b000] <= #1 data_in;
+        8'h01: buff[3'b001] <= #1 data_in;
+        8'h08: buff[3'b010] <= #1 data_in;
+        8'h09: buff[3'b011] <= #1 data_in;
+        8'h10: buff[3'b100] <= #1 data_in;
+        8'h11: buff[3'b101] <= #1 data_in;
+        8'h18: buff[3'b110] <= #1 data_in;
+        8'h19: buff[3'b111] <= #1 data_in;
+      endcase
+    end
   end
 end
 
 //
 //read from buffer
-assign rd_ram = (rd_addr== wr_addr);
-assign rd_ind = ({3'h0, bank,  2'b00, sel[0]}==wr_addr);
-assign ri_out = ( rd_ind & (wr) & !wr_bit) ? data_in : buff[{bank, 2'b00, sel[0]}];
 
-always @(posedge clk or posedge rst)
-  if (rst) begin
-    rn_out <= #1 8'h00;
-  end else if ( rd_ram & (wr) & !wr_bit) begin
-    rn_out <= #1 data_in;
-  end else begin
-    rn_out <= #1 buff[rd_addr[4:0]];
-  end
+assign ri_out = (({3'b000, bank, 2'b00, sel}==wr_addr) & (wr) & !wr_bit_r) ?
+                 data_in : buff[{bank, sel}];
+
 
 
 always @(posedge clk or posedge rst)

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.26  2003/04/29 11:24:31  simont
+// fix bug in case execution of two data dependent instructions.
+//
 // Revision 1.25  2003/04/25 17:15:51  simont
 // change branch instruction execution (reduse needed clock periods).
 //
@@ -230,7 +233,6 @@ wire [7:0]  op1_i,
 	    dptr_hi, 
 	    dptr_lo, 
 	    ri, 
-	    rn_mem, 
 	    data_out,
             op1,
             op2,
@@ -282,6 +284,7 @@ wire [1:0]  psw_set;    //write to psw or not; from decoder to psw (through regi
 wire [7:0]  src1,	//alu sources 1
             src2,	//alu sources 2
             src3,	//alu sources 3
+	    des_acc,
 	    des1,	//alu destination 1
 	    des2;	//alu destinations 2
 wire        desCy,	//carry out
@@ -357,13 +360,14 @@ oc8051_decoder oc8051_decoder1(.clk(wb_clk_i),
 //
 //alu
 oc8051_alu oc8051_alu1(.rst(wb_rst_i), 
-                       .clk(wb_clk_i), 
+                       .clk(wb_clk_i),
 		       .op_code(alu_op),
 		       .src1(src1),
 		       .src2(src2), 
 		       .src3(src3), 
 		       .srcCy(alu_cy), 
 		       .srcAc(srcAc),
+		       .des_acc(des_acc),
 		       .des1(des1),
 		       .des2(des2),
 		       .desCy(desCy),
@@ -414,7 +418,7 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
 			 .b_in(bit_out),
 			 .cy(cy),
 			 .acc(acc),
-			 .des(des1)
+			 .des(des_acc)
 			 );
 
 
@@ -445,14 +449,12 @@ oc8051_cy_select oc8051_cy_select1(.cy_sel(cy_sel),
 //
 oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_i), 
                                     .rst(wb_rst_i), 
-				    .rd_addr(rd_addr), 
 				    .wr_addr(wr_addr),
-				    .data_in(wr_dat), 
+				    .data_in(wr_dat),
 				    .wr(wr_o),
 				    .wr_bit(bit_addr_o), 
-				    .rn_out(rn_mem),
-				    .ri_out(ri), 
-				    .sel(op1_cur),
+				    .ri_out(ri),
+				    .sel(op1_cur[0]),
 				    .bank(bank_sel));
 
 
@@ -468,15 +470,16 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i),
 		       .wr_bit_i(bit_addr), 
 		       .wr_bit_o(bit_addr_o), 
 		       .wr_dat(wr_dat),
+		       .des_acc(des_acc),
 		       .des1(des1),
 		       .des2(des2),
-		       .rd_addr(rd_addr), 
+		       .rd_addr(rd_addr),
 		       .wr_addr(wr_addr),
 		       .wr_ind(wr_ind),
-		       .bit_in(bit_data), 
+		       .bit_in(bit_data),
 		       .in_ram(ram_data),
-		       .sfr(sfr_out), 
-		       .sfr_bit(sfr_bit), 
+		       .sfr(sfr_out),
+		       .sfr_bit(sfr_bit),
 		       .bit_out(bit_out),
 		       .iram_out(ram_out),
 
@@ -487,34 +490,34 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i),
                        .istb_o(istb_o),
 
 // internal instruction rom
-                       .op1_i(op1_i), 
-		       .op2_i(op2_i), 
+                       .op1_i(op1_i),
+		       .op2_i(op2_i),
 		       .op3_i(op3_i),
 
 // data memory
-                       .dadr_o(wbd_adr_o), 
+                       .dadr_o(wbd_adr_o),
 		       .ddat_o(wbd_dat_o),
-		       .dwe_o(wbd_we_o), 
+		       .dwe_o(wbd_we_o),
 		       .dstb_o(wbd_stb_o),
-		       .ddat_i(wbd_dat_i), 
+		       .ddat_i(wbd_dat_i),
 		       .dack_i(wbd_ack_i),
 
 // from decoder
-                       .rd_sel(ram_rd_sel), 
-		       .wr_sel(ram_wr_sel), 
+                       .rd_sel(ram_rd_sel),
+		       .wr_sel(ram_wr_sel),
 		       .rn({bank_sel, op1_cur}),
 		       .rd_ind(rd_ind),
 		       .rd(rd),
-		       .mem_act(mem_act), 
+		       .mem_act(mem_act),
 		       .mem_wait(mem_wait),
 
 // external access
-                       .ea(ea_in), 
+                       .ea(ea_in),
 		       .ea_int(ea_int),
 
 // instructions outputs to cpu
-                       .op1_out(op1_n), 
-		       .op2_out(op2_n), 
+                       .op1_out(op1_n),
+		       .op2_out(op2_n),
 		       .op3_out(op3_n),
 
 // interrupt interface
@@ -533,8 +536,7 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i),
                        .sp_w(sp_w), 
 		       .dptr({dptr_hi, dptr_lo}),
 		       .ri(ri), 
-		       .rn_mem(rn_mem),
-		       .acc(acc), 
+		       .acc(acc),
 		       .sp(sp)
 		       );
 
@@ -546,10 +548,11 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
                        .clk(wb_clk_i), 
 		       .adr0(rd_addr[7:0]), 
 		       .adr1(wr_addr[7:0]),
-		       .dat0(sfr_out), 
-		       .dat1(wr_dat), 
-		       .dat2(des2), 
-		       .we(wr_o && !wr_ind), 
+		       .dat0(sfr_out),
+		       .dat1(wr_dat),
+		       .dat2(des2),
+		       .des_acc(des_acc),
+		       .we(wr_o && !wr_ind),
 		       .bit_in(desCy),
 		       .bit_out(sfr_bit), 
 		       .wr_bit(bit_addr_o),

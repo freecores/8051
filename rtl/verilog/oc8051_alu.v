@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.13  2003/04/29 08:35:12  simont
+// fix bug in substraction.
+//
 // Revision 1.12  2003/04/25 17:15:51  simont
 // change branch instruction execution (reduse needed clock periods).
 //
@@ -68,8 +71,8 @@
 
 
 
-module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, des1, des2, desCy,
-                   desAc, desOv);
+module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, 
+                  des1, des2, des_acc, desCy, desAc, desOv);
 //
 // op_code      (in)  operation code [oc8051_decoder.alu_op -r]
 // src1         (in)  first operand [oc8051_alu_src1_sel.des]
@@ -85,14 +88,14 @@ module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, de
 // desOv        (out) Overflow output [oc8051_psw.ov_in]
 //
 
-input srcCy, srcAc, bit_in, clk, rst;
-input [3:0] op_code;
-input [7:0] src1, src2, src3;
-output desCy, desAc, desOv;
-output [7:0] des1, des2;
+input        srcCy, srcAc, bit_in, clk, rst;
+input  [3:0] op_code;
+input  [7:0] src1, src2, src3;
+output       desCy, desAc, desOv;
+output [7:0] des1, des2, des_acc;
 
 reg desCy, desAc, desOv;
-reg [7:0] des1, des2;
+reg [7:0] des1, des2, des_acc;
 
 
 //
@@ -129,6 +132,11 @@ reg enable_div;
 reg da_tmp;
 //reg [8:0] da1;
 
+//
+// inc
+//
+wire [15:0] inc, dec;
+
 oc8051_multiply oc8051_mul1(.clk(clk), .rst(rst), .enable(enable_mul), .src1(src1), .src2(src2), .des1(mulsrc1), .des2(mulsrc2), .desOv(mulOv));
 oc8051_divide oc8051_div1(.clk(clk), .rst(rst), .enable(enable_div), .src1(src1), .src2(src2), .des1(divsrc1), .des2(divsrc2), .desOv(divOv));
 
@@ -164,14 +172,20 @@ assign suba = {1'b0,src2[7]};
 assign subb = {1'b0,!sub8[3]};
 assign subc = sub9-suba-subb;
 
+/* inc */
+assign inc = {src2, src1} + {15'h0, 1'b1};
+assign dec = {src2, src1} - {15'h0, 1'b1};
 
-always @(op_code or src1 or src2 or srcCy or srcAc or bit_in or src3 or mulsrc1 or mulsrc2 or mulOv or divsrc1 or divsrc2 or divOv or addc or add8 or add4 or sub4 or sub8 or subc or da_tmp)
+always @(op_code or src1 or src2 or srcCy or srcAc or bit_in or src3 or mulsrc1
+      or mulsrc2 or mulOv or divsrc1 or divsrc2 or divOv or addc or add8 or add4
+      or sub4 or sub8 or subc or da_tmp or inc or dec)
 begin
 
   case (op_code)
 //operation add
     `OC8051_ALU_ADD: begin
-      des1 = {addc[0],add8[2:0],add4[3:0]};
+      des_acc = {addc[0],add8[2:0],add4[3:0]};
+      des1 = src1;
       des2 = src3+ {7'b0, addc[1]};
       desCy = addc[1];
       desAc = add4[4];
@@ -182,7 +196,8 @@ begin
     end
 //operation subtract
     `OC8051_ALU_SUB: begin
-      des1 = {subc[0],sub8[2:0],sub4[3:0]};
+      des_acc = {subc[0],sub8[2:0],sub4[3:0]};
+      des1 = src1;
       des2 = 8'h00;
       desCy = !subc[1];
       desAc = !sub4[4];
@@ -193,7 +208,8 @@ begin
     end
 //operation multiply
     `OC8051_ALU_MUL: begin
-      des1 = mulsrc1;
+      des_acc = mulsrc1;
+      des1 = src1;
       des2 = mulsrc2;
       desOv = mulOv;
       desCy = 1'b0;
@@ -203,7 +219,8 @@ begin
     end
 //operation divide
     `OC8051_ALU_DIV: begin
-      des1 = divsrc1;
+      des_acc = divsrc1;
+      des1 = src1;
       des2 = divsrc2;
       desOv = divOv;
       desAc = 1'bx;
@@ -214,12 +231,14 @@ begin
 //operation decimal adjustment
     `OC8051_ALU_DA: begin
 
-      if (srcAc==1'b1 | src1[3:0]>4'b1001) {da_tmp, des1[3:0]} = {1'b0, src1[3:0]}+ 5'b00110;
-      else {da_tmp, des1[3:0]} = {1'b0, src1[3:0]};
+      if (srcAc==1'b1 | src1[3:0]>4'b1001) {da_tmp, des_acc[3:0]} = {1'b0, src1[3:0]}+ 5'b00110;
+      else {da_tmp, des_acc[3:0]} = {1'b0, src1[3:0]};
 
       if (srcCy==1'b1 | src1[7:4]>4'b1001)
-        {desCy, des1[7:4]} = {srcCy, src1[7:4]}+ 5'b00110 + {4'b0, da_tmp};
-      else {desCy, des1[7:4]} = {srcCy, src1[7:4]} + {4'b0, da_tmp};
+        {desCy, des_acc[7:4]} = {srcCy, src1[7:4]}+ 5'b00110 + {4'b0, da_tmp};
+      else {desCy, des_acc[7:4]} = {srcCy, src1[7:4]} + {4'b0, da_tmp};
+
+      des1 = src1;
 
       des2 = 8'h00;
       desAc = 1'b0;
@@ -230,6 +249,7 @@ begin
 //operation not
 // bit operation not
     `OC8051_ALU_NOT: begin
+      des_acc = ~src1;
       des1 = ~src1;
       des2 = 8'h00;
       desCy = !srcCy;
@@ -241,6 +261,7 @@ begin
 //operation and
 //bit operation and
     `OC8051_ALU_AND: begin
+      des_acc = src1 & src2;
       des1 = src1 & src2;
       des2 = 8'h00;
       desCy = srcCy & bit_in;
@@ -252,6 +273,7 @@ begin
 //operation xor
 // bit operation xor
     `OC8051_ALU_XOR: begin
+      des_acc = src1 ^ src2;
       des1 = src1 ^ src2;
       des2 = 8'h00;
       desCy = srcCy ^ bit_in;
@@ -263,6 +285,7 @@ begin
 //operation or
 // bit operation or
     `OC8051_ALU_OR: begin
+      des_acc = src1 | src2;
       des1 = src1 | src2;
       des2 = 8'h00;
       desCy = srcCy | bit_in;
@@ -274,7 +297,8 @@ begin
 //operation rotate left
 // bit operation cy= cy or (not ram)
     `OC8051_ALU_RL: begin
-      des1 = {src1[6:0], src1[7]};
+      des_acc = {src1[6:0], src1[7]};
+      des1 = src1 ;
       des2 = 8'h00;
       desCy = srcCy | !bit_in;
       desAc = 1'bx;
@@ -284,7 +308,8 @@ begin
     end
 //operation rotate left with carry and swap nibbles
     `OC8051_ALU_RLC: begin
-      des1 = {src1[6:0], srcCy};
+      des_acc = {src1[6:0], srcCy};
+      des1 = src1 ;
       des2 = {src1[3:0], src1[7:4]};
       desCy = src1[7];
       desAc = 1'b0;
@@ -294,7 +319,8 @@ begin
     end
 //operation rotate right
     `OC8051_ALU_RR: begin
-      des1 = {src1[0], src1[7:1]};
+      des_acc = {src1[0], src1[7:1]};
+      des1 = src1 ;
       des2 = 8'h00;
       desCy = srcCy & !bit_in;
       desAc = 1'b0;
@@ -304,7 +330,8 @@ begin
     end
 //operation rotate right with carry
     `OC8051_ALU_RRC: begin
-      des1 = {srcCy, src1[7:1]};
+      des_acc = {srcCy, src1[7:1]};
+      des1 = src1 ;
       des2 = 8'h00;
       desCy = src1[0];
       desAc = 1'b0;
@@ -313,25 +340,32 @@ begin
       enable_div = 1'b0;
     end
 //operation pcs Add
-/*    `OC8051_ALU_PCS: begin
-      if (src1[7]) begin
-        {desCy, des1} = {1'b0, src2} + {1'b0, src1};
-        des2 = {1'b0, src3} - {8'h0, !desCy};
-      end else {des2, des1} = {src3,src2} + {8'h00, src1};
+    `OC8051_ALU_INC: begin
+      if (srcCy) begin
+        des_acc = dec[7:0];
+	des1 = dec[7:0];
+        des2 = dec[15:8];
+      end else begin
+        des_acc = inc[7:0];
+	des1 = inc[7:0];
+        des2 = inc[15:8];
+      end
       desCy = 1'b0;
       desAc = 1'b0;
       desOv = 1'b0;
       enable_mul = 1'b0;
       enable_div = 1'b0;
-    end*/
+    end
 //operation exchange
 //if carry = 0 exchange low order digit
     `OC8051_ALU_XCH: begin
       if (srcCy)
       begin
+        des_acc = src2;
         des1 = src2;
         des2 = src1;
       end else begin
+        des_acc = {src1[7:4],src2[3:0]};
         des1 = {src1[7:4],src2[3:0]};
         des2 = {src2[7:4],src1[3:0]};
       end
@@ -342,6 +376,7 @@ begin
       enable_div = 1'b0;
     end
     default: begin
+      des_acc = src1;
       des1 = src1;
       des2 = src2;
       desCy = srcCy;

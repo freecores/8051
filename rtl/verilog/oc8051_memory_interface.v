@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2003/04/25 17:15:51  simont
+// change branch instruction execution (reduse needed clock periods).
+//
 // Revision 1.4  2003/04/16 10:04:09  simont
 // chance idat_ir to 24 bit wide
 //
@@ -89,10 +92,10 @@ module oc8051_memory_interface (clk, rst,
   intr, int_v, int_ack,
 
 //alu
-  des1, des2,
+  des_acc, des1, des2,
 
 //sfr's
-  dptr, ri, rn_mem, sp,  sp_w, rn, acc, reti);
+  dptr, ri, sp,  sp_w, rn, acc, reti);
 
 input bit_in, sfr_bit, dack_i;
 input [2:0] mem_act;
@@ -104,7 +107,7 @@ output [7:0] iram_out, wr_dat;
 
 reg bit_out, reti;
 reg [7:0] iram_out, sp_r;
-reg [2:0] rd_addr_r;
+reg       rd_addr_r;
 input clk, rst, wr_i, wr_bit_i;
 output wr_o, wr_bit_o;
 
@@ -119,7 +122,7 @@ reg [23:0] idat_ir;
 //
 /////////////////////////////
 input iack_i;
-input [7:0] des1, des2;
+input [7:0] des_acc, des1, des2;
 output [15:0] iadr_o;
 
 wire ea_rom_sel;
@@ -129,7 +132,7 @@ wire ea_rom_sel;
 // ext_addr_sel
 //
 /////////////////////////////
-input [7:0] ri, rn_mem, ddat_i;
+input [7:0] ri, ddat_i;
 input [15:0] dptr;
 
 output dstb_o, dwe_o;
@@ -216,7 +219,7 @@ wire [7:0] isr_call;
 assign bank = rn[4:3];
 assign imm = op2_out;
 assign imm2 = op3_out;
-assign alu = {des2,des1};
+assign alu = {des2, des_acc};
 assign ea_rom_sel = ea && ea_int;
 assign wr_o = wr_i;
 assign wr_bit_o = wr_bit_i;
@@ -234,15 +237,12 @@ assign wr_dat = des1;
 //
 //  ram_select
 //
-/////////////////////////////
-always @(rd_addr_r or in_ram or sfr or bit_in or sfr_bit or rn_mem or rd_ind)
+///////////////////////////// ??????????????????????
+always @(rd_addr_r or in_ram or sfr or bit_in or sfr_bit or rd_ind)
 begin
-  if (rd_addr_r[2] && !rd_ind) begin
+  if (rd_addr_r && !rd_ind) begin
     iram_out = sfr;
     bit_out = sfr_bit;
-  end else if (~|rd_addr_r[2:0]) begin
-    iram_out = rn_mem;
-    bit_out = bit_in;
   end else begin
     iram_out = in_ram;
     bit_out = bit_in;
@@ -257,18 +257,18 @@ end
 
 always @(rd_sel or sp or ri or rn or imm or op1_out or dadr_o[15:0] or bank)
 begin
-     case (rd_sel)
-      `OC8051_RRS_RN : rd_addr = {3'h0, rn};
-      `OC8051_RRS_I : rd_addr = ri;
-      `OC8051_RRS_D : rd_addr = imm;
-      `OC8051_RRS_SP : rd_addr = sp;
+  case (rd_sel)
+    `OC8051_RRS_RN   : rd_addr = {3'h0, rn};
+    `OC8051_RRS_I    : rd_addr = ri;
+    `OC8051_RRS_D    : rd_addr = imm;
+    `OC8051_RRS_SP   : rd_addr = sp;
 
-      `OC8051_RRS_B : rd_addr = `OC8051_SFR_B;
-      `OC8051_RRS_DPTR : rd_addr = `OC8051_SFR_DPTR_LO;
-      `OC8051_RRS_PSW  : rd_addr = `OC8051_SFR_PSW;
-      `OC8051_RRS_ACC  : rd_addr = `OC8051_SFR_ACC;
-      default : rd_addr = 2'bxx;
-    endcase
+    `OC8051_RRS_B    : rd_addr = `OC8051_SFR_B;
+    `OC8051_RRS_DPTR : rd_addr = `OC8051_SFR_DPTR_LO;
+    `OC8051_RRS_PSW  : rd_addr = `OC8051_SFR_PSW;
+    `OC8051_RRS_ACC  : rd_addr = `OC8051_SFR_ACC;
+    default          : rd_addr = 2'bxx;
+  endcase
 
 end
 
@@ -277,15 +277,15 @@ end
 //
 always @(wr_sel or sp_w or rn_r or imm_r or ri_r or imm2_r or op1_r or dadr_o[15:0])
 begin
-    case (wr_sel)
-      `OC8051_RWS_RN : wr_addr = {3'h0, rn_r};
-      `OC8051_RWS_I  : wr_addr = ri_r;
-      `OC8051_RWS_D  : wr_addr = imm_r;
-      `OC8051_RWS_SP : wr_addr = sp_w;
-      `OC8051_RWS_D3 : wr_addr = imm2_r;
-      `OC8051_RWS_B  : wr_addr = `OC8051_SFR_B;
-      default : wr_addr = 2'bxx;
-    endcase
+  case (wr_sel)
+    `OC8051_RWS_RN : wr_addr = {3'h0, rn_r};
+    `OC8051_RWS_I  : wr_addr = ri_r;
+    `OC8051_RWS_D  : wr_addr = imm_r;
+    `OC8051_RWS_SP : wr_addr = sp_w;
+    `OC8051_RWS_D3 : wr_addr = imm2_r;
+    `OC8051_RWS_B  : wr_addr = `OC8051_SFR_B;
+    default        : wr_addr = 2'bxx;
+  endcase
 end
 
 always @(posedge clk or posedge rst)
@@ -312,7 +312,7 @@ always @(wr_sel)
 // output address is alu destination
 // (instructions MOVC)
 
-assign iadr_ot = istb_t ? iadr_t : pc;
+assign iadr_ot = (istb_t & !iack_i) ? iadr_t : pc;
 assign iadr_o = iadr_ot;
 
 
@@ -332,7 +332,7 @@ begin
   end else if (ea_rom_sel && !imem_wait && istb_t) begin
     istb_t <= #1 1'b0;
   end else if (mem_act==`OC8051_MAS_CODE) begin
-    iadr_t <= #1 {des2, des1};
+    iadr_t <= #1 alu;
     istb_t <= #1 1'b1;
     imem_wait <= #1 1'b1;
   end
@@ -497,7 +497,7 @@ always @(posedge clk or posedge rst)
 //
 /////////////////////////////
 
-always @(pc_buf or op1_out or pc_wait or int_buff or int_buff1 or alu[7:0] or ea_rom_sel or iack_i)
+always @(pc_buf or op1_out or pc_wait or int_buff or int_buff1 or ea_rom_sel or iack_i)
 begin
     if (int_buff || int_buff1) begin
 //
@@ -655,7 +655,7 @@ always @(posedge clk or posedge rst)
     ri_r <= #1 8'h00;
     imm_r <= #1 8'h00;
     imm2_r <= #1 8'h00;
-    rd_addr_r <= #1 3'h0;
+    rd_addr_r <= #1 1'b0;
     op1_r <= #1 8'h0;
     dack_ir <= #1 1'b0;
     sp_r <= #1 1'b0;
@@ -664,7 +664,7 @@ always @(posedge clk or posedge rst)
     ri_r <= #1 ri;
     imm_r <= #1 imm;
     imm2_r <= #1 imm2;
-    rd_addr_r <= #1 rd_addr[7:5];
+    rd_addr_r <= #1 rd_addr[7];
     op1_r <= #1 op1_out;
     dack_ir <= #1 dack_i;
     sp_r <= #1 sp;

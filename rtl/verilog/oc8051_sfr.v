@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.12  2003/04/29 11:24:31  simont
+// fix bug in case execution of two data dependent instructions.
+//
 // Revision 1.11  2003/04/25 17:15:51  simont
 // change branch instruction execution (reduse needed clock periods).
 //
@@ -89,13 +92,14 @@
 module oc8051_sfr (rst, clk,
        adr0, adr1, dat0, 
        dat1, dat2, bit_in,
+       des_acc,
        we, wr_bit,
        bit_out,
        wr_sfr, acc, 
        ram_wr_sel, ram_rd_sel, 
        sp, sp_w, 
        bank_sel, 
-       desAc, desOv, 
+       desAc, desOv,
        srcAc, cy,
        psw_set, rmw,
        comp_sel,
@@ -166,6 +170,7 @@ input [2:0] ram_rd_sel,
             ram_wr_sel;
 input [7:0] adr0, 	//address 0 input
             adr1, 	//address 1 input
+	    des_acc,
 	    dat1,	//data 1 input (des1)
             dat2;	//data 2 input (des2)
 
@@ -300,23 +305,23 @@ assign srcAc = psw [6];
 oc8051_acc oc8051_acc1(.clk(clk), 
                        .rst(rst), 
 		       .bit_in(bit_in), 
-		       .data_in(dat1),
-		       .data2_in(dat2), 
-		       .wr(we), 
-		       .wr_bit(wr_bit_r), 
+		       .data_in(des_acc),
+		       .data2_in(dat2),
+		       .wr(we),
+		       .wr_bit(wr_bit_r),
 		       .wr_sfr(wr_sfr),
-		       .wr_addr(adr1), 
-		       .data_out(acc), 
+		       .wr_addr(adr1),
+		       .data_out(acc),
 		       .p(p));
 
 
 //
 // b register
 // B
-oc8051_b_register oc8051_b_register (.clk(clk), 
-                                     .rst(rst), 
+oc8051_b_register oc8051_b_register (.clk(clk),
+                                     .rst(rst),
 				     .bit_in(bit_in),
-				     .data_in(dat1), 
+				     .data_in(des_acc),
 				     .wr(we), 
 				     .wr_bit(wr_bit_r), 
 				     .wr_addr(adr1),
@@ -342,7 +347,7 @@ oc8051_sp oc8051_sp1(.clk(clk),
 oc8051_dptr oc8051_dptr1(.clk(clk), 
                          .rst(rst), 
 			 .addr(adr1), 
-			 .data_in(dat1),
+			 .data_in(des_acc),
 			 .data2_in(dat2), 
 			 .wr(we), 
 			 .wr_bit(wr_bit_r),

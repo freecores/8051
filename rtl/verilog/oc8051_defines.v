@@ -90,7 +90,7 @@
 `define OC8051_ALU_RLC 4'b1011
 `define OC8051_ALU_RR 4'b1100
 `define OC8051_ALU_RRC 4'b1101
-`define OC8051_ALU_PCS 4'b1110
+`define OC8051_ALU_INC 4'b1110
 `define OC8051_ALU_XCH 4'b1111
 
 //
