@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2003/04/02 11:16:22  simont
+// initial inport
+//
 // Revision 1.4  2002/10/23 17:00:18  simont
 // signal es_int=1'b0
 //
@@ -51,6 +54,7 @@
 // prepared header
 //
 //
+`include "oc8051_defines.v"
 
 module oc8051_rom (rst, clk, addr, ea_int, data1, data2, data3);
 
@@ -68,7 +72,7 @@ wire ea;
 reg ea_int;
 
 
-`ifdef OC8051_XILINX_RAM
+`ifdef OC8051_XILINX_ROM
 
 parameter INT_ROM_WID= 12;
 
@@ -911,7 +915,7 @@ end
 endmodule
 
 
-`ifdef OC8051_XILINX_RAM
+`ifdef OC8051_XILINX_ROM
 
 //rom0
 module rom0 (o,a);
