@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2003/05/05 10:34:27  simont
+// registering outputs.
+//
 // Revision 1.4  2003/04/16 10:02:45  simont
 // fix bug (cyc_o and stb_o)
 //
@@ -118,7 +121,8 @@ always @(posedge clk or posedge rst)
     stb_o <= #1 1'b0;
     adr_o <= #1 16'h0000;
   end else if (ack_i) begin
-    stb_o <= #1 1'b0;
+    stb_o <= #1 stb_i;
+    adr_o <= #1 adr_i;
   end else if (!stb_o & stb_i) begin
     stb_o <= #1 1'b1;
     adr_o <= #1 adr_i;
