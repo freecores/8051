@@ -52,7 +52,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_comp (sel, b_in, cy, acc, ram, op2, des, eq);
+module oc8051_comp (sel, b_in, cy, acc, des, eq);
 //
 // sel          (in)  select whithc sourses to compare (look defines.v) [oc8051_decoder.comp_sel]
 // b_in         (in)  bit in - output from bit addressable memory space [oc8051_ram_sel.bit_out]
@@ -67,12 +67,12 @@ module oc8051_comp (sel, b_in, cy, acc, ram, op2, des, eq);
 
 input [1:0] sel;
 input b_in, cy;
-input [7:0] acc, ram, op2, des;
+input [7:0] acc, des;
 
 output eq;
 reg eq;
 
-always @(sel or b_in or cy or acc or ram or op2 or des)
+always @(sel or b_in or cy or acc or des)
 begin
   case (sel)
     `OC8051_CSS_AZ : eq = (acc == 8'h00);
