@@ -326,7 +326,7 @@ mode3:
 ; transmit / receive
 ;
 	mov b,#000h		;
-	mov ie, #092h		;
+	mov ie, #082h		;
 	mov 7fh, #012h		; error 12
 	mov a, #0d0h		; external mode 3 receive
 	movx @r0, a		;
