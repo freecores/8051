@@ -46,9 +46,10 @@
 //
 
 //
-// oc8051 cache
+// oc8051 memory
 //
 //`define OC8051_CACHE
+`define OC8051_XILINX
 
 //
 // operation codes for alu
