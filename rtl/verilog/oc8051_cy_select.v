@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2003/04/02 11:26:21  simont
+// updating...
+//
 // Revision 1.2  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -72,12 +75,11 @@ reg data_out;
 
 always @(cy_sel or cy_in or data_in)
 begin
-  case (cy_sel)
+  case (cy_sel) /* synopsys full_case parallel_case */
     `OC8051_CY_0: data_out = 1'b0;
     `OC8051_CY_PSW: data_out = cy_in;
     `OC8051_CY_RAM: data_out = data_in;
     `OC8051_CY_1: data_out = 1'b1;
-    default: data_out = 1'bx;
   endcase
 end
 

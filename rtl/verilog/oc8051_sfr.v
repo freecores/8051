@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.14  2003/05/07 12:39:20  simont
+// fix bug in case of sequence of inc dptr instrucitons.
+//
 // Revision 1.13  2003/05/05 15:46:37  simont
 // add aditional alu destination to solve critical path.
 //
@@ -587,7 +590,7 @@ begin
     wait_data <= #1 1'b1;
 
   end else begin
-    case (adr0)
+    case (adr0) /* synopsys full_case parallel_case */
       `OC8051_SFR_ACC: 		dat0 <= #1 acc;
       `OC8051_SFR_PSW: 		dat0 <= #1 psw;
 
@@ -640,7 +643,7 @@ begin
       `OC8051_SFR_T2CON:  	dat0 <= #1 t2con;
 `endif
 
-      default: 			dat0 <= #1 8'h00;
+//      default: 			dat0 <= #1 8'h00;
     endcase
     wait_data <= #1 1'b0;
   end
@@ -663,7 +666,7 @@ begin
   else if ((adr1==adr0) & we & wr_bit_r)
     bit_out <= #1 bit_in;
   else
-    case (adr0[7:3])
+    case (adr0[7:3]) /* synopsys full_case parallel_case */
       `OC8051_SFR_B_ACC:   bit_out <= #1 acc[adr0[2:0]];
       `OC8051_SFR_B_PSW:   bit_out <= #1 psw[adr0[2:0]];
 
@@ -698,7 +701,7 @@ begin
       `OC8051_SFR_B_T2CON: bit_out <= #1 t2con[adr0[2:0]];
 `endif
 
-      default:             bit_out <= #1 1'b0;
+//      default:             bit_out <= #1 1'b0;
     endcase
 end
 

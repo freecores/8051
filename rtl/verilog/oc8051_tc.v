@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.8  2003/04/10 12:43:19  simont
+// defines for pherypherals added
+//
 // Revision 1.7  2003/04/07 14:58:02  simont
 // change sfr's interface.
 //
@@ -139,7 +142,7 @@ begin
    tf0 <= #1 1'b0;
    tf1_0 <= #1 1'b0;
  end else begin
-     case (tmod[1:0])
+     case (tmod[1:0]) /* synopsys full_case parallel_case */
       `OC8051_MODE0: begin                       // mode 0
         tf1_0 <= #1 1'b0;
         if (tc0_add)
@@ -173,10 +176,10 @@ begin
 	   {tf1_0, th0} <= #1 {1'b0, th0} +1'b1;
 
       end
-      default:begin
+/*      default:begin
         tf0 <= #1 1'b0;
         tf1_0 <= #1 1'b0;
-      end
+      end*/
     endcase
  end
 end
@@ -197,7 +200,7 @@ begin
    th1 <= #1 data_in;
    tf1_1 <= #1 1'b0;
  end else begin
-     case (tmod[5:4])
+     case (tmod[5:4]) /* synopsys full_case parallel_case */
       `OC8051_MODE0: begin                       // mode 0
         if (tc1_add)
           {tf1_1, th1,tl1[4:0]} <= #1 {1'b0, th1, tl1[4:0]}+ 1'b1;
@@ -219,9 +222,9 @@ begin
           end
 	end
       end
-      default:begin
+/*      default:begin
         tf1_1 <= #1 1'b0;
-      end
+      end*/
     endcase
  end
 end

@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2003/04/25 17:15:51  simont
+// change branch instruction execution (reduse needed clock periods).
+//
 // Revision 1.6  2003/04/02 11:26:21  simont
 // updating...
 //
@@ -86,12 +89,11 @@ assign eq = eq_r;// & comp_wait;
 
 always @(sel or b_in or cy or acc or des)
 begin
-  case (sel)
+  case (sel) /* synopsys full_case parallel_case */
     `OC8051_CSS_AZ  : eq_r = (acc == 8'h00);
     `OC8051_CSS_DES : eq_r = (des == 8'h00);
     `OC8051_CSS_CY  : eq_r = cy;
     `OC8051_CSS_BIT : eq_r = b_in;
-    default:          eq_r = 1'bx;
   endcase
 end
 

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.14  2003/04/29 11:25:42  simont
+// prepared start of receiving if ren is not active.
+//
 // Revision 1.13  2003/04/10 08:57:16  simont
 // remove signal sbuf_txd [12:11]
 //
@@ -186,7 +189,7 @@ begin
 // start transmiting
 //
   end else if (wr_sbuf) begin
-    case (scon[7:6])
+    case (scon[7:6]) /* synopsys parallel_case */
       2'b00: begin  // mode 0
         sbuf_txd <= #1 {3'b001, data_in};
       end
@@ -283,7 +286,7 @@ begin
     {sbuf_rxd_tmp, rx_done} <= #1 {rxd, sbuf_rxd_tmp};
   end else if (receive & (scon[7:6]!=2'b00) & shift_re) begin //mode 1, 2, 3
     re_count <= #1 re_count + 4'd1;
-    case (re_count)
+    case (re_count) /* synopsys full_case parallel_case */
       4'h7: rx_sam[0] <= #1 rxd;
       4'h8: rx_sam[1] <= #1 rxd;
       4'h9: begin

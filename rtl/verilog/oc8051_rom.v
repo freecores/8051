@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2003/06/03 17:09:57  simont
+// pipelined acces to axternal instruction interface added.
+//
 // Revision 1.2  2003/04/03 19:17:19  simont
 // add `include "oc8051_defines.v"
 //
@@ -230,7 +233,7 @@ end
 // always read tree bits in row
 always @(posedge clk)
 begin
-  case(addr[6:0])
+  case(addr[6:0]) /* synopsys parallel_case */
     7'd0: begin
       data1 <= #1 int_data0;
       data2 <= #1 int_data1;

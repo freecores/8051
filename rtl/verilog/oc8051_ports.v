@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.9  2003/04/10 12:43:19  simont
+// defines for pherypherals added
+//
 // Revision 1.8  2003/04/07 14:58:02  simont
 // change sfr's interface.
 //
@@ -168,7 +171,7 @@ begin
 `endif
   end else if (wr) begin
     if (!wr_bit) begin
-      case (wr_addr)
+      case (wr_addr) /* synopsys full_case parallel_case */
 //
 // bytaddresable
 `ifdef OC8051_PORT0
@@ -188,7 +191,7 @@ begin
 `endif
       endcase
     end else begin
-      case (wr_addr[7:3])
+      case (wr_addr[7:3]) /* synopsys full_case parallel_case */
 
 //
 // bit addressable

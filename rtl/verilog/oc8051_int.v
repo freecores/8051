@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.9  2003/06/03 17:12:05  simont
+// fix some bugs.
+//
 // Revision 1.8  2003/04/07 14:58:02  simont
 // change sfr's interface.
 //
@@ -186,7 +189,7 @@ begin
  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
    tcon_s <= #1 {data_in[6], data_in[4], data_in[2], data_in[0]};
  end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`OC8051_SFR_B_TCON)) begin
-   case (wr_addr[2:0])
+   case (wr_addr[2:0]) /* synopsys full_case parallel_case */
      3'b000: tcon_s[0] <= #1 bit_in;
      3'b010: tcon_s[1] <= #1 bit_in;
      3'b100: tcon_s[2] <= #1 bit_in;

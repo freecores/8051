@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2003/05/05 15:46:37  simont
+// add aditional alu destination to solve critical path.
+//
 // Revision 1.5  2003/01/13 14:14:41  simont
 // replace some modules
 //
@@ -94,7 +97,7 @@ begin
     buff[3'b111] <= #1 8'h00;
   end else begin
     if ((wr) & !(wr_bit_r)) begin
-      case (wr_addr)
+      case (wr_addr) /* synopsys full_case parallel_case */
         8'h00: buff[3'b000] <= #1 data_in;
         8'h01: buff[3'b001] <= #1 data_in;
         8'h08: buff[3'b010] <= #1 data_in;

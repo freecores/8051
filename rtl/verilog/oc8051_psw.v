@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.11  2003/04/09 15:49:42  simont
+// Register oc8051_sfr dato output, add signal wait_data.
+//
 // Revision 1.10  2003/04/07 14:58:02  simont
 // change sfr's interface.
 //
@@ -115,7 +118,7 @@ begin
     else if (wr & wr_bit & (wr_addr[7:3]==`OC8051_SFR_B_PSW))
       data[wr_addr[2:0]] <= #1 cy_in;
     else begin
-      case (set)
+      case (set) /* synopsys full_case parallel_case */
         `OC8051_PS_CY: begin
 //
 //write carry

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.8  2003/06/20 13:36:37  simont
+// ram modules added.
+//
 // Revision 1.7  2003/05/05 10:35:35  simont
 // change to fit xrom.
 //
@@ -217,11 +220,11 @@ defparam oc8051_cache_ram.ADR_WIDTH = ADR_WIDTH;
 always @(stb_b or data0 or data1 or byte_sel)
 begin
   if (stb_b) begin
-    case (byte_sel)
+    case (byte_sel) /* synopsys full_case parallel_case */
       2'b00  : dat_o = data0;
       2'b01  : dat_o = {data1[7:0],   data0[31:8]};
       2'b10  : dat_o = {data1[15:0],  data0[31:16]};
-      default: dat_o = {8'h00, data1, data0[31:24]};
+      2'b11  : dat_o = {8'h00, data1, data0[31:24]};
     endcase
   end else begin
     dat_o = 32'h0;

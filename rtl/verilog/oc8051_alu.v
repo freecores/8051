@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.18  2003/07/01 18:51:11  simont
+// x replaced with 0.
+//
 // Revision 1.17  2003/06/09 16:51:16  simont
 // fix bug in DA operation.
 //
@@ -196,7 +199,7 @@ always @(op_code or src1 or src2 or srcCy or srcAc or bit_in or src3 or mulsrc1
       or sub4 or sub8 or subc or da_tmp or inc or dec or sub_result)
 begin
 
-  case (op_code)
+  case (op_code) /* synopsys full_case parallel_case */
 //operation add
     `OC8051_ALU_ADD: begin
       des_acc = {addc[0],add8[2:0],add4[3:0]};
@@ -391,7 +394,7 @@ begin
       enable_mul = 1'b0;
       enable_div = 1'b0;
     end
-    default: begin
+    `OC8051_ALU_NOP: begin
       des_acc = src1;
       des1 = src1;
       des2 = src2;

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2003/06/03 17:13:57  simont
+// remove pc_r register.
+//
 // Revision 1.2  2003/05/06 09:41:35  simont
 // remove define OC8051_AS2_PCL, chane signal src_sel2 to 2 bit wide.
 //
@@ -91,7 +94,7 @@ reg [7:0] op1_r, op2_r, op3_r;
 ///////
 always @(sel1 or op1_r or op2_r or op3_r or pc or acc or ram)
 begin
-  case (sel1)
+  case (sel1) /* synopsys full_case parallel_case */
     `OC8051_AS1_RAM: src1 = ram;
     `OC8051_AS1_ACC: src1 = acc;
     `OC8051_AS1_OP1: src1 = op1_r;
@@ -99,7 +102,7 @@ begin
     `OC8051_AS1_OP3: src1 = op3_r;
     `OC8051_AS1_PCH: src1 = pc[15:8];
     `OC8051_AS1_PCL: src1 = pc[7:0];
-    default: src1 = 8'h00;
+//    default: src1 = 8'h00;
   endcase
 end
 
@@ -110,12 +113,12 @@ end
 ///////
 always @(sel2 or op2_r or acc or ram or op1_r)
 begin
-  case (sel2)
+  case (sel2) /* synopsys full_case parallel_case */
     `OC8051_AS2_ACC: src2= acc;
     `OC8051_AS2_ZERO: src2= 8'h00;
     `OC8051_AS2_RAM: src2= ram;
     `OC8051_AS2_OP2: src2= op2_r;
-    default: src2= 8'h00;
+//    default: src2= 8'h00;
   endcase
 end
 
@@ -127,10 +130,10 @@ end
 
 always @(sel3 or pc[15:8] or dptr[15:8] or op1_r)
 begin
-  case (sel3)
+  case (sel3) /* synopsys full_case parallel_case */
     `OC8051_AS3_DP:   src3= dptr[15:8];
     `OC8051_AS3_PC:   src3= pc[15:8];
-    default: src3= 16'h0;
+//    default: src3= 16'h0;
   endcase
 end
 

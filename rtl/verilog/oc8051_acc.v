@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.13  2003/06/03 17:16:16  simont
+// `ifdef added.
+//
 // Revision 1.12  2003/04/09 16:24:03  simont
 // change wr_sft to 2 bit wire.
 //
@@ -105,7 +108,7 @@ begin
   else if (wr_acc)
     acc = data_in;
   else if (wr_bit_acc)
-    case (wr_addr[2:0])
+    case (wr_addr[2:0]) /* synopsys full_case parallel_case */
       3'b000: acc = {data_out[7:1], bit_in};
       3'b001: acc = {data_out[7:2], bit_in, data_out[0]};
       3'b010: acc = {data_out[7:3], bit_in, data_out[1:0]};
@@ -113,7 +116,7 @@ begin
       3'b100: acc = {data_out[7:5], bit_in, data_out[3:0]};
       3'b101: acc = {data_out[7:6], bit_in, data_out[4:0]};
       3'b110: acc = {data_out[7],   bit_in, data_out[5:0]};
-      default: acc = {bit_in, data_out[6:0]};
+      3'b111: acc = {bit_in, data_out[6:0]};
     endcase
   else
     acc = data_out;
