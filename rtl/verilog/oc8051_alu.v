@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.10  2003/01/13 14:14:40  simont
+// replace some modules
+//
 // Revision 1.9  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -311,8 +314,8 @@ begin
 //operation pcs Add
     `OC8051_ALU_PCS: begin
       if (src1[7]) begin
-        des1 = src2+src1;
-        des2 = src3;
+        {desCy, des1} = {1'b0, src2} + {1'b0, src1};
+        des2 = {1'b0, src3} - {8'h0, !desCy};
       end else {des2, des1} = {src3,src2} + {8'h00, src1};
       desCy = 1'b0;
       desAc = 1'b0;
@@ -342,7 +345,7 @@ begin
       des2 = src2;
       desCy = srcCy;
       desAc = srcAc;
-      desOv = 1'bx;
+      desOv = 1'b0;
       enable_mul = 1'b0;
       enable_div = 1'b0;
     end
