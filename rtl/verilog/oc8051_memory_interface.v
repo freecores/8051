@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.10  2003/06/05 11:15:02  simont
+// fix bug.
+//
 // Revision 1.9  2003/06/03 17:09:57  simont
 // pipelined acces to axternal instruction interface added.
 //
@@ -131,7 +134,7 @@ module oc8051_memory_interface (clk, rst,
      dadr_o, 
      dwe_o, 
      dstb_o, 
-     dack_i, 
+     dack_i,
      ddat_i, 
      ddat_o,
 
@@ -356,6 +359,18 @@ assign istb_o     = (istb || (istb_t & !iack_i)) && !dstb_o && !ea_rom_sel;
 assign pc_wait    = rd && (ea_rom_sel || (!istb_t && iack_i));
 
 assign wr_dat     = des1;
+
+
+`ifdef OC8051_SIMULATION
+  always @(negedge rst) begin
+    #5
+    if (ea_rom_sel)
+      $display("   progran execution from external rom");
+    else
+      $display("   progran execution from internal rom");
+  end
+
+`endif
 
 
 /////////////////////////////
