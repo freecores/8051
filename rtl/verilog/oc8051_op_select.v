@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2002/10/23 16:53:39  simont
+// fix bugs in instruction interface
+//
 // Revision 1.5  2002/10/17 18:50:00  simont
 // cahnge interface to instruction rom
 //
@@ -96,7 +99,7 @@ wire sel;
 
 assign sel = ea & ea_int;
 
-assign istb_o = sel ? 1'b0 : istb;
+assign istb_o = (sel || rst) ? 1'b0 : istb;
 
 assign op1 = sel ? op1_i: op1_xt;
 assign op2 = sel ? op2_i: op2_xt;

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.15  2002/10/23 16:53:39  simont
+// fix bugs in instruction interface
+//
 // Revision 1.14  2002/10/17 18:50:00  simont
 // cahnge interface to instruction rom
 //
@@ -351,7 +354,8 @@ oc8051_rom_addr_sel oc8051_rom_addr_sel1(.clk(clk), .rst(rst), .iack_i(iack_i),
 //
 //
 oc8051_ext_addr_sel oc8051_ext_addr_sel1(.clk(clk), .rst(rst), .sel(ext_addr_sel),
-		 .dptr_hi(dptr_hi), .dptr_lo(dptr_lo), .ri(ri), .addr_out(adr_o), .wr(wr_xaddr));
+		 .dptr_hi(dptr_hi), .dptr_lo(dptr_lo), .ri(ri), .addr_out(adr_o),
+		 .wr(wr_xaddr), .stb(stb_o));
 
 //
 //

@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -54,7 +57,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_ext_addr_sel (clk, rst, sel, dptr_hi, dptr_lo, ri, addr_out, wr);
+module oc8051_ext_addr_sel (clk, rst, sel, dptr_hi, dptr_lo, ri, addr_out, wr, stb);
 //
 // clk  clock
 // sel          (in)  select sourses [oc8051_decoder.ext_addr_sel -r]
@@ -66,7 +69,7 @@ module oc8051_ext_addr_sel (clk, rst, sel, dptr_hi, dptr_lo, ri, addr_out, wr);
 //
 
 
-input sel, clk, rst, wr;
+input sel, clk, rst, wr, stb;
 input [7:0] dptr_hi, dptr_lo, ri;
 
 output [15:0] addr_out;
@@ -74,7 +77,7 @@ reg [15:0] addr_out_dr, addr_out_ri;
 wire [15:0] addr_out_d;
 reg wr_r, sel_r;
 
-assign addr_out_d = wr_r ? {dptr_hi, dptr_lo} : addr_out_d;
+assign addr_out_d = wr_r ? {dptr_hi, dptr_lo} : addr_out_dr;
 //assign addr_in = sel_r ? {8'h00, ri} : {dptr_hi, dptr_lo};
 
 assign addr_out = sel_r ? addr_out_ri : addr_out_d;
@@ -90,7 +93,7 @@ always @(posedge clk or posedge rst)
   if (rst) begin
     addr_out_ri <= #1 16'h0000;
     sel_r <= #1 1'b0;
-  end else if (wr) begin
+  end else if (wr && !stb) begin
     addr_out_ri <= #1 {8'h00, ri};
     sel_r <= #1 sel;
   end
@@ -102,6 +105,5 @@ always @(posedge clk or posedge rst)
   end else begin
     wr_r <= #1 wr;
   end
-
 
 endmodule
