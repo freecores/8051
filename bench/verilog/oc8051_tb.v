@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.11  2003/04/10 12:45:06  simont
+// defines for pherypherals added
+//
 // Revision 1.10  2003/04/03 19:20:55  simont
 // Remove instruction cache and wb_interface
 //
@@ -78,13 +81,17 @@ module oc8051_tb;
 
 reg  rst, clk;
 reg  [7:0] p0_in, p1_in, p2_in;
-wire [31:0] idat_i;
 wire [15:0] ext_addr, iadr_o;
 wire write, write_xram, write_uart, txd, rxd, int_uart, int0, int1, t0, t1, bit_out, stb_o, ack_i;
 wire ack_xram, ack_uart, cyc_o, iack_i, istb_o, icyc_o, t2, t2ex;
 wire [7:0] data_in, data_out, p0_out, p1_out, p2_out, p3_out, data_out_uart, data_out_xram, p3_in;
 wire wbi_err_i, wbd_err_i;
 
+`ifdef OC8051_XILINX_RAMB
+  reg  [31:0] idat_i;
+`else
+  wire [31:0] idat_i;
+`endif
 
 ///
 /// buffer for test vectors
@@ -166,19 +173,84 @@ oc8051_uart_test oc8051_uart_test1(.clk(clk), .rst(rst), .addr(ext_addr[7:0]), .
                   .wr_bit(p3_out[0]), .data_in(data_out), .data_out(data_out_uart), .bit_out(bit_out), .rxd(txd),
 		  .txd(rxd), .ow(p3_out[1]), .intr(int_uart), .stb(stb_o), .ack(ack_uart));
 
+
+
+`ifdef OC8051_XILINX_RAMB
+
+`include "oc8051_rom_values.v"
+
 //
 // exteranl program rom
 //
+//
+// rom 0
+//
+wire [11:0] adr0, adr1;
+wire [15:0] dat0, dat1;
 
-oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_o), .data(idat_i),
-             .stb_i(istb_o), .cyc_i(icyc_o), .ack_o(iack_i));
+assign adr0 = iadr_o[13:2] + {11'h0, iadr_o[1]};
+assign adr1 = iadr_o[13:2];
 
+rom_8kx16_top rom_8kx16_top_0
+(
+  // WISHBONE slave
+  .wb_clk_i(clk),
+  .wb_rst_i(rst),
+  .wb_dat_i(16'h0),
+  .wb_dat_o(dat0),
 
+  .wb_adr_i(adr0),
+  .wb_sel_i(2'b11),
+  .wb_we_i(1'b0),
+  .wb_cyc_i(icyc_o),
+  .wb_stb_i(istb_o),
+  .wb_ack_o(iack_i),
+  .wb_err_o(wbi_err_i)
+);
+
+rom_8kx16_top rom_8kx16_top_1
+(
+  // WISHBONE slave
+  .wb_clk_i(clk),
+  .wb_rst_i(rst),
+  .wb_dat_i(16'h0),
+  .wb_dat_o(dat1),
+
+  .wb_adr_i(adr1),
+  .wb_sel_i(2'b11),
+  .wb_we_i(1'b0),
+  .wb_cyc_i(icyc_o),
+  .wb_stb_i(istb_o),
+  .wb_ack_o(iack_i),
+  .wb_err_o(wbi_err_i)
+);
+
+defparam  rom_8kx16_top_0.awidth = 12;
+defparam  rom_8kx16_top_1.awidth = 12;
+
+always @(iadr_o[1:0] or dat0 or dat1)
+begin
+  case (iadr_o[1:0])
+    2'b00: idat_i = {8'h0, dat1[7:0], dat0};
+    2'b01: idat_i = {8'h0, dat1, dat0[15:8]};
+    2'b10: idat_i = {8'h0, dat0[7:0], dat1};
+    default: idat_i = {8'h0, dat0, dat1[15:8]};
+  endcase
+end
+
+`else
+
+  oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_o), .data(idat_i),
+               .stb_i(istb_o), .cyc_i(icyc_o), .ack_o(iack_i));
+
+   defparam oc8051_xrom1.DELAY = 5;
+
+`endif
 //
 //
 //
 
-defparam oc8051_xrom1.DELAY = 5;
+
 
 //
 // test wb interface
