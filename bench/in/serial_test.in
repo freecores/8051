@@ -2,9 +2,9 @@
 /// created by oc8051 rom maker
 /// author: Simon Teran (simont@opencores.org)
 ///
-/// source file: Z:\projects\oc8051\simont\oc8051\asm\serial_test.hex
-/// date: 4/7/2003
-/// time: 1:01:05 PM
+/// source file: V:\projects\oc8051\simont\oc8051\asm\serial_test.hex
+/// date: 4/29/2003
+/// time: 10:56:05 AM
 ///
 01
 4B
@@ -68,7 +68,7 @@ C3
 E3
 9A
 70
-5D
+5F
 22
 00
 00
@@ -77,7 +77,7 @@ E5
 99
 9B
 70
-54
+56
 22
 00
 00
@@ -121,7 +121,7 @@ F2
 A2
 B0
 50
-28
+2A
 D2
 AF
 74
@@ -130,6 +130,8 @@ F2
 75
 7F
 01
+00
+00
 00
 00
 A2
@@ -161,13 +163,13 @@ B0
 80
 00
 01
-A2
+A4
 85
 7F
 A0
 00
 01
-9F
+A1
 75
 F0
 00
@@ -440,10 +442,10 @@ C2
 80
 02
 21
-B6
+B8
 02
 00
-9C
+9E
 75
 F0
 00
@@ -515,6 +517,9 @@ A2
 40
 B7
 75
+98
+D8
+75
 F0
 00
 75
@@ -526,9 +531,6 @@ A8
 74
 D0
 F2
-75
-98
-D8
 7A
 97
 D2
@@ -578,7 +580,7 @@ D7
 80
 03
 41
-38
+3A
 02
 00
-9C
+9E

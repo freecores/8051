@@ -62,10 +62,8 @@ wait:
 	nop		; 1
 	nop		; 1
 	nop		; 1
-	nop		; 1
-	nop		; 1
-	jnz wait	; 2
-	reti		; 4
+	jnz wait	; 4
+	ret		; 4
 
 
 error:
@@ -294,7 +292,6 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.6	; stop counter 1
 	mov r2, #0b0h	;
 	mov r3, #004h	;
@@ -307,7 +304,6 @@ start:
 	setb tcon.6	;start counter 1
 	mov a, #05h	;
 	acall wait	;
-	nop;
 	nop;
 	nop;
 	nop;

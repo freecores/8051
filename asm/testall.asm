@@ -979,9 +979,28 @@ done28:
 	add  a,#99h
 	da   a
 	subb a,#78h	;Will clr acc if c set
-	jz   done29
+	jz   tst2
+
+fail_da:
 	mov  P1,#29
-	ljmp failed	
+	ljmp failed
+tst2:
+	mov psw, #00h
+	mov r3, #67h
+	mov a, #56h
+	addc a, r3
+	da  a
+	subb a, #24h
+	jnz fail_da
+
+	mov psw, #00h
+	mov a, #30h
+	addc a, #99h
+	da  a
+	subb a, #28h
+	jnz fail_da
+
+
 done29:
 
 

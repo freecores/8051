@@ -1,8 +1,12 @@
 ////
 ////
-//// test vectors for counter_test
+//// test vectors for lcall
 ////
 ////
 ffffff
+0axxxx
+04xxxx
 01xxxx
 02xxxx
+33xxxx
+34xxxx

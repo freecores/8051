@@ -2,9 +2,9 @@
 /// created by oc8051 rom maker
 /// author: Simon Teran (simont@opencores.org)
 ///
-/// source file: D:\tmp\asm\TEMP\Xram_m.ihx
-/// date: 11.7.02
-/// time: 9:14:39
+/// source file: Z:\oc8051\simont\oc8051\asm\xram_m.ihx
+/// date: 5/23/2003
+/// time: 12:33:06 PM
 ///
 02
 00
@@ -89,7 +89,7 @@ CC
 7C
 00
 7E
-01
+00
 7F
 00
 C3

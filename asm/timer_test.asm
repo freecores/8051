@@ -12,6 +12,10 @@
 
 	org 0bh		;t/c 0 interrupt
 	inc r0;
+	nop;
+	nop;
+	nop;
+	nop;
 	reti;
 
 	org 13h		;external interrupt 1
@@ -19,6 +23,10 @@
 
 	org 1bh		;t/c 1 interrupt
 	inc r1;
+	nop;
+	nop;
+	nop;
+	nop;
 	reti;
 
 	org 23h		;serial interface interrupt
@@ -68,10 +76,8 @@ wait:
 	nop		; 1
 	nop		; 1
 	nop		; 1
-	nop		; 1
-	nop		; 1
-	jnz wait	; 2
-	reti		; 4
+	jnz wait	; 4
+	ret		; 4
 
 
 start:
@@ -92,8 +98,7 @@ start:
 	mov tcon, #010h	;start timer 0;
 
 	mov a, #03h	; 1
-	acall wait	; 2
-	nop;
+	acall wait	; 3
 	nop;
 	nop;
 	nop;
@@ -114,7 +119,6 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.4	;stop timer 0;
 	mov r2, #020h	;
 	mov r3, #001h	;
@@ -130,11 +134,10 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.4	;stop timer 0
 	mov r2, #030h	;
 	mov r3, #000h	;
-	mov r4, #002h	;
+	mov r4, #003h	;
 	mov r5, #001h	;
 	acall test0	;
 ;
@@ -149,7 +152,6 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.4	;stop timer 0
 	mov r2, #040h	;
 	mov r3, #000h	;
@@ -161,7 +163,6 @@ start:
 	setb tcon.4	;start timer 0;
 	mov a, #04h	;
 	acall wait	;
-	nop;
 	nop;
 	nop;
 	nop;
@@ -180,11 +181,10 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.4	;stop timer 0
 	mov r2, #060h	;
 	mov r3, #000h	;
-	mov r4, #002h	;
+	mov r4, #003h	;
 	mov r5, #002h	;
 	acall test0	;
 ;
@@ -196,7 +196,6 @@ start:
 	setb tcon.4	;start timer 0;
 	mov a, #03h	;
 	acall wait	;
-	nop;
 	nop;
 	nop;
 	nop;
@@ -215,11 +214,6 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
-;	nop		; tl0=fd
-;	nop		; tl0=fe
-;	nop		; tl0=ff
-;	nop		; tl0=50
 	clr tcon.4	;stop timer 0;
 	mov r2, #080h	;
 	mov r3, #050h	;
@@ -238,7 +232,6 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.4	;stop timer 0
 	mov r2, #090h	;
 	mov r3, #000h	;
@@ -251,7 +244,6 @@ start:
 	setb tcon.4	;start timer 0
 	mov a, #05h	;
 	acall wait	;
-	nop;
 	nop;
 	nop;
 	nop;
@@ -270,7 +262,6 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.6	; stop timer 1
 	mov r2, #0b0h	;
 	mov r3, #004h	;
@@ -286,10 +277,9 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.6	;stop timer 1
 	mov r2, #0c0h	;
-	mov r3, #002h	;
+	mov r3, #003h	;
 	mov r4, #000h	;
 	mov r5, #001h	;
 	mov r0, 01h	;
@@ -312,7 +302,6 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.6	;stop timer 1
 	mov r2, #018h	;
 	mov r3, #000h	;
@@ -324,7 +313,6 @@ start:
 	setb tcon.6	;start timer 1
 	mov a, #04h	;
 	acall wait	;
-	nop;
 	nop;
 	nop;
 	nop;
@@ -340,7 +328,6 @@ start:
 	setb tcon.6	;start timer 1
 	mov a, #05h	;
 	acall wait	;
-	nop;
 	nop;
 	nop;
 	nop;
@@ -362,7 +349,6 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.6	;stop timer 1
 	mov r2, #048h	;
 	mov r3, #000h	;
@@ -374,7 +360,6 @@ start:
 	setb tcon.6	; start timer 1
 	mov a, #04h	;
 	acall wait	;
-	nop;
 	nop;
 	nop;
 	nop;
@@ -393,11 +378,10 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.6	;stop timer 1
 	mov r2, #068h	;
 	mov r3, #000h	;
-	mov r4, #003h	;
+	mov r4, #004h	;
 	mov r5, #002h	;
 	acall test1	;
 ;
@@ -409,8 +393,6 @@ start:
 	setb tcon.6	;start timer 1
 	mov a, #03h	;
 	acall wait	;
-	nop;
-	nop;
 	nop;
 	nop;
 	clr tcon.6	;stop timer 1
@@ -428,11 +410,10 @@ start:
 	nop;
 	nop;
 	nop;
-	nop;
 	clr tcon.6	;stop timer 1
 	mov r2, #088h	;
 	mov r3, #050h	;
-	mov r4, #051h	;
+	mov r4, #052h	;
 	mov r5, #003h	;
 	acall test1	;
 ;
@@ -444,7 +425,6 @@ start:
 	setb tcon.6	;start timer 1
 	mov a, #03h	;
 	acall wait	;
-	nop;
 	nop;
 	nop;
 	nop;
@@ -460,7 +440,6 @@ start:
 	setb tcon.6	;start timer 1
 	mov a, #05h	;
 	acall wait	;
-	nop;
 	nop;
 	nop;
 	nop;

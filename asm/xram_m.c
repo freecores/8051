@@ -22,7 +22,7 @@ void main() {
     buffer[255] = 255;
     for (j=1; j<10; j++){
       x = 256 * j;
-      for(i=1; i<256; i++) {
+      for(i=0; i<256; i++) {
           buffer[x+i] = buffer[x+i - 1] + 1;
       }
       if (buffer[x+255]!=255) {

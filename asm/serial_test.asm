@@ -100,6 +100,8 @@ start:
 	mov 7fh, #001h	; error 1
 	nop		;
 	nop		;
+	nop		;
+	nop		;
 	mov c, p3.0	;
 	jc error	;
 	mov 7fh, #002h	; error 2
@@ -338,12 +340,12 @@ mode3:
 ;
 ; transmit / receive
 ;
+	mov scon, #0d8h		;
 	mov b,#000h		;
 	mov ie, #082h		;
 	mov 7fh, #012h		; error 12
 	mov a, #0d0h		; external mode 3 receive
 	movx @r0, a		;
-	mov scon, #0d8h		;
 	mov r2, #097h		;
 	setb tcon.4		;
 	setb tcon.6		;

@@ -52,6 +52,7 @@ error:
 	nop;
 	ajmp error;
 
+
 wait:
 	dec a		; 1
 	nop		; 1
@@ -61,10 +62,12 @@ wait:
 	nop		; 1
 	nop		; 1
 	nop		; 1
-	nop		; 1
-	nop		; 1
-	jnz wait	; 2
-	reti		; 4
+	jnz wait	; 4
+	nop;
+;	nop;
+	nop;
+	ret		; 4
+
 
 
 start:
@@ -91,10 +94,7 @@ start:
 	setb tr2	;start timer 2;
 	mov a, #03h	; 1
 	acall wait	; 2
-	nop;
-	nop;
-	nop;
-	nop;
+	
 	clr tr2		;stop timer 2
 	mov b, #00h	; error 0
 	mov r3, #000h	;
@@ -105,10 +105,7 @@ start:
 	setb tr2	; start timer 2;
 	mov a, #04h	;
 	acall wait	;
-	nop;
-	nop;
-	nop;
-	nop;
+	
 	clr tr2		; stop timer 2
 	mov b, #01h	; error 1
 	mov r3, #001h	;
@@ -120,10 +117,7 @@ start:
 	setb tr2	;start timer 2
 	mov a, #05h	;
 	acall wait	;
-	nop;
-	nop;
-	nop;
-	nop;
+	
 	clr tr2		;stop timer 0
 	mov b, #02h	; error 2
 	mov r3, #000h	;
@@ -201,10 +195,7 @@ arm:
 	setb tr2	;start timer 2;
 	mov a, #03h	;
 	acall wait	;
-	nop;
-	nop;
-	nop;
-	nop;
+	
 	clr tr2		;stop timer 2
 	mov b, #08h	; error 8
 	mov r3, #000h	;
@@ -215,10 +206,7 @@ arm:
 	setb tr2	; start timer 2
 	mov a, #04h	;
 	acall wait	;
-	nop;
-	nop;
-	nop;
-	nop;
+	
 	clr tr2		; stop timer 2
 	mov b, #09h	; error 9
 	mov r3, #001h	;
@@ -235,10 +223,7 @@ arm:
 	setb tr2	;start timer 2
 	mov a, #05h	;
 	acall wait	;
-	nop;
-	nop;
-	nop;
-	nop;
+	
 	clr tr2		;stop timer 0
 	mov b, #0bh	; error b
 	mov r3, #022h	;
@@ -333,10 +318,7 @@ brate:
 	setb tr2	;start timer 2;
 	mov a, #03h	;
 	acall wait	;
-	nop;
-	nop;
-	nop;
-	nop;
+	
 	clr tr2		;stop timer 2
 	mov b, #20h	; error 20
 	mov r3, #000h	;
@@ -348,10 +330,7 @@ brate:
 	setb tr2	; start timer 2
 	mov a, #04h	;
 	acall wait	;
-	nop;
-	nop;
-	nop;
-	nop;
+	
 	clr tr2		; stop timer 2
 	mov b, #021h	; error 21
 	mov r3, #001h	;
@@ -368,10 +347,7 @@ brate:
 	setb tr2	;start timer 2
 	mov a, #05h	;
 	acall wait	;
-	nop;
-	nop;
-	nop;
-	nop;
+	
 	clr tr2		;stop timer 0
 	mov b, #23h	; error 23
 	mov r3, #022h	;
