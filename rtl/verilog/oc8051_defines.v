@@ -58,6 +58,11 @@
 `define OC8051_PORT3
 
 
+//
+// oc8051 ITERNAL ROM
+//
+//`define OC8051_ROM
+
 
 //
 // oc8051 memory

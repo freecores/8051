@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.23  2003/04/10 12:43:19  simont
+// defines for pherypherals added
+//
 // Revision 1.22  2003/04/09 16:24:04  simont
 // change wr_sft to 2 bit wire.
 //
@@ -412,13 +415,20 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
 
 //
 //program rom
-oc8051_rom oc8051_rom1(.rst(wb_rst_i),
-                       .clk(wb_clk_i), 
-		       .ea_int(ea_int), 
+`ifdef OC8051_ROM
+  oc8051_rom oc8051_rom1(.rst(wb_rst_i),
+                       .clk(wb_clk_i),
+		       .ea_int(ea_int),
 		       .addr(iadr_o),
-		       .data1(op1_i), 
-		       .data2(op2_i), 
+		       .data1(op1_i),
+		       .data2(op2_i),
 		       .data3(op3_i));
+`else
+  assign ea_int = 1'b0;
+  assign op1_i = 8'h00;
+  assign op2_i = 8'h00;
+  assign op3_i = 8'h00;
+`endif
 
 //
 //
