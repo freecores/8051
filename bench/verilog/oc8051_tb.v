@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2002/10/24 13:36:53  simont
+// add instruction cache and DELAY parameters for external ram, rom
+//
 // Revision 1.5  2002/10/17 19:00:50  simont
 // add external rom
 //
@@ -114,12 +117,12 @@ oc8051_uart_test oc8051_uart_test1(.clk(clk), .rst(rst), .addr(ext_addr[7:0]), .
 //    cache
 //
 //
-
-`ifdef OC8051_CACHE
-
 wire istb_i, icyc_i, iack_o;
 wire [15:0] iadr_i;
 wire [31:0] idat_o;
+
+`ifdef OC8051_CACHE
+
 
 oc8051_icache oc8051_icache1(.rst(rst), .clk(clk),
 // oc8051
@@ -133,8 +136,8 @@ oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_i), .data(idat_o),
              .stb_i(istb_i), .cyc_i(icyc_i), .ack_o(iack_o));
 
 defparam oc8051_icache1.ADR_WIDTH = 6;  // cache address wihth
-defparam oc8051_icache1.LINE_WIDTH = 3; // line address width (2 => 4x32)
-defparam oc8051_icache1.BL_NUM = 7; // number of blocks (2^BL_WIDTH-1); BL_WIDTH = ADR_WIDTH - LINE_WIDTH
+defparam oc8051_icache1.LINE_WIDTH = 2; // line address width (2 => 4x32)
+defparam oc8051_icache1.BL_NUM = 15; // number of blocks (2^BL_WIDTH-1); BL_WIDTH = ADR_WIDTH - LINE_WIDTH
 defparam oc8051_icache1.CACHE_RAM = 64; // cache ram x 32 (2^ADR_WIDTH)
 
 
@@ -143,8 +146,17 @@ defparam oc8051_icache1.CACHE_RAM = 64; // cache ram x 32 (2^ADR_WIDTH)
 //
 `else
 
-oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_o), .data(idat_i),
-             .stb_i(istb_o), .cyc_i(icyc_o), .ack_o(iack_i));
+oc8051_wb_iinterface oc8051_wb_iinterface(.rst(rst), .clk(clk),
+// oc8051
+        .adr_i(iadr_o), .dat_o(idat_i), .stb_i(istb_o), .ack_o(iack_i),
+        .cyc_i(icyc_o),
+// external rom
+        .dat_i(idat_o), .stb_o(istb_i), .adr_o(iadr_i), .ack_i(iack_o),
+        .cyc_o(icyc_i));
+
+oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_i), .data(idat_o),
+             .stb_i(istb_i), .cyc_i(icyc_i), .ack_o(iack_o));
+
 
 `endif
 //
@@ -152,6 +164,36 @@ oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_o), .data(idat_i),
 //
 
 defparam oc8051_xrom1.DELAY = 5;
+
+//
+// test wb interface
+//
+reg [31:0] log_file;
+
+initial
+begin
+  log_file = $fopen("log_file");
+  $fdisplay(log_file, "file open");
+end
+
+// cache/cpu to instruction rom
+//
+
+WB_BUS_MON wb_bus_mon1(.CLK_I(clk), .RST_I(rst), .ACK_I(iack_o), .ADDR_O({16'h0000, iadr_i}), .CYC_O(icyc_i),
+     .DAT_I(idat_o), .DAT_O(32'd0), .ERR_I(1'b0), .RTY_I(1'b0), .SEL_O(4'b0000), .STB_O(istb_i),
+     .WE_O(1'b0), .TAG_I(4'h0), .TAG_O(4'h0), .CAB_O(1'b0), .log_file_desc(log_file));
+
+
+// cpu to data ram
+//
+
+WB_BUS_MON wb_bus_mon3(.CLK_I(clk), .RST_I(rst), .ACK_I(ack_i), .ADDR_O({16'h0000, ext_addr}), .CYC_O(cyc_o),
+     .DAT_I({24'h000000, data_in}), .DAT_O({24'h000000, data_out}), .ERR_I(1'b0), .RTY_I(1'b0), .SEL_O(4'b0000), .STB_O(stb_o),
+     .WE_O(write), .TAG_I(4'h0), .TAG_O(4'h0), .CAB_O(1'b0), .log_file_desc(log_file));
+//
+//
+//
+//
 
 
 
@@ -179,6 +221,7 @@ initial begin
 //#444000
 
 #7000000
+  $fclose(log_file);
   $display("time ",$time, "\n faulire: end of time\n \n");
   $finish;
 end
@@ -206,6 +249,7 @@ begin
     $display(" testvecp %h", buff[num]);
     $display(" p_out   %h%h%h", p0_out, p1_out, p2_out);
 #22
+    $fclose(log_file);
     $finish;
   end
   else begin
@@ -215,6 +259,7 @@ begin
     begin
       $display("");
       $display(" Done!");
+      $fclose(log_file);
       $finish;
     end
   end
