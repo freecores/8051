@@ -179,8 +179,8 @@ begin
     end
 //operation multiply
     `OC8051_ALU_MUL: begin
-      des1 = mulsrc2;
-      des2 = mulsrc1;
+      des1 = mulsrc1;
+      des2 = mulsrc2;
       desOv = mulOv;
       desCy = 1'b0;
       desAc = 1'bx;
@@ -189,8 +189,8 @@ begin
     end
 //operation divide
     `OC8051_ALU_DIV: begin
-      des1 = divsrc2;
-      des2 = divsrc1;
+      des1 = divsrc1;
+      des2 = divsrc2;
       desOv = divOv;
       desAc = 1'bx;
       desCy = 1'b0;

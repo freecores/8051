@@ -281,9 +281,10 @@ always @(posedge clk or posedge rst)
 always @(posedge clk or posedge rst)
 begin
   if (rst) bit_out <= #1 1'b0;
-  else if (wr & wr_bit & (wr_addr==rd_addr) & ((wr_addr[7:3]==`OC8051_SFR_B_IP) | 
-     (wr_addr[7:3]==`OC8051_SFR_B_IE) | (wr_addr[7:3]==`OC8051_SFR_B_TCON))) begin
+  else if (wr & wr_bit & (wr_addr==rd_addr)) begin
     bit_out <= #1 bit_in;
+  end else if ((rd_addr[7:3]==wr_addr[7:3]) & wr & !wr_bit) begin
+    bit_out <= #1 data_in[rd_addr[2:0]];
   end else begin
     case (rd_addr[7:3])
       `OC8051_SFR_B_IP: bit_out <= #1 ip[rd_addr[2:0]];

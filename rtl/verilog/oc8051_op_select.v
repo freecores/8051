@@ -74,7 +74,7 @@ output ack;
 output [7:0] op1_out, op3_out, op2_out, op2_direct;
 
 reg int_ack, ack, int_ack_buff;
-reg [7:0] op2_direct, int_vec_buff;
+reg [7:0] op2_direct_in, int_vec_buff, op2_direct_buff;
 reg [7:0] op2_buff, op3_buff;
 reg [7:0] op1_o, op2_o, op3_o;
 
@@ -96,6 +96,7 @@ assign op1_out = op1_o;
 assign op3_out = rd ? op3_o : op3_buff;
 //assign op2_tmp = rd ? op2_o : op2_buff;
 assign op2_out = rd ? op2_o : op2_buff;
+assign op2_direct = rd ? op2_direct_in : op2_direct_buff;
 
 //
 // in case of interrupts
@@ -118,9 +119,11 @@ begin
   if (rst) begin
     op2_buff <= #1 8'h0;
     op3_buff <= #1 8'h0;
-  end else begin
+    op2_direct_buff <= #1 8'h0;
+  end else if (rd) begin
     op2_buff <= #1 op2_o;
     op3_buff <= #1 op3_o;
+    op2_direct_buff <= #1 op2_direct_in;
   end
 end
 
@@ -153,10 +156,10 @@ always @(posedge clk or posedge rst)
 always @(op1_out or op2_out)
 begin
   if ((op1_out==`OC8051_MOV_DP) | (op1_out==`OC8051_INC_DP) | (op1_out==`OC8051_JMP) | (op1_out==`OC8051_MOVC_DP))
-    op2_direct  = `OC8051_SFR_DPTR_LO;
+    op2_direct_in  = `OC8051_SFR_DPTR_LO;
   else if ((op1_out==`OC8051_MUL) | (op1_out == `OC8051_DIV))
-    op2_direct  = `OC8051_SFR_B;
-  else op2_direct  = op2_out;
+    op2_direct_in  = `OC8051_SFR_B;
+  else op2_direct_in  = op2_out;
 end
 
 

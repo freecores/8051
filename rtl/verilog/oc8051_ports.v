@@ -145,6 +145,8 @@ begin
   else if (rmw) begin
     if ((wr_addr==rd_addr) & wr & wr_bit)
       bit_out <= #1 bit_in;
+    else if ((wr_addr[7:3]==rd_addr[7:3]) & wr & !wr_bit)
+      bit_out <= #1 data_in[rd_addr[2:0]];
     else begin
       case (rd_addr[7:3])
         `OC8051_SFR_B_P0: bit_out <= #1 p0_out[rd_addr[2:0]];
