@@ -49,7 +49,7 @@
 // synopsys translate_on
 
 
-module oc8051_ram (clk, rd_addr, rd_data, wr_addr, wr_data, wr);
+module oc8051_ram (clk, rst, rd_addr, rd_data, wr_addr, wr_data, wr);
 //
 // this module is part of oc8051_ram_top
 // it's tehnology dependent
@@ -63,7 +63,7 @@ module oc8051_ram (clk, rd_addr, rd_data, wr_addr, wr_data, wr);
 //
 
 
-input clk, wr;
+input clk, wr, rst;
 input [7:0] rd_addr, wr_addr, wr_data;
 output [7:0] rd_data;
 
@@ -88,15 +88,17 @@ end
 // writing to ram
 always @(posedge clk)
 begin
-  if (wr)
+ if (wr)
     buff[wr_addr] <= #1 wr_data;
 end
 
 //
 // reading from ram
-always @(posedge clk)
+always @(posedge clk or posedge rst)
 begin
-  if ((wr_addr==rd_addr) & wr)
+  if (rst)
+    rd_data <= #1 8'h0;
+  else if ((wr_addr==rd_addr) & wr)
     rd_data <= #1 wr_data;
   else
     rd_data <= #1 buff[rd_addr];
