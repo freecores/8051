@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2003/04/04 10:35:07  simont
+// signal prsc_ow added.
+//
 // Revision 1.4  2003/03/28 17:45:57  simont
 // change module name.
 //
@@ -220,7 +223,8 @@ oc8051_ports oc8051_ports1(.clk(clk), .rst(rst), .bit_in(bit_in), .data_in(dat1)
 oc8051_uart oc8051_uatr1 (.clk(clk), .rst(rst), .bit_in(bit_in), .rd_addr(adr0),
 		.data_in(dat1), .wr(we), .wr_bit(wr_bit_r), .wr_addr(adr1),
 		.data_out(uart), .bit_out(uart_bit), .rxd(rxd), .txd(txd), .intr(uart_int),
-		.t1_ow(tf1));
+		.rclk(rclk), .tclk(tclk), .brate2(brate2), 
+		.t1_ow(tf1), .pres_ow(pres_ow));
 
 //
 // interrupt control

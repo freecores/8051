@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.10  2003/01/13 14:14:41  simont
+// replace some modules
+//
 // Revision 1.9  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -55,28 +58,66 @@
 
 `include "oc8051_defines.v"
 
-module oc8051_uart (rst, clk, bit_in, rd_addr, data_in, bit_out, wr, wr_bit, wr_addr, data_out,
-                   rxd, txd, intr, t1_ow);
+module oc8051_uart (rst, clk, 
+             bit_in, data_in,
+	     rd_addr, wr_addr,
+	     bit_out, data_out,
+	     wr, wr_bit,
+             rxd, txd, 
+	     intr,
+             brate2, t1_ow, pres_ow,
+	     rclk, tclk);
 
-input rst, clk, bit_in, wr, rxd, wr_bit, t1_ow;
-input [7:0] rd_addr, data_in, wr_addr;
+input        rst,
+             clk,
+	     bit_in,
+	     wr,
+	     rxd,
+	     wr_bit,
+	     t1_ow,
+	     brate2,
+	     pres_ow,
+	     rclk,
+	     tclk;
+input [7:0]  rd_addr,
+             data_in,
+	     wr_addr;
 
-output txd, intr, bit_out;
+output       txd,
+             intr,
+	     bit_out;
 output [7:0] data_out;
 
-reg txd, bit_out;
+reg /*txd, */bit_out;
 reg [7:0] data_out;
 
-reg tr_start, trans, trans_buf, t1_ow_buf;
-reg [5:0] smod_cnt_r, smod_cnt_t;
-reg receive, receive_buf, rxd_buf, r_int;
+reg t1_ow_buf;
+//reg tr_start, trans, trans_buf, t1_ow_buf;
+//reg [5:0] smod_cnt_r, smod_cnt_t;
+//reg receive, receive_buf, rxd_buf, r_int;
 //
-reg [7:0] sbuf_rxd, sbuf_txd, scon, pcon;
-reg [10:0] sbuf_rxd_tmp;
+reg [7:0] /*sbuf_rxd, sbuf_txd, */scon, pcon;
+//reg [10:0] sbuf_rxd_tmp;
 //
 //tr_count	trancive counter
 //re_count	receive counter
-reg [3:0] tr_count, re_count, re_count_buff;
+//reg [3:0] tr_count, re_count, re_count_buff;
+
+
+reg        txd,
+           trans,
+           receive,
+           tx_done,
+	   rx_done,
+	   rxd_r,
+	   shift_tr,
+	   shift_re;
+reg [1:0]  rx_sam;
+reg [3:0]  tr_count,
+           re_count;
+reg [7:0]  sbuf_rxd;
+reg [11:0] sbuf_rxd_tmp;
+reg [12:0] sbuf_txd;
 
 
 assign intr = scon[1] | scon [0];
@@ -84,6 +125,12 @@ assign intr = scon[1] | scon [0];
 //
 //serial port control register
 //
+wire ren, tb8, rb8, ri;
+assign ren = scon[4];
+assign tb8 = scon[3];
+assign rb8 = scon[2];
+assign ri  = scon[0];
+
 always @(posedge clk or posedge rst)
 begin
   if (rst)
@@ -92,34 +139,129 @@ begin
     scon <= #1 data_in;
   else if ((wr) & (wr_bit) & (wr_addr[7:3]==`OC8051_SFR_B_SCON))
     scon[wr_addr[2:0]] <= #1 bit_in;
-  else if ((trans_buf) & !(trans))
+  else if (tx_done)
     scon[1] <= #1 1'b1;
-  else if ((receive_buf) & !(receive) & !(sbuf_rxd_tmp[0])) begin
-    case (scon[7:6])
-      2'b00: scon[0] <= #1 1'b1;
-      default: begin
-        if ((sbuf_rxd_tmp[9]) | !(scon[5])) scon[0] <= #1 1'b1;
-	scon[2] <= #1 sbuf_rxd_tmp[9];
-      end
-    endcase
+  else if (!rx_done) begin
+    if (scon[7:6]==2'b00) begin
+      scon[0] <= #1 1'b1;
+    end else if ((sbuf_rxd_tmp[11]) | !(scon[5])) begin
+      scon[0] <= #1 1'b1;
+      scon[2] <= #1 sbuf_rxd_tmp[11];
+    end else
+      scon[2] <= #1 sbuf_rxd_tmp[11];
   end
-
 end
+
+//
+//power control register
+//
+wire smod;
+assign smod = pcon[7];
+always @(posedge clk or posedge rst)
+begin
+  if (rst)
+  begin
+    pcon <= #1 `OC8051_RST_PCON;
+  end else if ((wr_addr==`OC8051_SFR_PCON) & (wr) & !(wr_bit))
+    pcon <= #1 data_in;
+end
+
 
 //
 //serial port buffer (transmit)
 //
+
+wire wr_sbuf;
+assign wr_sbuf = (wr_addr==`OC8051_SFR_SBUF) & (wr) & !(wr_bit);
+
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    sbuf_txd <= #1 `OC8051_RST_SBUF;
-    tr_start <= #1 1'b0;
-  end else if ((wr_addr==`OC8051_SFR_SBUF) & (wr) & !(wr_bit)) begin
-    sbuf_txd <= #1 data_in;
-    tr_start <= #1 1'b1;
-  end else tr_start <= #1 1'b0;
+    txd      <= #1 1'b1;
+    tr_count <= #1 4'd0;
+    trans    <= #1 1'b0;
+    sbuf_txd <= #1 11'h00;
+    tx_done  <= #1 1'b0;
+//
+// start transmiting
+//
+  end else if (wr_sbuf) begin
+    case (scon[7:6])
+      2'b00: begin  // mode 0
+        sbuf_txd <= #1 {3'b001, data_in};
+      end
+      2'b01: begin // mode 1
+        sbuf_txd <= #1 {2'b01, data_in, 1'b0};
+      end
+      default: begin  // mode 2 and mode 3
+        sbuf_txd <= #1 {1'b1, tb8, data_in, 1'b0};
+      end
+    endcase
+    trans    <= #1 1'b1;
+    tr_count <= #1 4'd0;
+    tx_done  <= #1 1'b0;
+//
+// transmiting
+//
+  end else if (trans & (scon[7:6] == 2'b00) & pres_ow) // mode 0
+  begin
+    if (~|sbuf_txd[10:1]) begin
+      trans   <= #1 1'b0;
+      tx_done <= #1 1'b1;
+    end else begin
+      {sbuf_txd, txd} <= #1 {1'b0, sbuf_txd};
+      tx_done         <= #1 1'b0;
+    end
+  end else if (trans & (scon[7:6] != 2'b00) & shift_tr) begin // mode 1, 2, 3
+    tr_count <= #1 tr_count + 4'd1;
+    if (~|tr_count) begin
+      if (~|sbuf_txd[10:0]) begin
+        trans   <= #1 1'b0;
+        tx_done <= #1 1'b1;
+        txd <= #1 1'b1;
+      end else begin
+        {sbuf_txd, txd} <= #1 {1'b0, sbuf_txd};
+        tx_done         <= #1 1'b0;
+      end
+    end
+  end else if (!trans) begin
+    txd     <= #1 1'b1;
+    tx_done <= #1 1'b0;
+  end
 end
 
+//
+//
+reg sc_clk_tr, smod_clk_tr;
+always @(brate2 or t1_ow or t1_ow_buf or scon[7:6] or tclk)
+begin
+  if (scon[7:6]==8'b10) begin //mode 2
+    sc_clk_tr = 1'b1;
+  end else if (tclk) begin //
+    sc_clk_tr = brate2;
+  end else begin //
+    sc_clk_tr = !t1_ow_buf & t1_ow;
+  end
+end
+
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    smod_clk_tr <= #1 1'b0;
+    shift_tr    <= #1 1'b0;
+  end else if (sc_clk_tr) begin
+    if (smod) begin
+      shift_tr <= #1 1'b1;
+    end else begin
+      shift_tr    <= #1  smod_clk_tr;
+      smod_clk_tr <= #1 !smod_clk_tr;
+    end
+  end else begin
+    shift_tr <= #1 1'b0;
+  end
+end
+
+/*
 //
 // transmit
 //
@@ -239,22 +381,92 @@ begin
   end else
     txd <= #1 1'b1;
 end
-
-//
-//power control register
-//
-always @(posedge clk or posedge rst)
-begin
-  if (rst)
-  begin
-    pcon <= #1 `OC8051_RST_PCON;
-  end else if ((wr_addr==`OC8051_SFR_PCON) & (wr) & !(wr_bit))
-    pcon <= #1 data_in;
-end
+*/
 
 //
 //serial port buffer (receive)
 //
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    re_count     <= #1 4'd0;
+    receive      <= #1 1'b0;
+    sbuf_rxd     <= #1 8'h00;
+    sbuf_rxd_tmp <= #1 12'd0;
+    rx_done      <= #1 1'b1;
+    rxd_r        <= #1 1'b1;
+    rx_sam       <= #1 2'b00;
+  end else if (!rx_done) begin
+    receive <= #1 1'b0;
+    rx_done <= #1 1'b1;
+//    if (scon[7:6]==2'b00) begin
+      sbuf_rxd <= #1 sbuf_rxd_tmp[10:3];
+//    end else begin
+//      sbuf_rxd <= #1 sbuf_rxd_tmp[8:1];
+//    end
+  end else if (receive & (scon[7:6]==2'b00) & pres_ow) begin //mode 0
+    {sbuf_rxd_tmp, rx_done} <= #1 {rxd, sbuf_rxd_tmp};
+  end else if (receive & (scon[7:6]!=2'b00) & shift_re) begin //mode 1, 2, 3
+    re_count <= #1 re_count + 4'd1;
+    case (re_count)
+      4'h7: rx_sam[0] <= #1 rxd;
+      4'h8: rx_sam[1] <= #1 rxd;
+      4'h9: begin
+        {sbuf_rxd_tmp, rx_done} <= #1 {(rxd==rx_sam[0] ? rxd : rx_sam[1]), sbuf_rxd_tmp};
+      end
+    endcase
+//
+//start receiving
+//
+  end else if (scon[7:6]==2'b00) begin //start mode 0
+    rx_done <= #1 1'b1;
+    if (ren && !ri && !receive) begin
+      receive      <= #1 1'b1;
+      sbuf_rxd_tmp <= #1 10'h0ff;
+    end
+  end else if (ren & shift_re) begin
+    rxd_r <= #1 rxd;
+    rx_done <= #1 1'b1;
+    re_count <= #1 4'h0;
+    receive <= #1 (rxd_r & !rxd);
+    sbuf_rxd_tmp <= #1 10'h1ff;
+  end else
+    rx_done <= #1 1'b1;
+end
+
+//
+//
+reg sc_clk_re, smod_clk_re;
+always @(brate2 or t1_ow or t1_ow_buf or scon[7:6] or rclk)
+begin
+  if (scon[7:6]==8'b10) begin //mode 2
+    sc_clk_re = 1'b1;
+  end else if (rclk) begin //
+    sc_clk_re = brate2;
+  end else begin //
+    sc_clk_re = !t1_ow_buf & t1_ow;
+  end
+end
+
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    smod_clk_re <= #1 1'b0;
+    shift_re    <= #1 1'b0;
+  end else if (sc_clk_re) begin
+    if (smod) begin
+      shift_re <= #1 1'b1;
+    end else begin
+      shift_re    <= #1  smod_clk_re;
+      smod_clk_re <= #1 !smod_clk_re;
+    end
+  end else begin
+    shift_re <= #1 1'b0;
+  end
+end
+
+
+/*
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
@@ -372,6 +584,7 @@ begin
     r_int <= #1 1'b0;
   end
 end
+*/
 
 //
 //
@@ -395,17 +608,18 @@ end
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    trans_buf <= #1 1'b0;
-    receive_buf <= #1 1'b0;
+//    trans_buf <= #1 1'b0;
+//    receive_buf <= #1 1'b0;
     t1_ow_buf <= #1 1'b0;
-    rxd_buf <= #1 1'b0;
+//    rxd_buf <= #1 1'b0;
   end else begin
-    trans_buf <= #1 trans;
-    receive_buf <= #1 receive;
+//    trans_buf <= #1 trans;
+//    receive_buf <= #1 receive;
     t1_ow_buf <= #1 t1_ow;
-    rxd_buf <= #1 rxd;
+//    rxd_buf <= #1 rxd;
   end
 end
+
 
 always  @(posedge clk or posedge rst)
 begin
@@ -416,10 +630,12 @@ begin
     bit_out <= #1 scon[rd_addr[2:0]];
 end
 
+/*
 always @(posedge clk or posedge rst)
   if (rst)
     re_count_buff <= #1 4'h4;
   else re_count_buff <= #1 re_count;
+*/
 
 endmodule
 
