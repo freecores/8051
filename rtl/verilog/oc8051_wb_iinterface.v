@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2003/01/13 14:14:41  simont
+// replace some modules
+//
 // Revision 1.1  2002/10/28 16:42:08  simont
 // initial import
 //
@@ -71,7 +74,7 @@ input rst, clk;
 // ack_o    (out) acknowledge
 // cyc_i    (in)  cycle
 input stb_i, cyc_i;
-input [22:0] adr_i;
+input [15:0] adr_i;
 output ack_o;
 output [31:0] dat_o;
 
@@ -86,12 +89,12 @@ output [31:0] dat_o;
 input ack_i;
 input [31:0] dat_i;
 output stb_o, cyc_o;
-output [22:0] adr_o;
+output [15:0] adr_o;
 
 //
 // internal bufers and wires
 //
-reg [22:0] adr;
+reg [15:0] adr;
 reg stb;
 
 assign ack_o = ack_i;
