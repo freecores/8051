@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2003/05/06 09:39:34  simont
+// cahnge assigment to pc_wait (remove istb_o)
+//
 // Revision 1.6  2003/05/05 15:46:37  simont
 // add aditional alu destination to solve critical path.
 //
@@ -228,7 +231,7 @@ assign wr_o = wr_i;
 assign wr_bit_o = wr_bit_i;
 
 assign mem_wait = dmem_wait || imem_wait;
-assign istb_o = (istb || istb_t) && !dstb_o && !ea_rom_sel;
+assign istb_o = (istb || (istb_t & !iack_i)) && !dstb_o && !ea_rom_sel;
 
 assign pc_wait = rd && (ea_rom_sel || (!istb_t && iack_i));
 
