@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.14  2003/05/05 15:46:36  simont
+// add aditional alu destination to solve critical path.
+//
 // Revision 1.13  2003/04/29 08:35:12  simont
 // fix bug in substraction.
 //
@@ -111,6 +114,7 @@ wire [1:0] add9, adda, addb, addc;
 wire [4:0] sub1, sub2, sub3, sub4;
 wire [3:0] sub5, sub6, sub7, sub8;
 wire [1:0] sub9, suba, subb, subc;
+wire [7:0] sub_result;
 
 //
 //mul
@@ -172,13 +176,15 @@ assign suba = {1'b0,src2[7]};
 assign subb = {1'b0,!sub8[3]};
 assign subc = sub9-suba-subb;
 
+assign sub_result = {subc[0],sub8[2:0],sub4[3:0]};
+
 /* inc */
 assign inc = {src2, src1} + {15'h0, 1'b1};
 assign dec = {src2, src1} - {15'h0, 1'b1};
 
 always @(op_code or src1 or src2 or srcCy or srcAc or bit_in or src3 or mulsrc1
       or mulsrc2 or mulOv or divsrc1 or divsrc2 or divOv or addc or add8 or add4
-      or sub4 or sub8 or subc or da_tmp or inc or dec)
+      or sub4 or sub8 or subc or da_tmp or inc or dec or sub_result)
 begin
 
   case (op_code)
@@ -196,8 +202,8 @@ begin
     end
 //operation subtract
     `OC8051_ALU_SUB: begin
-      des_acc = {subc[0],sub8[2:0],sub4[3:0]};
-      des1 = src1;
+      des_acc = sub_result;
+      des1 = sub_result;
       des2 = 8'h00;
       desCy = !subc[1];
       desAc = !sub4[4];
