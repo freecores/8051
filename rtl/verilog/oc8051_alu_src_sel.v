@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2003/05/06 09:41:35  simont
+// remove define OC8051_AS2_PCL, chane signal src_sel2 to 2 bit wide.
+//
 // Revision 1.1  2003/01/13 14:13:12  simont
 // initial import
 //
@@ -80,14 +83,13 @@ output [7:0] src1, src2, src3;
 reg [7:0] src1, src2, src3;
 
 reg [7:0] op1_r, op2_r, op3_r;
-reg [15:0] pc_r;
 
 ///////
 //
 // src1
 //
 ///////
-always @(sel1 or op1_r or op2_r or op3_r or pc_r or acc or ram)
+always @(sel1 or op1_r or op2_r or op3_r or pc or acc or ram)
 begin
   case (sel1)
     `OC8051_AS1_RAM: src1 = ram;
@@ -95,8 +97,8 @@ begin
     `OC8051_AS1_OP1: src1 = op1_r;
     `OC8051_AS1_OP2: src1 = op2_r;
     `OC8051_AS1_OP3: src1 = op3_r;
-    `OC8051_AS1_PCH: src1 = pc_r[15:8];
-    `OC8051_AS1_PCL: src1 = pc_r[7:0];
+    `OC8051_AS1_PCH: src1 = pc[15:8];
+    `OC8051_AS1_PCL: src1 = pc[7:0];
     default: src1 = 8'h00;
   endcase
 end
@@ -106,7 +108,7 @@ end
 // src2
 //
 ///////
-always @(sel2 or op2_r or acc or ram or op1_r or pc)
+always @(sel2 or op2_r or acc or ram or op1_r)
 begin
   case (sel2)
     `OC8051_AS2_ACC: src2= acc;
@@ -144,10 +146,4 @@ always @(posedge clk or posedge rst)
     op3_r <= #1 op3;
   end
 
-always @(posedge clk or posedge rst)
-  if (rst) begin
-    pc_r <= #1 16'h0;
-  end else if (rd) begin
-    pc_r <= #1 pc;
-  end
 endmodule
