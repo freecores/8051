@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.12  2003/04/25 17:15:51  simont
+// change branch instruction execution (reduse needed clock periods).
+//
 // Revision 1.11  2003/04/14 14:29:42  simont
 // fiz bug iv pcs operation.
 //
@@ -183,7 +186,7 @@ begin
       des2 = 8'h00;
       desCy = !subc[1];
       desAc = !sub4[4];
-      desOv = !subc[1] ^ sub8[3];
+      desOv = !subc[1] ^ !sub8[3];
 
       enable_mul = 1'b0;
       enable_div = 1'b0;
