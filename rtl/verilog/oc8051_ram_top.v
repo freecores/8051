@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.10  2003/06/20 13:36:37  simont
+// ram modules added.
+//
 // Revision 1.9  2003/06/17 14:17:22  simont
 // BIST signals added.
 //
@@ -127,20 +130,26 @@ input   scanb_en;
 reg [7:0] wr_data_m;
 reg [7:0] rd_addr_m, wr_addr_m;
 
-// bit_addr_r   bit addresable instruction (registerd)
-reg bit_addr_r;
-reg [2:0] bit_select;
+
+wire       rd_en;
+reg        bit_addr_r,
+           rd_en_r;
+reg  [7:0] wr_data_r;
+wire [7:0] rd_data_m;
+reg  [2:0] bit_select;
 
 assign bit_data_out = rd_data[bit_select];
 
 
+assign rd_data = rd_en_r ? wr_data_r: rd_data_m;
+assign rd_en   = (rd_addr_m == wr_addr_m) & wr;
 
 oc8051_ram_256x8_two_bist oc8051_idata(
                            .clk     ( clk        ),
                            .rst     ( rst        ),
 			   .rd_addr ( rd_addr_m  ),
-			   .rd_data ( rd_data    ),
-			   .rd_en   ( 1'b1       ),
+			   .rd_data ( rd_data_m  ),
+			   .rd_en   ( !rd_en     ),
 			   .wr_addr ( wr_addr_m  ),
 			   .wr_data ( wr_data_m  ),
 			   .wr_en   ( 1'b1       ),
@@ -162,6 +171,16 @@ always @(posedge clk or posedge rst)
   end else begin
     bit_addr_r <= #1 bit_addr;
     bit_select <= #1 rd_addr[2:0];
+  end
+
+
+always @(posedge clk or posedge rst)
+  if (rst) begin
+    rd_en_r    <= #1 1'b0;
+    wr_data_r  <= #1 8'h0;
+  end else begin
+    rd_en_r    <= #1 rd_en;
+    wr_data_r  <= #1 wr_data_m;
   end
 
 
