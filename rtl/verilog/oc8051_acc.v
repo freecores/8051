@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.12  2003/04/09 16:24:03  simont
+// change wr_sft to 2 bit wire.
+//
 // Revision 1.11  2003/04/09 15:49:42  simont
 // Register oc8051_sfr dato output, add signal wait_data.
 //
@@ -123,6 +126,21 @@ begin
   else
     data_out <= #1 acc;
 end
+
+
+`ifdef OC8051_SIMULATION
+
+always @(data_out)
+  if (data_out===8'hxx) begin
+    $display("time ",$time, "   faulire: invalid write to ACC (oc8051_acc)");
+#22
+    $finish;
+
+  end
+
+
+`endif
+
 
 endmodule
 
