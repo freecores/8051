@@ -1,0 +1,21 @@
+////
+////
+//// test vectors for BLINKY
+////
+////
+ffffff
+xx01xx
+xx02xx
+xx04xx
+xx08xx
+xx10xx
+xx20xx
+xx40xx
+xx80xx
+xx40xx
+xx20xx
+xx10xx
+xx08xx
+xx04xx
+xx02xx
+xx01xx
