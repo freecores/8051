@@ -89,8 +89,8 @@ input [7:0] op_in;
 
 output wr, reti, write_x, bit_addr, src_sel3, rom_addr_sel, ext_addr_sel,
 pc_wr, wad2, rmw;
-output [1:0] ram_rd_sel, src_sel1, src_sel2, psw_set, cy_sel, pc_sel;
-output [2:0] ram_wr_sel, comp_sel, imm_sel;
+output [1:0] ram_rd_sel, src_sel1, src_sel2, psw_set, cy_sel, pc_sel, comp_sel;
+output [2:0] ram_wr_sel, imm_sel;
 output [3:0] alu_op;
 output rd;
 
@@ -2916,7 +2916,7 @@ always @(posedge clk or posedge rst)
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    state <= #1 2'b00;
+    state <= #1 2'b01;
   else begin
     case (state)
       2'b10: state <= #1 2'b01;

@@ -83,6 +83,7 @@ begin
     tr_count <= #1 4'd0;
     trans <= #1 1'b0;
     smod_cnt_t <= #1 1'b0;
+    mode2_count <= #1 3'b000;
 //
 // start transmiting
 //

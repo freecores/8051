@@ -43,13 +43,12 @@ input clk, rst, wr, wr_bit, ie0, ie1, tr0, tr1, t0, t1;
 output [7:0] data_out;
 output tf0, tf1;
 reg [7:0] tmod, tl0, th0, tl1, th1, data_out;
-reg [1:0] tmp0, tmp1;
 reg tf0, tf1_0, tf1_1, t0_buff, t1_buff;
 
 wire tc0_add, tc1_add;
 
 assign tc0_add = (tr0 & (!tmod[3] | !ie0) & (!(tmod[2]) | (tmod[2] & !t0 & t0_buff)));
-assign tc1_add = (tr1 & (!tmod[7] | !ie0) & (!(tmod[6]) | (tmod[6] & !t1 & t1_buff)));
+assign tc1_add = (tr1 & (!tmod[7] | !ie1) & (!(tmod[6]) | (tmod[6] & !t1 & t1_buff)));
 assign tf1= tf1_0 | tf1_1;
 
 //

@@ -280,8 +280,7 @@ oc8051_alu_src3_sel oc8051_alu_src3_sel1(.sel(src_sel3_r), .pc(pc_hi_r),
 
 //
 //
-oc8051_comp oc8051_comp1(.sel(comp_sel), .eq(eq), .b_in(bit_out), .cy(psw_r[7]), .acc(acc),
-		.ram(ram_out), .op2(op2_nr), .des(des1_r));
+oc8051_comp oc8051_comp1(.sel(comp_sel), .eq(eq), .b_in(bit_out), .cy(psw_r[7]), .acc(acc), .des(des1_r));
 
 //
 //stack pointer

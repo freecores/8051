@@ -185,9 +185,10 @@ always @(posedge clk or posedge rst)
 
 always @(posedge clk or posedge rst)
 begin
-  if (rst)
+  if (rst) begin
     pc <= #1 `OC8051_RST_PC;
-  else if (wr_lo) begin
+    wr_lo <= #1 1'b0;
+  end else if (wr_lo) begin
     pc[7:0] <= #1 alu[15:8];
     wr_lo <= #1 1'b0;
   end else begin

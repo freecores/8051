@@ -18,7 +18,6 @@
 //ip  ip register (internal)
 //ie  ie register (internal)
 //tcon  tcon register (internal)
-//id  id register (internal)
 
 
 
@@ -38,7 +37,7 @@ input wr, tf0, tf1, ie0, ie1, clk, rst, reti, wr_bit, bit_in, uart, ack;
 output tr0, tr1, intr, bit_out;
 output [7:0] int_vec, data_out;
 
-reg [7:0] ip, ie, int_vec, id, data_out;
+reg [7:0] ip, ie, int_vec, data_out;
 
 reg [3:0] tcon_s;
 reg tcon_tf1, tcon_tf0, tcon_ie1, tcon_ie0, bit_out;
