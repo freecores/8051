@@ -4,7 +4,6 @@
 
 
 t2con	EQU 0c8h;
-t2mod	EQU 0c9h;
 rcap2l	EQU 0cah;
 rcap2h	EQU 0cbh;
 tl2	EQU 0cch;
@@ -53,6 +52,20 @@ error:
 	nop;
 	ajmp error;
 
+wait:
+	dec a		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	jnz wait	; 2
+	reti		; 4
+
 
 start:
 	clr a;
@@ -76,6 +89,9 @@ start:
 	mov th2, #000h	;load timer 2
 	mov tl2, #000h	;
 	setb tr2	;start timer 2;
+	mov a, #03h	; 1
+	acall wait	; 2
+	nop;
 	nop;
 	nop;
 	nop;
@@ -87,6 +103,8 @@ start:
 
 	mov tl2, #0fch	; load timer 2
 	setb tr2	; start timer 2;
+	mov a, #04h	;
+	acall wait	;
 	nop;
 	nop;
 	nop;
@@ -100,7 +118,8 @@ start:
 	mov tl2, #0fch	;
 	mov th2, #0ffh	;
 	setb tr2	;start timer 2
-	nop;
+	mov a, #05h	;
+	acall wait	;
 	nop;
 	nop;
 	nop;
@@ -162,7 +181,7 @@ loop2:  nop		;
 	clr exf2	;
 
 	mov p0, #02h;
-	
+
 	ajmp arm;
 
 error0:
@@ -170,7 +189,7 @@ error0:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; auto reload mode, up counter
+; auto reload mode
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 arm:
@@ -180,6 +199,9 @@ arm:
 	mov rcap2l, #11h;
 	mov rcap2h, #22h;
 	setb tr2	;start timer 2;
+	mov a, #03h	;
+	acall wait	;
+	nop;
 	nop;
 	nop;
 	nop;
@@ -191,6 +213,8 @@ arm:
 
 	mov tl2, #0fch	; load timer 2
 	setb tr2	; start timer 2
+	mov a, #04h	;
+	acall wait	;
 	nop;
 	nop;
 	nop;
@@ -209,7 +233,8 @@ arm:
 	mov tl2, #0fch	;
 	mov th2, #0ffh	;
 	setb tr2	;start timer 2
-	nop;
+	mov a, #05h	;
+	acall wait	;
 	nop;
 	nop;
 	nop;
@@ -288,204 +313,11 @@ loop4:  nop		;
 
 	mov p0, #04h	;
 
-	ajmp upc;
+	ajmp brate;
 
 
 error1:
 	ljmp error;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; auto reload mode, up/down counter
-;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; up counter
-;
-upc:
-	mov t2con, #00h	; t/c 2 in auto reload mode
-	mov t2mod, #01h	;
-	setb p3.2	;
-	mov th2, #000h	;load timer 2
-	mov tl2, #000h	;
-	mov rcap2l, #33h;
-	mov rcap2h, #44h;
-	setb tr2	;start timer 2;
-	nop;
-	nop;
-	nop;
-	clr tr2		;stop timer 2
-	mov b, #11h	; error 11
-	mov r3, #000h	;
-	mov r4, #004h	;
-	acall test2	;
-
-	mov tl2, #0fch	; load timer 2
-	setb tr2	; start timer 2
-	nop;
-	nop;
-	nop;
-	nop;
-	clr tr2		; stop timer 2
-	mov b, #12h	; error 12
-	mov r3, #001h	;
-	mov r4, #001h	;
-	acall test2	;
-
-	mov b, #13h	; error 13
-	jb  tf2, error1	;
-	clr tf2	;
-
-	mov b, #14h	; error 14
-	jb  exf2, error1;
-
-	mov tl2, #0fch	;
-	mov th2, #0ffh	;
-	setb tr2	;start timer 2
-	nop;
-	nop;
-	nop;
-	nop;
-	nop;
-	clr tr2		;stop timer 2
-	mov b, #15h	; error 15
-	mov r3, #044h	;
-	mov r4, #035h	;
-	acall test2	;
-
-	mov b, #16h	; error 16
-	jnb tf2, error1	;
-	clr tf2	;
-
-	mov b, #17h	; error 17
-	jnb exf2, error1;
-
-
-	mov tl2, #0fch	;
-	mov th2, #0ffh	;
-	setb tr2	;start timer 2
-	nop;
-	nop;
-	nop;
-	nop;
-	nop;
-	clr tr2		;stop timer 2
-
-	mov b, #18h	; error 18
-	jb exf2, error15;
-	clr exf2	;
-	clr tf2	;
-
-	mov a, rcap2l	;
-	mov psw, #00h	;
-	mov b, #0f2h	;error f2
-	subb a, #33h	;
-	jnz error15	;
-	mov a, rcap2h	;
-	subb a, #44h	;
-	jnz error15	;
-
-	mov p0, #05h	;
-
-	ajmp down;
-
-error15:
-	ljmp error;
-
-;
-; down counter
-;
-down:
-	mov t2con, #00h	; t/c 2 in auto reload mode
-	mov t2mod, #01h	;
-	clr p3.2	;
-	mov th2, #0e2h	;load timer 2
-	mov tl2, #048h	;
-	mov rcap2l, #11h;
-	mov rcap2h, #22h;
-	setb tr2	;start timer 2;
-	nop;
-	nop;
-	nop;
-	clr tr2		;stop timer 2
-	mov b, #19h	; error 19
-	mov r3, #0e2h	;
-	mov r4, #044h	;
-	acall test2	;
-
-	mov tl2, #01h	; load timer 2
-	setb tr2	; start timer 2
-	nop;
-	nop;
-	nop;
-	nop;
-	clr tr2		; stop timer 2
-	mov b, #1ah	; error 1a
-	mov r3, #0e1h	;
-	mov r4, #0fch	;
-	acall test2	;
-
-	mov b, #1bh	; error 1b
-	jb  tf2, error2	;
-	clr tf2	;
-
-	mov b, #1ch	; error 1c
-	jb  exf2, error2;
-
-	mov tl2, #012h	;
-	mov th2, #022h	;
-	setb tr2	;start timer 2
-	nop;
-	nop;
-	nop;
-	nop;
-	nop;
-	clr tr2		;stop timer 2
-	mov b, #1dh	; error 1d
-	mov r3, #0ffh	;
-	mov r4, #0fbh	;
-	acall test2	;
-
-	mov b, #1eh	; error 1e
-	jnb tf2, error2	;
-	clr tf2	;
-
-	mov b, #1fh	; error 1f
-	jnb exf2, error2;
-
-
-	mov tl2, #012h	;
-	mov th2, #022h	;
-	setb tr2	;start timer 2
-	nop;
-	nop;
-	nop;
-	nop;
-	nop;
-	clr tr2		;stop timer 2
-
-	mov b, #18h	; error 18
-	jb exf2, error2	;
-	clr exf2	;
-	clr tf2	;
-
-	mov a, rcap2l	;
-	mov psw, #00h	;
-	mov b, #04h	;error f3
-	subb a, #11h	;
-	jnz error2	;
-	mov a, rcap2h	;
-	subb a, #22h	;
-	jnz error2	;
-
-	mov p0, #06h	;
-
-	ajmp brate;
-
-
-
-error2:
-	ljmp error;
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -499,6 +331,9 @@ brate:
 	mov rcap2l, #11h;
 	mov rcap2h, #22h;
 	setb tr2	;start timer 2;
+	mov a, #03h	;
+	acall wait	;
+	nop;
 	nop;
 	nop;
 	nop;
@@ -511,6 +346,8 @@ brate:
 	mov t2con, #20h	;
 	mov tl2, #0fch	; load timer 2
 	setb tr2	; start timer 2
+	mov a, #04h	;
+	acall wait	;
 	nop;
 	nop;
 	nop;
@@ -522,14 +359,15 @@ brate:
 	acall test2	;
 
 	mov b, #22h	; error 22
-	jb  tf2, error2	;
+	jb  tf2, error1	;
 	clr tf2	;
 
 
 	mov tl2, #0fch	;
 	mov th2, #0ffh	;
 	setb tr2	;start timer 2
-	nop;
+	mov a, #05h	;
+	acall wait	;
 	nop;
 	nop;
 	nop;
@@ -541,7 +379,7 @@ brate:
 	acall test2	;
 
 	mov b, #24h	; error 24
-	jb tf2, error2	;
+	jb tf2, error1	;
 	clr tf2	;
 
 
@@ -549,10 +387,10 @@ brate:
 	mov psw, #00h	;
 	mov b, #0f4h	;error f4
 	subb a, #11h	;
-	jnz error2	;
+	jnz error1	;
 	mov a, rcap2h	;
 	subb a, #22h	;
-	jnz error2	;
+	jnz error1	;
 
 	mov p0, #07h;
 
@@ -733,7 +571,7 @@ error4:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; auto reload mode, up counter
+; auto reload mode
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 armc:
@@ -869,254 +707,11 @@ loop10: nop		;
 
 	mov p0, #0ch	;
 
-	ajmp upcc;
+	ajmp bratec;
 
 
 error5:
 	ljmp error;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; auto reload mode, up/down counter
-;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; up counter
-;
-upcc:
-	mov t2con, #02h	; t/c 2 in auto reload mode
-	mov t2mod, #01h	;
-	setb p3.2	;
-	mov th2, #000h	;load timer 2
-	mov tl2, #000h	;
-	mov rcap2l, #33h;
-	mov rcap2h, #44h;
-	setb tr2	;start timer 2;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	clr tr2		;stop timer 2
-	mov b, #11h	; error 11
-	mov r3, #000h	;
-	mov r4, #004h	;
-	acall test2	;
-
-	mov tl2, #0fch	; load timer 2
-	setb tr2	; start timer 2
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	clr tr2		; stop timer 2
-	mov b, #12h	; error 12
-	mov r3, #001h	;
-	mov r4, #001h	;
-	acall test2	;
-
-	mov b, #13h	; error 13
-	jb  tf2, error5	;
-	clr tf2	;
-
-	mov b, #14h	; error 14
-	jb  exf2, error5;
-
-	mov tl2, #0fch	;
-	mov th2, #0ffh	;
-	setb tr2	;start timer 2
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	clr tr2		;stop timer 2
-	mov b, #15h	; error 15
-	mov r3, #044h	;
-	mov r4, #035h	;
-	acall test2	;
-
-	mov b, #16h	; error 16
-	jnb tf2, error6	;
-	clr tf2	;
-
-	mov b, #17h	; error 17
-	jnb exf2, error6;
-
-
-	mov tl2, #0fch	;
-	mov th2, #0ffh	;
-	setb tr2	;start timer 2
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	clr tr2		;stop timer 2
-
-	mov b, #18h	; error 18
-	jb exf2, error6	;
-	clr exf2	;
-	clr tf2	;
-
-	mov a, rcap2l	;
-	mov psw, #00h	;
-	mov b, #0f2h	;error f2
-	subb a, #33h	;
-	jnz error6	;
-	mov a, rcap2h	;
-	subb a, #44h	;
-	jnz error6	;
-
-	mov p0, #0dh	;
-
-	ajmp downc;
-
-error6:
-	ljmp error;
-
-;
-; down counter
-;
-downc:
-	mov t2con, #02h	; t/c 2 in auto reload mode
-	mov t2mod, #01h	;
-	clr p3.2	;
-	mov th2, #0e2h	;load timer 2
-	mov tl2, #048h	;
-	mov rcap2l, #11h;
-	mov rcap2h, #22h;
-	setb tr2	;start timer 2;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	clr tr2		;stop timer 2
-	mov b, #19h	; error 19
-	mov r3, #0e2h	;
-	mov r4, #044h	;
-	acall test2	;
-
-	mov tl2, #01h	; load timer 2
-	setb tr2	; start timer 2
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	clr tr2		; stop timer 2
-	mov b, #1ah	; error 1a
-	mov r3, #0e1h	;
-	mov r4, #0fch	;
-	acall test2	;
-
-	mov b, #1bh	; error 1b
-	jb  tf2, error6	;
-	clr tf2	;
-
-	mov b, #1ch	; error 1c
-	jb  exf2, error6;
-
-	mov tl2, #012h	;
-	mov th2, #022h	;
-	setb tr2	;start timer 2
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	clr tr2		;stop timer 2
-	mov b, #1dh	; error 1d
-	mov r3, #0ffh	;
-	mov r4, #0fbh	;
-	acall test2	;
-
-	mov b, #1eh	; error 1e
-	jnb tf2, error7	;
-	clr tf2	;
-
-	mov b, #1fh	; error 1f
-	jnb exf2, error7;
-
-
-	mov tl2, #012h	;
-	mov th2, #022h	;
-	setb tr2	;start timer 2
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	cpl p3.5;
-	clr tr2		;stop timer 2
-
-	mov b, #18h	; error 18
-	jb exf2, error7	;
-	clr exf2	;
-	clr tf2	;
-
-	mov a, rcap2l	;
-	mov psw, #00h	;
-	mov b, #04h	;error f3
-	subb a, #11h	;
-	jnz error7	;
-	mov a, rcap2h	;
-	subb a, #22h	;
-	jnz error7	;
-
-	mov p0, #0eh	;
-
-	ajmp bratec;
-
-
-
-error7:
-	ljmp error;
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -1163,7 +758,7 @@ bratec:
 	acall test2	;
 
 	mov b, #22h	; error 22
-	jb  tf2, error7	;
+	jb  tf2, error5	;
 	clr tf2	;
 
 
@@ -1183,8 +778,8 @@ bratec:
 	clr tr2		;stop timer 0
 	mov b, #23h	; error 23
 	mov r3, #022h	;
-	mov r4, #013h	;
-	acall test2	;
+	mov r4, #012h	;
+	lcall test2	;
 
 	mov b, #24h	; error 24
 	jb tf2, error8	;

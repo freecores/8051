@@ -7,21 +7,21 @@
 ;
 	ajmp start;
 	
-	.org 03h	;external interrupt 0
+	org 03h		;external interrupt 0
 	reti;
 
-	.org 0bh	;t/c 0 interrupt
+	org 0bh		;t/c 0 interrupt
 	setb p3.1	;
 	clr p3.1	;
 	reti;
 
-	.org 13h	;external interrupt 1
+	org 13h		;external interrupt 1
 	reti;
 
-	.org 1bh	;t/c 1 interrupt
+	org 1bh		;t/c 1 interrupt
 	reti;
 
-	.org 23h	;serial interface interrupt
+	org 23h		;serial interface interrupt
 	clr scon.4		;
 	clr scon.0		;
 	clr scon.1		;
@@ -34,6 +34,12 @@ wait:
 	mov a,b		;
 	jz wait		;
 	ret		;
+
+wait_txd:
+	movx a, @r0		;
+	jnb acc.1, wait_txd	;
+	ret		;
+
 
 	nop;
 	nop;
@@ -79,8 +85,8 @@ start:
 	mov b,#000h	;
 	mov a, #010h	;
 	mov r2, #06ch	;
-	movx @r0, a	;
 	mov sbuf, r2	; transmit 6c
+	movx @r0, a	;
 	acall wait	;
 	acall test_txd	;
 	mov c, p3.0	;
@@ -149,19 +155,24 @@ mode1:
 	mov b, #000h		;
 	mov a, #040h		;
 	movx @r0, a		;
-	mov scon, #050h		;	
+	mov scon, #050h		;
 	mov a, #0a2h		;
 	mov r3, a		;
 	setb tcon.4		;
 	setb tcon.6		;
 	movx @r1, a		;
 	acall wait		;
+	acall wait_txd		;
+
 	clr tcon.4		;
 	clr tcon.6		;
 	acall test_rxd		;
 	mov 7fh, #005h		; error 5
 	mov c, scon.2		;
 	jnc error		;
+
+
+
 ;
 ; transmit / receive
 ;
@@ -239,10 +250,10 @@ loop0:
 	mov r3, a		;
 	movx @r1, a		;
 loop1:
-	nop		;
-  nop   ;
-  dec a   ;
-  jnz   loop1   ;
+	nop			;
+	nop			;
+	dec a   		;
+	jnz   loop1		;
 	acall test_rxd		;
 	mov 7fh, #00ch		; error c
 	mov a, b		;
@@ -316,6 +327,8 @@ mode3:
 	setb tcon.4		;
 	setb tcon.6		;
 	acall wait		;
+	acall wait_txd		;
+
 	clr tcon.4		;
 	clr tcon.6		;
 	acall test_rxd		;
@@ -352,8 +365,16 @@ loop3:
 	clr scon.0		;
 	mov 7fh, #014h		; error 14
 	mov c, scon.2		;
-	jc error1		;
+	jc error2		;
 	movx a, @r0		;
 	subb a, #0d7h		;
-	
+
+done:
 	mov p0, #03h		;
+	ajmp done		;
+
+error2:
+	ljmp error		;
+
+
+	end

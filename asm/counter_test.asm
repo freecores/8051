@@ -7,21 +7,21 @@
 
 	ajmp start;
 
-	.org 03h	;external interrupt 0
+	org 03h		;external interrupt 0
 	reti;
 
-	.org 0bh	;t/c 0 interrupt
+	org 0bh		;t/c 0 interrupt
 	inc r0;
 	reti;
 
-	.org 13h	;external interrupt 1
+	org 13h		;external interrupt 1
 	reti;
 
-	.org 1bh	;t/c 1 interrupt
+	org 1bh		;t/c 1 interrupt
 	inc r1;
 	reti;
 
-	.org 23h	;serial interface interrupt
+	org 23h		;serial interface interrupt
 	reti;
 
 
@@ -52,6 +52,20 @@ test1:
 	subb a, r5	;
 	jnz error	;
 	ret;
+
+wait:
+	dec a		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	jnz wait	; 2
+	reti		; 4
 
 
 error:
@@ -275,6 +289,9 @@ start:
 	mov tl0, #000h	; load counter 0
 	mov th0, #000h	;
 	setb tcon.6	; start counter 1
+	mov a, #03h	;
+	acall wait	;
+	nop;
 	nop;
 	nop;
 	nop;
@@ -288,14 +305,15 @@ start:
 	mov tl0, #000h	; load counter 0
 	mov th0, #0fch	;
 	setb tcon.6	;start counter 1
-	nop;
+	mov a, #05h	;
+	acall wait	;
 	nop;
 	nop;
 	nop;
 	nop;
 	clr tcon.6	;stop counter 1
 	mov r2, #0c0h	;
-	mov r3, #002h	;
+	mov r3, #003h	;
 	mov r4, #000h	;
 	mov r5, #001h	;
 	mov r0, 01h	;
@@ -506,6 +524,7 @@ start:
 	cpl p3.6;
 	cpl p3.6;
 
+
 	cpl p3.6;
 	cpl p3.6;
 	cpl p3.6;
@@ -519,4 +538,4 @@ start:
 	mov p0, #002h	; test counter 1 done!
 
 
-
+end
