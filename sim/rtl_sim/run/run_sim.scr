@@ -58,11 +58,10 @@ echo "../../../rtl/verilog/oc8051_tc2.v                             " >> ncvlog.
 echo "../../../rtl/verilog/oc8051_icache.v                          " >> ncvlog.args
 echo "../../../rtl/verilog/oc8051_wb_iinterface.v                   " >> ncvlog.args
 echo "../../../rtl/verilog/oc8051_sfr.v                             " >> ncvlog.args
-echo "../../../rtl/verilog/oc8051_ram.v                             " >> ncvlog.args
 echo "../../../rtl/verilog/oc8051_rom.v                             " >> ncvlog.args
 echo "../../../rtl/verilog/oc8051_cache_ram.v                       " >> ncvlog.args
-echo "../../../memory/xilinx/rom_32x1/rom_32x1.v                    " >> ncvlog.args
-echo "../../../memory/xilinx/ramb_521x8_dual/ramb_521x8_dual.v      " >> ncvlog.args
+
+echo "../../../../common/generic_memories/rtl/verilog/generic_dpram.v" >> ncvlog.args
 
 
 ncvlog -f ncvlog.args

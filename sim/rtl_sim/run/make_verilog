@@ -27,8 +27,6 @@ verilog 						\
 ../../../rtl/verilog/oc8051_icache.v 			\
 ../../../rtl/verilog/oc8051_wb_iinterface.v 		\
 ../../../rtl/verilog/oc8051_sfr.v			\
-../../../rtl/verilog/oc8051_ram.v 			\
 ../../../rtl/verilog/oc8051_rom.v 			\
 ../../../rtl/verilog/oc8051_cache_ram.v			\
-../../../memory/xilinx/rom_32x1/rom_32x1.v		\
-../../../memory/xilinx/ramb_521x8_dual/ramb_521x8_dual.v
+../../../../common/generic_memories/rtl/verilog/generic_dpram.v
