@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2003/04/03 19:19:02  simont
+// change adr_i and adr_o length.
+//
 // Revision 1.2  2003/01/13 14:14:41  simont
 // replace some modules
 //
@@ -95,20 +98,20 @@ output [15:0] adr_o;
 // internal bufers and wires
 //
 reg [15:0] adr;
-reg stb;
+//reg stb;
 
 assign ack_o = ack_i;
 assign dat_o = dat_i;
-assign stb_o = stb || ack_i;
-assign cyc_o = stb;
+assign stb_o = stb_i || ack_i;
+assign cyc_o = stb_i || ack_i;
 assign adr_o = ack_i ? adr : adr_i;
 
 always @(posedge clk or posedge rst)
   if (rst) begin
-    stb <= #1 1'b0;
+//    stb <= #1 1'b0;
     adr <= #1 16'h0000;
   end else begin
-    stb <= #1 stb_i;
+//    stb <= #1 stb_i;
     adr <= #1 adr_i;
   end
 
