@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.17  2003/06/09 16:51:16  simont
+// fix bug in DA operation.
+//
 // Revision 1.16  2003/06/03 17:15:06  simont
 // sub_result output added.
 //
@@ -226,7 +229,7 @@ begin
       des2 = mulsrc2;
       desOv = mulOv;
       desCy = 1'b0;
-      desAc = 1'bx;
+      desAc = 1'b0;
       enable_mul = 1'b1;
       enable_div = 1'b0;
     end
@@ -236,7 +239,7 @@ begin
       des1 = src1;
       des2 = divsrc2;
       desOv = divOv;
-      desAc = 1'bx;
+      desAc = 1'b0;
       desCy = 1'b0;
       enable_mul = 1'b0;
       enable_div = 1'b1;
@@ -266,8 +269,8 @@ begin
       des1 = ~src1;
       des2 = 8'h00;
       desCy = !srcCy;
-      desAc = 1'bx;
-      desOv = 1'bx;
+      desAc = 1'b0;
+      desOv = 1'b0;
       enable_mul = 1'b0;
       enable_div = 1'b0;
     end
@@ -278,8 +281,8 @@ begin
       des1 = src1 & src2;
       des2 = 8'h00;
       desCy = srcCy & bit_in;
-      desAc = 1'bx;
-      desOv = 1'bx;
+      desAc = 1'b0;
+      desOv = 1'b0;
       enable_mul = 1'b0;
       enable_div = 1'b0;
     end
@@ -290,8 +293,8 @@ begin
       des1 = src1 ^ src2;
       des2 = 8'h00;
       desCy = srcCy ^ bit_in;
-      desAc = 1'bx;
-      desOv = 1'bx;
+      desAc = 1'b0;
+      desOv = 1'b0;
       enable_mul = 1'b0;
       enable_div = 1'b0;
     end
@@ -302,8 +305,8 @@ begin
       des1 = src1 | src2;
       des2 = 8'h00;
       desCy = srcCy | bit_in;
-      desAc = 1'bx;
-      desOv = 1'bx;
+      desAc = 1'b0;
+      desOv = 1'b0;
       enable_mul = 1'b0;
       enable_div = 1'b0;
     end
@@ -314,8 +317,8 @@ begin
       des1 = src1 ;
       des2 = 8'h00;
       desCy = srcCy | !bit_in;
-      desAc = 1'bx;
-      desOv = 1'bx;
+      desAc = 1'b0;
+      desOv = 1'b0;
       enable_mul = 1'b0;
       enable_div = 1'b0;
     end
