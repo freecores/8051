@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.28  2003/05/06 09:41:35  simont
+// remove define OC8051_AS2_PCL, chane signal src_sel2 to 2 bit wide.
+//
 // Revision 1.27  2003/05/05 15:46:37  simont
 // add aditional alu destination to solve critical path.
 //
@@ -421,7 +424,7 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
 			 .b_in(bit_out),
 			 .cy(cy),
 			 .acc(acc),
-			 .des(des_acc)
+			 .des(des1)
 			 );
 
 
