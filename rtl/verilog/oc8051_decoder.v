@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.20  2003/05/06 11:10:38  simont
+// optimize state machine.
+//
 // Revision 1.19  2003/05/06 09:41:35  simont
 // remove define OC8051_AS2_PCL, chane signal src_sel2 to 2 bit wide.
 //
@@ -145,7 +148,9 @@ assign istb = (!state[1]) && stb_i;
 
 assign state_dec = wait_data ? 2'b00 : state;
 
-assign op_cur = (state[0] || state[1] || mem_wait || wait_data) ? op : op_in;
+assign op_cur = mem_wait ? 8'h00
+                : (state[0] || state[1] || mem_wait || wait_data) ? op : op_in;
+//assign op_cur = (state[0] || state[1] || mem_wait || wait_data) ? op : op_in;
 
 assign op1_c = op_cur[2:0];
 
@@ -182,6 +187,42 @@ begin
       end
       2'b10: begin
         casex (op_cur)
+          `OC8051_SJMP : begin
+              ram_rd_sel = `OC8051_RRS_DC;
+              pc_wr = `OC8051_PCW_Y;
+              pc_sel = `OC8051_PIS_SO1;
+              comp_sel =  `OC8051_CSS_DC;
+              bit_addr = 1'b0;
+            end
+          `OC8051_JC : begin
+              ram_rd_sel = `OC8051_RRS_PSW;
+              pc_wr = eq;
+              pc_sel = `OC8051_PIS_SO1;
+              comp_sel =  `OC8051_CSS_CY;
+              bit_addr = 1'b0;
+            end
+          `OC8051_JNC : begin
+              ram_rd_sel = `OC8051_RRS_PSW;
+              pc_wr = !eq;
+              pc_sel = `OC8051_PIS_SO1;
+              comp_sel =  `OC8051_CSS_CY;
+              bit_addr = 1'b0;
+            end
+          `OC8051_JNZ : begin
+              ram_rd_sel = `OC8051_RRS_ACC;
+              pc_wr = !eq;
+              pc_sel = `OC8051_PIS_SO1;
+              comp_sel =  `OC8051_CSS_AZ;
+              bit_addr = 1'b0;
+            end
+          `OC8051_JZ : begin
+              ram_rd_sel = `OC8051_RRS_ACC;
+              pc_wr = eq;
+              pc_sel = `OC8051_PIS_SO1;
+              comp_sel =  `OC8051_CSS_AZ;
+              bit_addr = 1'b0;
+            end
+
           `OC8051_RET : begin
               ram_rd_sel = `OC8051_RRS_DC;
               pc_wr = `OC8051_PCW_Y;
@@ -819,7 +860,7 @@ begin
               stb_i = 1'b0;
               bit_addr = 1'b1;
             end
-          `OC8051_JC : begin
+/*          `OC8051_JC : begin
               ram_rd_sel = `OC8051_RRS_PSW;
               pc_wr = eq;
               pc_sel = `OC8051_PIS_SO1;
@@ -827,7 +868,7 @@ begin
               rmw = `OC8051_RMW_N;
               stb_i = 1'b0;
               bit_addr = 1'b0;
-            end
+            end*/
           `OC8051_JMP_D : begin
               ram_rd_sel = `OC8051_RRS_DPTR;
               pc_wr = `OC8051_PCW_N;
@@ -847,7 +888,7 @@ begin
               stb_i = 1'b0;
               bit_addr = 1'b1;
             end
-          `OC8051_JNC : begin
+/*          `OC8051_JNC : begin
               ram_rd_sel = `OC8051_RRS_PSW;
               pc_wr = !eq;
               pc_sel = `OC8051_PIS_SO1;
@@ -873,7 +914,7 @@ begin
               rmw = `OC8051_RMW_N;
               stb_i = 1'b0;
               bit_addr = 1'b0;
-            end
+            end*/
           `OC8051_LCALL :begin
               ram_rd_sel = `OC8051_RRS_DC;
               pc_wr = `OC8051_PCW_Y;
@@ -1063,7 +1104,7 @@ begin
               stb_i = 1'b1;
               bit_addr = 1'b1;
             end
-          `OC8051_SJMP : begin
+/*          `OC8051_SJMP : begin
               ram_rd_sel = `OC8051_RRS_DC;
               pc_wr = `OC8051_PCW_Y;
               pc_sel = `OC8051_PIS_SO1;
@@ -1071,7 +1112,7 @@ begin
               rmw = `OC8051_RMW_N;
               stb_i = 1'b0;
               bit_addr = 1'b0;
-            end
+            end*/
           `OC8051_SUBB_D : begin
               ram_rd_sel = `OC8051_RRS_D;
               pc_wr = `OC8051_PCW_N;
@@ -1196,7 +1237,7 @@ begin
               psw_set <= #1 `OC8051_PS_NOT;
               wr_sfr <= #1 `OC8051_WRS_ACC1;
             end
-          `OC8051_ACALL :begin
+/*          `OC8051_ACALL :begin
               ram_wr_sel <= #1 `OC8051_RWS_SP;
               src_sel1 <= #1 `OC8051_AS1_PCH;
               src_sel2 <= #1 `OC8051_AS2_DC;
@@ -1222,7 +1263,7 @@ begin
               wr <= #1 1'b1;
               psw_set <= #1 `OC8051_PS_NOT;
               wr_sfr <= #1 `OC8051_WRS_N;
-            end
+            end*/
           `OC8051_DIV : begin
               ram_wr_sel <= #1 `OC8051_RWS_B;
               src_sel1 <= #1 `OC8051_AS1_ACC;
@@ -1256,6 +1297,22 @@ begin
       end
       2'b10: begin
         casex (op_cur)
+          `OC8051_ACALL :begin
+              ram_wr_sel <= #1 `OC8051_RWS_SP;
+              src_sel1 <= #1 `OC8051_AS1_PCH;
+              src_sel2 <= #1 `OC8051_AS2_DC;
+              alu_op <= #1 `OC8051_ALU_NOP;
+              wr <= #1 1'b1;
+              psw_set <= #1 `OC8051_PS_NOT;
+            end
+          `OC8051_LCALL :begin
+              ram_wr_sel <= #1 `OC8051_RWS_SP;
+              src_sel1 <= #1 `OC8051_AS1_PCH;
+              src_sel2 <= #1 `OC8051_AS2_DC;
+              alu_op <= #1 `OC8051_ALU_NOP;
+              wr <= #1 1'b1;
+              psw_set <= #1 `OC8051_PS_NOT;
+            end
           `OC8051_JBC : begin
               ram_wr_sel <= #1 `OC8051_RWS_D;
               src_sel1 <= #1 `OC8051_AS1_DC;
@@ -2578,23 +2635,23 @@ always @(posedge clk or posedge rst)
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    state <= #1 2'b01;
+    state <= #1 2'b11;
   else if  (!mem_wait & !wait_data) begin
     case (state)
       2'b10: state <= #1 2'b01;
       2'b11: state <= #1 2'b10;
       2'b00:
           casex (op_in)
-            `OC8051_ACALL   : state <= #1 2'b01;
-            `OC8051_AJMP    : state <= #1 2'b01;
+            `OC8051_ACALL   : state <= #1 2'b10;
+            `OC8051_AJMP    : state <= #1 2'b10;
             `OC8051_CJNE_R  : state <= #1 2'b10;
             `OC8051_CJNE_I  : state <= #1 2'b10;
             `OC8051_CJNE_D  : state <= #1 2'b10;
             `OC8051_CJNE_C  : state <= #1 2'b10;
-            `OC8051_LJMP    : state <= #1 2'b01;
+            `OC8051_LJMP    : state <= #1 2'b10;
             `OC8051_DJNZ_R  : state <= #1 2'b10;
             `OC8051_DJNZ_D  : state <= #1 2'b10;
-            `OC8051_LCALL   : state <= #1 2'b01;
+            `OC8051_LCALL   : state <= #1 2'b10;
             `OC8051_MOVC_DP : state <= #1 2'b11;
             `OC8051_MOVC_PC : state <= #1 2'b11;
             `OC8051_MOVX_IA : state <= #1 2'b10;
@@ -2603,15 +2660,15 @@ begin
             `OC8051_MOVX_AP : state <= #1 2'b10;
             `OC8051_RET     : state <= #1 2'b11;
             `OC8051_RETI    : state <= #1 2'b11;
-            `OC8051_SJMP    : state <= #1 2'b01;
+            `OC8051_SJMP    : state <= #1 2'b10;
             `OC8051_JB      : state <= #1 2'b10;
             `OC8051_JBC     : state <= #1 2'b10;
-            `OC8051_JC      : state <= #1 2'b01;
+            `OC8051_JC      : state <= #1 2'b10;
             `OC8051_JMP_D   : state <= #1 2'b10;
-            `OC8051_JNC     : state <= #1 2'b01;
+            `OC8051_JNC     : state <= #1 2'b10;
             `OC8051_JNB     : state <= #1 2'b10;
-            `OC8051_JNZ     : state <= #1 2'b01;
-            `OC8051_JZ      : state <= #1 2'b01;
+            `OC8051_JNZ     : state <= #1 2'b10;
+            `OC8051_JZ      : state <= #1 2'b10;
             `OC8051_DIV     : state <= #1 2'b11;
             `OC8051_MUL     : state <= #1 2'b11;
             default         : state <= #1 2'b00;
@@ -2650,6 +2707,24 @@ begin
     ram_rd_sel_r <= #1 ram_rd_sel;
   end
 end
+
+
+
+`ifdef OC8051_SIMULATION
+
+always @(op_cur)
+  if (op_cur===8'hxx) begin
+    $display("time ",$time, "   faulire: invalid instruction (oc8051_decoder)");
+#22
+    $finish;
+
+  end
+
+
+`endif
+
+
+
 
 endmodule
 

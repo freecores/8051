@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2003/04/03 19:17:19  simont
+// add `include "oc8051_defines.v"
+//
 // Revision 1.1  2003/04/02 11:16:22  simont
 // initial inport
 //
@@ -56,7 +59,7 @@
 //
 `include "oc8051_defines.v"
 
-module oc8051_rom (rst, clk, addr, ea_int, data1, data2, data3);
+module oc8051_rom (rst, clk, addr, ea_int, data_o);
 
 //parameter INT_ROM_WID= 15;
 
@@ -64,9 +67,9 @@ input rst, clk;
 input [15:0] addr;
 //input [22:0] addr;
 output ea_int;
-output [7:0] data1, data2, data3;
+output [31:0] data_o;
 
-reg [7:0] data1, data2, data3;
+reg [31:0] data_o;
 wire ea;
 
 reg ea_int;
@@ -885,14 +888,11 @@ always @(posedge clk or posedge rst)
 
 
 reg [7:0] buff [0:65535]; //64kb
-//reg [7:0] buff [8388607:0];  //8Mb
 
 assign ea = 1'b0;
 
 initial
 begin
-//  for (i=0; i<65536; i=i+1)
-//    buff [i] = 8'h00;
   $readmemh("../../../bench/in/oc8051_rom.in", buff);
 end
 
@@ -903,9 +903,7 @@ always @(posedge clk or posedge rst)
 
 always @(posedge clk)
 begin
-  data1 <= #1 buff [addr];
-  data2 <= #1 buff [addr+1];
-  data3 <= #1 buff [addr+2];
+  data_o <= #1 {buff[addr+3], buff[addr+2], buff[addr+1], buff[addr]};
 end
 
 
