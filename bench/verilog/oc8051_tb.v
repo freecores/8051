@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2002/09/30 17:33:58  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -52,11 +55,12 @@
 
 module oc8051_tb;
 
-reg rst, clk, ea;
+reg rst, clk;
 reg [15:0] pc_in;
-reg [7:0] p0_in, p1_in, p2_in, op1, op2, op3;
-wire [15:0] ext_addr, rom_addr;
-wire  write, write_xram, write_uart, txd, rxd, int_uart, int0, int1, t0, t1, bit_out, stb_o, ack_i, ack_xram, ack_uart, cyc_o;
+reg [7:0] p0_in, p1_in, p2_in;
+wire [31:0] idat_i;
+wire [15:0] ext_addr, iadr_o;
+wire  write, write_xram, write_uart, txd, rxd, int_uart, int0, int1, t0, t1, bit_out, stb_o, ack_i, ack_xram, ack_uart, cyc_o, iack_i, istb_o, icyc_o;
 wire [7:0] data_in, data_out, p0_out, p1_out, p2_out, p3_out, data_out_uart, data_out_xram, p3_in;
 
 ///
@@ -65,24 +69,29 @@ wire [7:0] data_in, data_out, p0_out, p1_out, p2_out, p3_out, data_out_uart, dat
 //
 // buffer
 reg [23:0] buff [255:0];
+reg ea [1:0];
 
 integer num;
 
 
 oc8051_top oc8051_top_1(.rst(rst), .clk(clk), .int0(int0), .int1(int1),
          .dat_i(data_in), .dat_o(data_out),
-         .adr_o(ext_addr), .rom_addr(rom_addr), .we_o(write), .p0_in(p0_in),
+         .adr_o(ext_addr), .iadr_o(iadr_o), .istb_o(istb_o), .iack_i(iack_i),
+         .icyc_o(icyc_o), .we_o(write), .p0_in(p0_in),
          .ack_i(ack_i), .stb_o(stb_o), .cyc_o(cyc_o),
 	 .p1_in(p1_in), .p2_in(p2_in), .p3_in(p3_in), .p0_out(p0_out), .p1_out(p1_out),
-	 .p2_out(p2_out), .p3_out(p3_out), .op1(op1), .op2(op2), .op3(op3), .ea(ea),
+	 .p2_out(p2_out), .p3_out(p3_out), .idat_i(idat_i), .ea(ea[0]),
 	 .rxd(rxd), .txd(txd), .t0(t0), .t1(t1));
 
 
-oc8051_xram oc8051_xram1 (.clk(clk), .wr(write_xram), .addr(ext_addr), .data_in(data_out), .data_out(data_out_xram), .ack(ack_xram), .stb(stb_o));
+oc8051_xram oc8051_xram1 (.clk(clk), .rst(rst), .wr(write_xram), .addr(ext_addr), .data_in(data_out), .data_out(data_out_xram), .ack(ack_xram), .stb(stb_o));
 
 oc8051_uart_test oc8051_uart_test1(.clk(clk), .rst(rst), .addr(ext_addr[7:0]), .wr(write_uart),
                   .wr_bit(p3_out[0]), .data_in(data_out), .data_out(data_out_uart), .bit_out(bit_out), .rxd(txd),
 		  .txd(rxd), .ow(p3_out[1]), .intr(int_uart), .stb(stb_o), .ack(ack_uart));
+
+oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_o), .data(idat_i), 
+             .stb_i(istb_o), .cyc_i(icyc_o), .ack_o(iack_i));
 
 
 assign write_xram = p3_out[7] & write;
@@ -100,40 +109,31 @@ assign int1 = p3_out[4];
 initial begin
   clk= 1'b0;
   rst= 1'b1;
-//  int0= 1'b1;
-//  int1= 1'b1;
   pc_in = 16'h0000;
   p0_in = 8'h00;
   p1_in = 8'h00;
   p2_in = 8'h00;
-  op1 = 8'h00;
-  op2 = 8'h00;
-  op3 = 8'h00;
-  ea =1'b1;
 #22
   rst = 1'b0;
 //#2000000
-#4444000
+//#4444000
 
-//#500000
+#7000000
   $display("time ",$time, "\n faulire: end of time\n \n");
   $finish;
 end
 
-/*initial begin
-#222
-  int= 1'b1;
-  int_v= 8'h50;
-#20
-  int= 1'b0;
-end*/
 
 always clk = #5 ~clk;
 
 
 
 initial
-  $readmemh("../src/oc8051_test.vec", buff);
+  $readmemh("../../../asm/vec/oc8051_test.vec", buff);
+
+initial
+  $readmemb("../oc8051_ea.in", ea);
+
 
 initial num= 0;
 
