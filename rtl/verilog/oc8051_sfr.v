@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.13  2003/05/05 15:46:37  simont
+// add aditional alu destination to solve critical path.
+//
 // Revision 1.12  2003/04/29 11:24:31  simont
 // fix bug in case execution of two data dependent instructions.
 //
@@ -503,7 +506,7 @@ oc8051_int oc8051_int1 (.clk(clk),
 `ifdef OC8051_TC2
   oc8051_tc2 oc8051_tc21(.clk(clk), 
                          .rst(rst), 
-			 .wr_addr(adr1), 
+			 .wr_addr(adr1),
 			 .data_in(dat1), 
 			 .wr(we),
 			 .wr_bit(wr_bit_r), 
@@ -565,13 +568,14 @@ begin
     dat0 <= #1 8'h00;
     wait_data <= #1 1'b0;
   end else if ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) begin				//write and read same address
-    dat0 <= #1 dat1;
+    dat0 <= #1 des_acc;
     wait_data <= #1 1'b0;
   end else if (
-      (((wr_sfr==`OC8051_WRS_ACC1) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
-      ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) |	//write to dpl
-      (adr1[7] & (adr1==adr0) & we & !wr_bit_r) |			//write and read same address
-      (adr1[7] & (adr1[7:3]==adr0[7:3]) & (~&adr0[2:0]) &  we & wr_bit_r) //write bit addressable to read address
+      (
+        ((wr_sfr==`OC8051_WRS_ACC1) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
+//        ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) |	//write to dpl
+        (adr1[7] & (adr1==adr0) & we & !wr_bit_r) |			//write and read same address
+        (adr1[7] & (adr1[7:3]==adr0[7:3]) & (~&adr0[2:0]) &  we & wr_bit_r) //write bit addressable to read address
       ) & !wait_data) begin
     wait_data <= #1 1'b1;
 
@@ -645,6 +649,7 @@ end
 
 //
 //set output in case of address (bit)
+
 always @(posedge clk or posedge rst)
 begin
   if (rst)
@@ -678,7 +683,7 @@ begin
   `ifdef OC8051_PORT3
       `OC8051_SFR_B_P3:    bit_out <= #1 p3_data[adr0[2:0]];
   `endif
-`endif  
+`endif
 
       `OC8051_SFR_B_B:     bit_out <= #1 b_reg[adr0[2:0]];
       `OC8051_SFR_B_IP:    bit_out <= #1 ip[adr0[2:0]];
