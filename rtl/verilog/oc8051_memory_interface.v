@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2003/04/09 16:24:03  simont
+// change wr_sft to 2 bit wire.
+//
 // Revision 1.1  2003/01/13 14:13:12  simont
 // initial import
 //
@@ -496,75 +499,75 @@ begin
 //      pc = {pc_buf[22:8], alu[7:0]};
     end else if (pc_wait) begin
         casex (op1_out)
-          `OC8051_ACALL : pc= pc_buf + 23'h2;
-          `OC8051_AJMP : pc= pc_buf + 23'h2;
+          `OC8051_ACALL :  pc= pc_buf + 16'h2;
+          `OC8051_AJMP :   pc= pc_buf + 16'h2;
 
         //op_code [7:3]
-          `OC8051_CJNE_R : pc= pc_buf + 23'h3;
-          `OC8051_DJNZ_R : pc= pc_buf + 23'h2;
-          `OC8051_MOV_DR : pc= pc_buf + 23'h2;
-          `OC8051_MOV_CR : pc= pc_buf + 23'h2;
-          `OC8051_MOV_RD : pc= pc_buf + 23'h2;
+          `OC8051_CJNE_R : pc= pc_buf + 16'h3;
+          `OC8051_DJNZ_R : pc= pc_buf + 16'h2;
+          `OC8051_MOV_DR : pc= pc_buf + 16'h2;
+          `OC8051_MOV_CR : pc= pc_buf + 16'h2;
+          `OC8051_MOV_RD : pc= pc_buf + 16'h2;
 
         //op_code [7:1]
-          `OC8051_CJNE_I : pc= pc_buf + 23'h3;
-          `OC8051_MOV_ID : pc= pc_buf + 23'h2;
-          `OC8051_MOV_DI : pc= pc_buf + 23'h2;
-          `OC8051_MOV_CI : pc= pc_buf + 23'h2;
+          `OC8051_CJNE_I : pc= pc_buf + 16'h3;
+          `OC8051_MOV_ID : pc= pc_buf + 16'h2;
+          `OC8051_MOV_DI : pc= pc_buf + 16'h2;
+          `OC8051_MOV_CI : pc= pc_buf + 16'h2;
 
         //op_code [7:0]
-          `OC8051_ADD_D : pc= pc_buf + 23'h2;
-          `OC8051_ADD_C : pc= pc_buf + 23'h2;
-          `OC8051_ADDC_D : pc= pc_buf + 23'h2;
-          `OC8051_ADDC_C : pc= pc_buf + 23'h2;
-          `OC8051_ANL_D : pc= pc_buf + 23'h2;
-          `OC8051_ANL_C : pc= pc_buf + 23'h2;
-          `OC8051_ANL_DD : pc= pc_buf + 23'h2;
-          `OC8051_ANL_DC : pc= pc_buf + 23'h3;
-          `OC8051_ANL_B : pc= pc_buf + 23'h2;
-          `OC8051_ANL_NB : pc= pc_buf + 23'h2;
-          `OC8051_CJNE_D : pc= pc_buf + 23'h3;
-          `OC8051_CJNE_C : pc= pc_buf + 23'h3;
-          `OC8051_CLR_B : pc= pc_buf + 23'h2;
-          `OC8051_CPL_B : pc= pc_buf + 23'h2;
-          `OC8051_DEC_D : pc= pc_buf + 23'h2;
-          `OC8051_DJNZ_D : pc= pc_buf + 23'h3;
-          `OC8051_INC_D : pc= pc_buf + 23'h2;
-          `OC8051_JB : pc= pc_buf + 23'h3;
-          `OC8051_JBC : pc= pc_buf + 23'h3;
-          `OC8051_JC : pc= pc_buf + 23'h2;
-          `OC8051_JNB : pc= pc_buf + 23'h3;
-          `OC8051_JNC : pc= pc_buf + 23'h2;
-          `OC8051_JNZ : pc= pc_buf + 23'h2;
-          `OC8051_JZ : pc= pc_buf + 23'h2;
-          `OC8051_LCALL :pc= pc_buf + 23'h3;
-          `OC8051_LJMP : pc= pc_buf + 23'h3;
-          `OC8051_MOV_D : pc= pc_buf + 23'h2;
-          `OC8051_MOV_C : pc= pc_buf + 23'h2;
-          `OC8051_MOV_DA : pc= pc_buf + 23'h2;
-          `OC8051_MOV_DD : pc= pc_buf + 23'h3;
-          `OC8051_MOV_CD : pc= pc_buf + 23'h3;
-          `OC8051_MOV_BC : pc= pc_buf + 23'h2;
-          `OC8051_MOV_CB : pc= pc_buf + 23'h2;
-          `OC8051_MOV_DP : pc= pc_buf + 23'h3;
-          `OC8051_ORL_D : pc= pc_buf + 23'h2;
-          `OC8051_ORL_C : pc= pc_buf + 23'h2;
-          `OC8051_ORL_AD : pc= pc_buf + 23'h2;
-          `OC8051_ORL_CD : pc= pc_buf + 23'h3;
-          `OC8051_ORL_B : pc= pc_buf + 23'h2;
-          `OC8051_ORL_NB : pc= pc_buf + 23'h2;
-          `OC8051_POP : pc= pc_buf + 23'h2;
-          `OC8051_PUSH : pc= pc_buf + 23'h2;
-          `OC8051_SETB_B : pc= pc_buf + 23'h2;
-          `OC8051_SJMP : pc= pc_buf + 23'h2;
-          `OC8051_SUBB_D : pc= pc_buf + 23'h2;
-          `OC8051_SUBB_C : pc= pc_buf + 23'h2;
-          `OC8051_XCH_D : pc= pc_buf + 23'h2;
-          `OC8051_XRL_D : pc= pc_buf + 23'h2;
-          `OC8051_XRL_C : pc= pc_buf + 23'h2;
-          `OC8051_XRL_AD : pc= pc_buf + 23'h2;
-          `OC8051_XRL_CD : pc= pc_buf + 23'h3;
-          default: pc= pc_buf + 23'h1;
+          `OC8051_ADD_D :  pc= pc_buf + 16'h2;
+          `OC8051_ADD_C :  pc= pc_buf + 16'h2;
+          `OC8051_ADDC_D : pc= pc_buf + 16'h2;
+          `OC8051_ADDC_C : pc= pc_buf + 16'h2;
+          `OC8051_ANL_D :  pc= pc_buf + 16'h2;
+          `OC8051_ANL_C :  pc= pc_buf + 16'h2;
+          `OC8051_ANL_DD : pc= pc_buf + 16'h2;
+          `OC8051_ANL_DC : pc= pc_buf + 16'h3;
+          `OC8051_ANL_B :  pc= pc_buf + 16'h2;
+          `OC8051_ANL_NB : pc= pc_buf + 16'h2;
+          `OC8051_CJNE_D : pc= pc_buf + 16'h3;
+          `OC8051_CJNE_C : pc= pc_buf + 16'h3;
+          `OC8051_CLR_B :  pc= pc_buf + 16'h2;
+          `OC8051_CPL_B :  pc= pc_buf + 16'h2;
+          `OC8051_DEC_D :  pc= pc_buf + 16'h2;
+          `OC8051_DJNZ_D : pc= pc_buf + 16'h3;
+          `OC8051_INC_D :  pc= pc_buf + 16'h2;
+          `OC8051_JB :     pc= pc_buf + 16'h3;
+          `OC8051_JBC :    pc= pc_buf + 16'h3;
+          `OC8051_JC :     pc= pc_buf + 16'h2;
+          `OC8051_JNB :    pc= pc_buf + 16'h3;
+          `OC8051_JNC :    pc= pc_buf + 16'h2;
+          `OC8051_JNZ :    pc= pc_buf + 16'h2;
+          `OC8051_JZ :     pc= pc_buf + 16'h2;
+          `OC8051_LCALL :  pc= pc_buf + 16'h3;
+          `OC8051_LJMP :   pc= pc_buf + 16'h3;
+          `OC8051_MOV_D :  pc= pc_buf + 16'h2;
+          `OC8051_MOV_C :  pc= pc_buf + 16'h2;
+          `OC8051_MOV_DA : pc= pc_buf + 16'h2;
+          `OC8051_MOV_DD : pc= pc_buf + 16'h3;
+          `OC8051_MOV_CD : pc= pc_buf + 16'h3;
+          `OC8051_MOV_BC : pc= pc_buf + 16'h2;
+          `OC8051_MOV_CB : pc= pc_buf + 16'h2;
+          `OC8051_MOV_DP : pc= pc_buf + 16'h3;
+          `OC8051_ORL_D :  pc= pc_buf + 16'h2;
+          `OC8051_ORL_C :  pc= pc_buf + 16'h2;
+          `OC8051_ORL_AD : pc= pc_buf + 16'h2;
+          `OC8051_ORL_CD : pc= pc_buf + 16'h3;
+          `OC8051_ORL_B :  pc= pc_buf + 16'h2;
+          `OC8051_ORL_NB : pc= pc_buf + 16'h2;
+          `OC8051_POP :    pc= pc_buf + 16'h2;
+          `OC8051_PUSH :   pc= pc_buf + 16'h2;
+          `OC8051_SETB_B : pc= pc_buf + 16'h2;
+          `OC8051_SJMP :   pc= pc_buf + 16'h2;
+          `OC8051_SUBB_D : pc= pc_buf + 16'h2;
+          `OC8051_SUBB_C : pc= pc_buf + 16'h2;
+          `OC8051_XCH_D :  pc= pc_buf + 16'h2;
+          `OC8051_XRL_D :  pc= pc_buf + 16'h2;
+          `OC8051_XRL_C :  pc= pc_buf + 16'h2;
+          `OC8051_XRL_AD : pc= pc_buf + 16'h2;
+          `OC8051_XRL_CD : pc= pc_buf + 16'h3;
+          default:         pc= pc_buf + 16'h1;
         endcase
 //
 //in case of instructions that use more than one clock hold current pc
