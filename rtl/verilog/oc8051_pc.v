@@ -176,12 +176,19 @@ end
 //interrupt buffer
 always @(posedge clk or posedge rst)
   if (rst) begin
-    int_buff <= #1 1'b0;
     int_buff1 <= #1 1'b0;
   end else begin
-    int_buff <= #1 intr;
     int_buff1 <= #1 int_buff;
   end
+
+always @(posedge clk or posedge rst)
+  if (rst) begin
+    int_buff <= #1 1'b0;
+  end else if (intr) begin
+    int_buff <= #1 1'b1;
+  end else if (rd)
+    int_buff <= #1 1'b0;
+
 
 always @(posedge clk or posedge rst)
 begin
