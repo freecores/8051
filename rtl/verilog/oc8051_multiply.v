@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.8  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 // ver: 2 markom
 // changed to two cycle multiplication, to save resources and

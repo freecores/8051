@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2003/01/26 14:19:22  rherveille
+// Replaced oc8051_ram by generic_dpram.
+//
 // Revision 1.5  2003/01/13 14:14:41  simont
 // replace some modules
 //
@@ -97,11 +100,11 @@ reg [2:0] bit_select;
 assign bit_data_out = rd_data[bit_select];
 
 
-/*
+
 oc8051_ram oc8051_ram1(.clk(clk), .rst(rst), .rd_addr(rd_addr_m), .rd_data(rd_data), .wr_addr(wr_addr_m),
          .wr_data(wr_data_m), .wr(wr));
-*/
 
+/*
 generic_dpram #(ram_aw, 8) oc8051_ram1(
 	.rclk  ( clk       ),
 	.rrst  ( rst       ),
@@ -117,7 +120,7 @@ generic_dpram #(ram_aw, 8) oc8051_ram1(
 	.waddr ( wr_addr_m ),
 	.di    ( wr_data_m )
 );
-
+*/
 
 always @(posedge clk or posedge rst)
   if (rst) begin

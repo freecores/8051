@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.8  2002/09/30 17:15:31  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -124,4 +127,3 @@ assign des1 = rem_out;
 assign des2 = div_out;
 
 endmodule
-
