@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2003/04/02 11:22:15  simont
+// fix bug.
+//
 // Revision 1.4  2003/01/21 14:08:18  simont
 // fix bugs
 //
@@ -114,7 +117,7 @@ reg [13-ADR_WIDTH:0] con_buf [BL_NUM:0];
 reg [BL_NUM:0] valid;
 // con0, con2 contain temporal control information of current address and corrent address+2
 // part of con_buf memory
-reg [14-ADR_WIDTH:0] con0, con2;
+reg [13-ADR_WIDTH:0] con0, con2;
 //current upper address,
 reg [13-ADR_WIDTH:0] cadr0, cadr2;
 reg stb_b;
@@ -127,6 +130,11 @@ reg [31:0] data1_i;
 // temporaly data from ram
 reg [15:0] tmp_data1;
 reg wr1, wr1_t, stb_it;
+
+////////////////
+
+reg vaild_h, vaild_l;
+
 
 wire [31:0] data0, data1_o;
 wire cy, cy1;
@@ -141,19 +149,19 @@ wire [LINE_WIDTH-1:0] adr_r1;
 
 assign cy = &adr_i[LINE_WIDTH+1:1];
 assign {cy1, adr_i2} = {1'b0, adr_i[ADR_WIDTH+1:LINE_WIDTH+2]}+cy;
-assign hit_l =(con0=={cadr0,1'b1});
-assign hit_h =(con2=={cadr2,1'b1});
+assign hit_l = (con0==cadr0) & vaild_l;
+assign hit_h = (con2==cadr2) & vaild_h;
 assign hit = hit_l && hit_h;
 
 assign adr_r = adr_i[ADR_WIDTH+1:2] + adr_i[1];
 assign addr1 = wr1 ? adr_w : adr_r;
 assign adr_r1 = adr_r[LINE_WIDTH-1:0] + 2'b01;
-//assign ack_o = hit;
 assign ack_o = hit && stb_it;
 
 assign data1 = wr1_t ? tmp_data1 : data1_o[31:16];
 
 assign adr_o = {mis_adr[15:LINE_WIDTH+2], cyc, 2'b00};
+
 
 
 oc8051_cache_ram oc8051_cache_ram1(.clk(clk), .rst(rst), .addr0(adr_i[ADR_WIDTH+1:2]),
@@ -162,6 +170,29 @@ oc8051_cache_ram oc8051_cache_ram1(.clk(clk), .rst(rst), .addr0(adr_i[ADR_WIDTH+
 
 defparam oc8051_cache_ram1.ADR_WIDTH = ADR_WIDTH;
 defparam oc8051_cache_ram1.CACHE_RAM = CACHE_RAM;
+
+
+
+/*
+generic_dpram #(ADR_WIDTH, 32) oc8051_cache_ram1(
+	.rclk  ( clk                  ),
+	.rrst  ( rst                  ),
+	.rce   ( 1'b1                 ),
+	.oe    ( 1'b1                 ),
+	.raddr ( adr_i[ADR_WIDTH+1:2] ),
+	.do    ( data0                ),
+
+	.wclk  ( clk                  ),
+	.wrst  ( rst                  ),
+	.wce   ( 1'b1                 ),
+	.we    ( wr1                  ),
+	.waddr ( addr1                ),
+	.di    ( data1_i              )
+);
+*/
+
+
+
 
 always @(stb_b or data0 or data1 or byte_sel)
 begin
@@ -183,11 +214,15 @@ begin
     begin
         con0 <= #1 9'h0;
         con2 <= #1 9'h0;
+        vaild_h <= #1 1'b0;
+	vaild_l <= #1 1'b0;
     end
   else
     begin
-        con0 <= #1 {con_buf[adr_i[ADR_WIDTH+1:LINE_WIDTH+2]], valid[adr_i[ADR_WIDTH+1:LINE_WIDTH+2]]};
-        con2 <= #1 {con_buf[adr_i2], valid[adr_i2]};
+        con0 <= #1 {con_buf[adr_i[ADR_WIDTH+1:LINE_WIDTH+2]]};
+        con2 <= #1 {con_buf[adr_i2]};
+	vaild_l <= #1 valid[adr_i[ADR_WIDTH+1:LINE_WIDTH+2]];
+	vaild_h <= #1 valid[adr_i2];
     end
 end
 
@@ -224,7 +259,7 @@ begin
         wr1    <= #1 1'b0;
         adr_w  <= #1 6'h0;
         valid  <= #1 16'h0;
-    end 
+    end
   else if (stb_b && !hit && !stb_o && !wr1)
     begin
         cyc     <= #1 2'b00;
@@ -244,7 +279,6 @@ begin
               cyc   <= #1 2'b00;
               cyc_o <= #1 1'b0;
               stb_o <= #1 1'b0;
-//              con_buf[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 mis_adr[15:ADR_WIDTH+2];
               valid[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 1'b1;
           end
         else
@@ -252,33 +286,8 @@ begin
               cyc   <= #1 cyc + 1'b1;
               cyc_o <= #1 1'b1;
               stb_o <= #1 1'b1;
+              valid[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 1'b0;
           end
-
-
-/*    case (cyc)
-      2'b00: begin
-        cyc <= #1 2'b01;
-        cyc_o <= #1 1'b1;
-        stb_o <= #1 1'b1;
-      end
-      2'b01: begin
-        cyc <= #1 2'b10;
-        cyc_o <= #1 1'b1;
-        stb_o <= #1 1'b1;
-      end
-      2'b10: begin
-        cyc <= #1 2'b11;
-        cyc_o <= #1 1'b1;
-        stb_o <= #1 1'b1;
-      end
-      default: begin
-        cyc <= #1 2'b00;
-        cyc_o <= #1 1'b0;
-        stb_o <= #1 1'b0;
-        con_buf[mis_adr[7:4]] <= #1 mis_adr[15:8];
-        valid[mis_adr[7:4]] <= #1 1'b1;
-      end
-    endcase*/
     end
   else
     wr1 <= #1 1'b0;
