@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2002/10/23 16:58:21  simont
+// initial import
+//
 //
 
 // synopsys translate_off
@@ -65,27 +68,19 @@ module oc8051_cache_ram (clk, rst, addr0, data0, addr1, data1_i, data1_o, wr1);
 // wr1          (in)  write port 1
 //
 
+parameter ADR_WIDTH = 7; // cache address wihth
+parameter CACHE_RAM = 128; // cache ram x 32 (2^ADR_WIDTH)
 
 input clk, wr1, rst;
-input [5:0] addr0, addr1;
+input [ADR_WIDTH-1:0] addr0, addr1;
 input [31:0] data1_i;
 output [31:0] data0, data1_o;
 
 reg [31:0] data0, data1_o;
-reg [8:0] count;
 
 //
 // buffer
-reg [31:0] buff [63:0];
-
-/*
-initial
-begin
-  for (count = 0; count < 64; count = count + 1)
-  begin
-    buff[count] <= 32'h00000000;
-  end
-end*/
+reg [31:0] buff [CACHE_RAM:0];
 
 //
 // port 1
@@ -97,7 +92,7 @@ begin
   else if (wr1) begin
     buff[addr1] <= #1 data1_i;
     data1_o <= #1 data1_i;
-  end else 
+  end else
     data1_o <= #1 buff[addr1];
 end
 
