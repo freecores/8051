@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.18  2003/01/13 14:14:41  simont
+// replace some modules
+//
 // Revision 1.17  2002/11/05 17:23:54  simont
 // add module oc8051_sfr, 256 bytes internal ram
 //
@@ -66,43 +69,64 @@
 // synopsys translate_on
 
 
-module oc8051_top (rst_i, clk, int0, int1, ea, iadr_o, idat_i,istb_o, iack_i, ddat_i,
-		icyc_o, ddat_o, dadr_o, dwe_o, dack_i, dstb_o, dcyc_o, p0_in, p1_in, p2_in, p3_in, p0_out,
-		p1_out, p2_out, p3_out, rxd, txd, t0, t1, t2, t2ex);
-//
-// rst_i         (in)  reset - pin
-// clk           (in)  clock - pin
-// iadr_o        (out) program rom addres (pin + internal)
-// int0          (in)  external interrupt 0
-// int1          (in)  external interrupt 1
-// dat_i         (in)  exteranal ram input
-// dat_o         (out) exteranal ram output
-// adr_o         (out) external address
-// dwe_o         (out) write to external ram
-// dstb_o
-// ack_i
-// idat_i        (in)  data from external program rom
-// istb_o        (out) strobe to program rom
-// iack_i        (in)  acknowlage from external rom
-// icyc_o        (out)
-// p0_in, p1_in, p2_in, p3_in           (in)  port inputs
-// p0_out, p1_out, p2_out, p3_out       (out) port outputs
-// rxd		 (in) receive
-// txd		 (out) transmit
-// t0, t1	 (in)  t/c external inputs
-//
-//
+module oc8051_top (wb_rst_i, wb_clk_i,
+//interface to instruction rom
+		wbi_adr_o, wbi_dat_i, wbi_stb_o, wbi_ack_i, wbi_cyc_o, wbi_err_i,
+//interface to data ram
+		wbd_dat_i, wbd_dat_o,
+		wbd_adr_o, wbd_we_o, wbd_ack_i, wbd_stb_o, wbd_cyc_o, wbd_err_i,
+// interrupt interface
+		int0_i, int1_i,
+// external access (active low)
+		ea_in,
+// port interface
+		p0_i, p1_i, p2_i, p3_i,
+		p0_o, p1_o, p2_o, p3_o,
+// serial interface
+		rxd_i, txd_o,
+// counter interface
+		t0_i, t1_i, t2_i, t2ex_i);
 
 
 
-input rst_i, clk, int0, int1, ea, rxd, t0, t1, dack_i, iack_i, t2, t2ex;
-input [7:0] ddat_i, p0_in, p1_in, p2_in, p3_in;
-input [31:0] idat_i;
+input         wb_rst_i,		// reset input
+              wb_clk_i,		// clock input
+              int0_i,		// interrupt 0
+              int1_i,		// interrupt 1
+              ea_in,		// external access
+              rxd_i,		// receive
+              t0_i,		// counter 0 input
+              t1_i,		// counter 1 input
+              wbd_ack_i,	// data acknowalge
+              wbi_ack_i,	// instruction acknowlage
+              wbd_err_i,	// data error
+              wbi_err_i,	// instruction error
+              t2_i,		// counter 2 input
+              t2ex_i;		// ???
 
-output dwe_o, txd, dstb_o, dcyc_o, istb_o, icyc_o;
-output [7:0] ddat_o, p0_out, p1_out, p2_out, p3_out;
+input [7:0]   wbd_dat_i,	// ram data input
+              p0_i,		// port 0 input
+	      p1_i,		// port 1 input
+	      p2_i,		// port 2 input
+	      p3_i;		// port 3 input
+input [31:0]  wbi_dat_i;	// rom data input
 
-output [15:0] dadr_o, iadr_o;
+output        wbd_we_o,		// data write enable
+              txd_o,		// transnmit
+	      wbd_stb_o,	// data strobe
+	      wbd_cyc_o,	// data cycle
+	      wbi_stb_o,	// instruction strobe
+	      wbi_cyc_o;	// instruction cycle
+
+output [7:0]  wbd_dat_o,	// data output
+              p0_o,		// port 0 output
+	      p1_o,		// port 1 output
+	      p2_o,		// port 2 output
+	      p3_o;		// port 3 output
+
+output [15:0] wbd_adr_o,	// data address
+              wbi_adr_o;	// instruction address
+
 
 wire [7:0] op1_i, op2_i, op3_i, dptr_hi, dptr_lo, ri, rn_mem, data_out;
 wire [7:0] op1, op2, op3;
@@ -111,11 +135,8 @@ wire [7:0] sp, sp_w;
 
 wire [15:0] pc;
 
-wire rst;
-assign rst = rst_i;
-
-assign dcyc_o = dstb_o;
-assign icyc_o = istb_o;
+assign wbd_cyc_o = wbd_stb_o;
+assign wbi_cyc_o = wbi_stb_o;
 
 //
 // ram_rd_sel    ram read (internal)
@@ -208,7 +229,7 @@ wire bit_addr, bit_data, bit_out, bit_addr_o;
 
 //
 // decoder
-oc8051_decoder oc8051_decoder1(.clk(clk), .rst(rst), .op_in(op1_n), .op1_c(op1_cur),
+oc8051_decoder oc8051_decoder1(.clk(wb_clk_i), .rst(wb_rst_i), .op_in(op1_n), .op1_c(op1_cur),
      .ram_rd_sel(ram_rd_sel), .ram_wr_sel(ram_wr_sel), .bit_addr(bit_addr),
      .src_sel1(src_sel1), .src_sel2(src_sel2),
      .src_sel3(src_sel3), .alu_op(alu_op), .psw_set(psw_set),
@@ -220,20 +241,20 @@ oc8051_decoder oc8051_decoder1(.clk(clk), .rst(rst), .op_in(op1_n), .op1_c(op1_c
 
 //
 //alu
-oc8051_alu oc8051_alu1(.rst(rst), .clk(clk), .op_code(alu_op), .rd(rd),
+oc8051_alu oc8051_alu1(.rst(wb_rst_i), .clk(wb_clk_i), .op_code(alu_op), .rd(rd),
      .src1(src1), .src2(src2), .src3(src3), .srcCy(alu_cy), .srcAc(srcAc),
      .des1(des1), .des2(des2), .des1_r(des1_r), .desCy(desCy),
      .desAc(desAc), .desOv(desOv), .bit_in(bit_out));
 
 //
 //data ram
-oc8051_ram_top oc8051_ram_top1(.clk(clk), .rst(rst), .rd_addr(rd_addr), .rd_data(ram_data),
+oc8051_ram_top oc8051_ram_top1(.clk(wb_clk_i), .rst(wb_rst_i), .rd_addr(rd_addr), .rd_data(ram_data),
           .wr_addr(wr_addr), .bit_addr(bit_addr_o), .wr_data(wr_dat), .wr(wr_o && (!wr_addr[7] || wr_ind)),
 	  .bit_data_in(desCy), .bit_data_out(bit_data));
 
 //
 
-oc8051_alu_src_sel oc8051_alu_src_sel1(.clk(clk), .rst(rst), .rd(rd),
+oc8051_alu_src_sel oc8051_alu_src_sel1(.clk(wb_clk_i), .rst(wb_rst_i), .rd(rd),
      .sel1(src_sel1), .sel2(src_sel2), .sel3(src_sel3),
      .acc(acc), .ram(ram_out), .pc(pc), .dptr({dptr_hi, dptr_lo}),
      .op1(op1_n), .op2(op2_n), .op3(op3_n),
@@ -247,7 +268,7 @@ oc8051_comp oc8051_comp1(.sel(comp_sel), .eq(eq), .b_in(bit_out), .cy(cy), .acc(
 
 //
 //program rom
-oc8051_rom oc8051_rom1(.rst(rst), .clk(clk), .ea_int(ea_int), .addr(iadr_o),
+oc8051_rom oc8051_rom1(.rst(wb_rst_i), .clk(wb_clk_i), .ea_int(ea_int), .addr(wbi_adr_o),
 		.data1(op1_i), .data2(op2_i), .data3(op3_i));
 
 //
@@ -256,34 +277,34 @@ oc8051_cy_select oc8051_cy_select1(.cy_sel(cy_sel), .cy_in(cy), .data_in(bit_out
 		 .data_out(alu_cy));
 //
 //
-oc8051_indi_addr oc8051_indi_addr1 (.clk(clk), .rst(rst), .rd_addr(rd_addr), .wr_addr(wr_addr),
+oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_i), .rst(wb_rst_i), .rd_addr(rd_addr), .wr_addr(wr_addr),
       .data_in(wr_dat), .wr(wr_o), .wr_bit(bit_addr_o), .rn_out(rn_mem),
       .ri_out(ri), .sel(op1_cur), .bank(bank_sel));
 
 
 //
 //
-oc8051_memory_interface oc8051_memory_interface1(.clk(clk), .rst(rst),
+oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i), .rst(wb_rst_i),
    .wr_i(wr), .wr_o(wr_o), .wr_bit_i(bit_addr), .wr_bit_o(bit_addr_o), .wr_dat(wr_dat),
 //rom_addr_sel
-   .iack_i(iack_i), .des1(des1), .des2(des2),
-   .iadr_o(iadr_o), .sp_w(sp_w),
+   .iack_i(wbi_ack_i), .des1(des1), .des2(des2),
+   .iadr_o(wbi_adr_o), .sp_w(sp_w),
 
 //ext_addr_sel
-   .dptr({dptr_hi, dptr_lo}), .ri(ri), .rn_mem(rn_mem), .dadr_o(dadr_o), .ddat_o(ddat_o),
-   .dwe_o(dwe_o), .dstb_o(dstb_o), .ddat_i(ddat_i), .acc(acc), .dack_i(dack_i),
+   .dptr({dptr_hi, dptr_lo}), .ri(ri), .rn_mem(rn_mem), .dadr_o(wbd_adr_o), .ddat_o(wbd_dat_o),
+   .dwe_o(wbd_we_o), .dstb_o(wbd_stb_o), .ddat_i(wbd_dat_i), .acc(acc), .dack_i(wbd_ack_i),
 
 //ram_addr_sel
    .rd_sel(ram_rd_sel), .wr_sel(ram_wr_sel), .sp(sp), .rn({bank_sel, op1_n[2:0]}),
    .rd_addr(rd_addr), .wr_addr(wr_addr), .rd_ind(rd_ind), .wr_ind(wr_ind),
 
 //op_select
-   .ea(ea), .ea_int(ea_int),
+   .ea(ea_in), .ea_int(ea_int),
    .op1_i(op1_i), .op2_i(op2_i), .op3_i(op3_i),
-   .idat_i(idat_i),
+   .idat_i(wbi_dat_i),
    .op1_out(op1_n), .op2_out(op2_n), .op3_out(op3_n),
    .intr(intr), .int_v(int_src), .rd(rd), .int_ack(int_ack), .istb(istb),
-   .istb_o(istb_o),
+   .istb_o(wbi_stb_o),
 
 //pc
    .pc_wr_sel(pc_wr_sel), .pc_wr(pc_wr), .pc(pc),
@@ -296,7 +317,7 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(clk), .rst(rst),
 //
 //
 
-oc8051_sfr oc8051_sfr1(.rst(rst), .clk(clk), .adr0(rd_addr[7:0]), .adr1(wr_addr[7:0]),
+oc8051_sfr oc8051_sfr1(.rst(wb_rst_i), .clk(wb_clk_i), .adr0(rd_addr[7:0]), .adr1(wr_addr[7:0]),
        .dat0(sfr_out), .dat1(wr_dat), .dat2(des2), .we(wr_o && !wr_ind), .bit_in(desCy),
        .bit_out(sfr_bit), .wr_bit(bit_addr_o), .ram_rd_sel(ram_rd_sel), .ram_wr_sel(ram_wr_sel), .wr_sfr(wr_sfr),
 // acc
@@ -307,14 +328,15 @@ oc8051_sfr oc8051_sfr1(.rst(rst), .clk(clk), .adr0(rd_addr[7:0]), .adr1(wr_addr[
        .bank_sel(bank_sel), .desAc(desAc), .desOv(desOv), .psw_set(psw_set),
        .srcAc(srcAc), .cy(cy),
 // ports
-       .rmw(rmw), .p0_out(p0_out), .p1_out(p1_out), .p2_out(p2_out), .p3_out(p3_out),
-       .p0_in(p0_in), .p1_in(p1_in), .p2_in(p2_in), .p3_in(p3_in),
+       .rmw(rmw), .p0_out(p0_o), .p1_out(p1_o), .p2_out(p2_o), .p3_out(p3_o),
+       .p0_in(p0_i), .p1_in(p1_i), .p2_in(p2_i), .p3_in(p3_i),
 // uart
-       .rxd(rxd), .txd(txd),
+       .rxd(rxd_i), .txd(txd_o),
 // int
-       .int_ack(int_ack), .intr(intr), .int0(int0), .int1(int1), .reti(reti), .int_src(int_src),
+       .int_ack(int_ack), .intr(intr), .int0(int0_i), .int1(int1_i),
+       .reti(reti), .int_src(int_src),
 // t/c
-       .t0(t0), .t1(t1), .t2(t2), .t2ex(t2ex),
+       .t0(t0_i), .t1(t1_i), .t2(t2_i), .t2ex(t2ex_i),
 // dptr
        .dptr_hi(dptr_hi), .dptr_lo(dptr_lo));
 
