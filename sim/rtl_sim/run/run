@@ -6,8 +6,7 @@ set all_testsi = 0;
 set all_testsx = 0;
 
 
-set internal_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m timer_test counter_test interrupt_test serial_test r_bank)
-
+set internal_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m timer_test counter_test timer2_test interrupt_test serial_test r_bank)
 set external_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m interrupt_test r_bank xrom_test)
 
 # Prepare all .args files
@@ -88,6 +87,7 @@ foreach internal_test ($internal_tests)
 	endif
   mv ../out/ncsim.out ../out/${internal_test}.out
   mv verilog.dump ../out/wave/${internal_test}.dump
+  mv log_file ../out/wb/${internal_test}
 end
 
 echo ""
@@ -120,6 +120,7 @@ foreach external_test ($external_tests)
           @ all_testsx += 1;
 	endif
   mv ../out/ncsim.out ../out/x_${external_test}.out
+  mv log_file ../out/wb/x_${external_test}
 end
 
 	echo ""

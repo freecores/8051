@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -53,7 +56,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_dptr(clk, rst, addr, data_in, data2_in, wr, wd2, wr_bit, data_hi, data_lo);
+module oc8051_dptr(clk, rst, addr, data_in, data2_in, wr, wr_sfr, wr_bit, data_hi, data_lo);
 //
 // clk          (in)  clock
 // rst          (in)  reset
@@ -69,7 +72,7 @@ module oc8051_dptr(clk, rst, addr, data_in, data2_in, wr, wd2, wr_bit, data_hi, 
 
 
 input clk, rst, wr, wr_bit;
-input [2:0] wd2;
+input [2:0] wr_sfr;
 input [7:0] addr, data_in, data2_in;
 
 output [7:0] data_hi, data_lo;
@@ -81,7 +84,7 @@ begin
   if (rst) begin
     data_hi <= #1 `OC8051_RST_DPH;
     data_lo <= #1 `OC8051_RST_DPL;
-  end else if (wd2==`OC8051_RWS_DPTR) begin
+  end else if (wr_sfr==`OC8051_WRS_DPTR) begin
 //
 //write from destination 2 and 1
     data_hi <= #1 data2_in;

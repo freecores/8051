@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.8  2002/11/05 17:23:54  simont
+// add module oc8051_sfr, 256 bytes internal ram
+//
 // Revision 1.7  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -57,7 +60,8 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_psw (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, data_out, bit_out, p, cy_in, ac_in, ov_in, set, bank_sel);
+module oc8051_psw (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, data_out, bit_out, p, 
+                cy_in, ac_in, ov_in, set, bank_sel);
 //
 // clk          (in)  clock
 // rst          (in)  reset
@@ -90,6 +94,7 @@ wire wr_psw;
 assign wr_psw = (wr & (wr_addr==`OC8051_SFR_PSW) && !wr_bit);
 
 assign bank_sel = wr_psw ? data_in[4:3]:data[4:3];
+//assign bank_sel = data[4:3];
 assign data_out = data;
 
 //

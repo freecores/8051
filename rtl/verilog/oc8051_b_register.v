@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -53,7 +56,8 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_b_register (clk, rst, bit_in, bit_out, data_in, wr, wr_bit, wr_addr, rd_addr, data_out);
+module oc8051_b_register (clk, rst, bit_in, bit_out, data_in, wr, wr_bit,
+              wr_addr, rd_addr, data_out, wr_sfr);
 //
 // clk          (in)  clock
 // rst          (in)  reset
@@ -63,11 +67,12 @@ module oc8051_b_register (clk, rst, bit_in, bit_out, data_in, wr, wr_bit, wr_add
 // wr_bit       (in)  write bit addresable - actine high [oc8051_decoder.bit_addr -r]
 // wr_addr      (in)  write address [oc8051_ram_wr_sel.out]
 // data_out     (out) data output [oc8051_ram_sel.b_reg]
+// wr_sfr
 //
 
 
 input clk, rst, wr, wr_bit, bit_in;
-input [2:0] rd_addr;
+input [2:0] rd_addr, wr_sfr;
 input [7:0] wr_addr, data_in;
 
 output bit_out;
@@ -83,6 +88,8 @@ always @(posedge clk or posedge rst)
 begin
   if (rst)
     data_out <= #1 `OC8051_RST_B;
+  else if (wr_sfr==`OC8051_WRS_BA)
+    data_out <= #1 data_in;
   else if (wr) begin
     if (!wr_bit) begin
       if (wr_addr==`OC8051_SFR_B)

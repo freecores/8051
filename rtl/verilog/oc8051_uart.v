@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.9  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -65,7 +68,7 @@ reg txd, bit_out;
 reg [7:0] data_out;
 
 reg tr_start, trans, trans_buf, t1_ow_buf;
-reg [5:0] smod_cnt_r, smod_cnt_t; 
+reg [5:0] smod_cnt_r, smod_cnt_t;
 reg receive, receive_buf, rxd_buf, r_int;
 //
 reg [7:0] sbuf_rxd, sbuf_txd, scon, pcon;
@@ -286,11 +289,11 @@ begin
       	    re_count <= #1 re_count + 4'd1;
             smod_cnt_r <= #1 6'h00;
             sbuf_rxd_tmp[re_count_buff] <= #1 rxd;
-            if ((re_count==4'd0) && (rxd)) 
+            if ((re_count==4'd0) && (rxd))
               receive <= #1 1'b0;
 
 	        end else smod_cnt_r <= #1 smod_cnt_r + 6'h01;
-	      end else begin 
+	      end else begin
    	      r_int <= #1 1'b1;
      	    if (re_count == 4'd10)
           begin
@@ -345,16 +348,16 @@ begin
           receive <= #1 1'b1;
           smod_cnt_r <= #1 6'h6;
         end
-      end 
+      end
       2'b10: begin
         if ((scon[4]) && !(rxd)) begin
           receive <= #1 1'b1;
           if (pcon[7])
             smod_cnt_r <= #1 6'd15;
           else smod_cnt_r <= #1 6'd31;
-        end  
+        end
       end
-      default: begin 
+      default: begin
         if ((scon[4]) && (!rxd)) begin
           if (pcon[7])
             smod_cnt_r <= #1 6'd7;
@@ -363,7 +366,7 @@ begin
         end
       end
     endcase
-    
+
     sbuf_rxd_tmp <= #1 11'd0;
     re_count <= #1 4'd0;
     r_int <= #1 1'b0;
@@ -409,7 +412,7 @@ begin
   if (rst) bit_out <= #1 1'b0;
   else if (wr & wr_bit & (rd_addr==wr_addr) & (wr_addr[7:3]==`OC8051_SFR_B_SCON)) begin
     bit_out <= #1 bit_in;
-  end else 
+  end else
     bit_out <= #1 scon[rd_addr[2:0]];
 end
 

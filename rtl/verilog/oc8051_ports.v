@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 
@@ -147,7 +150,7 @@ begin
   else if (rmw) begin
     if ((wr_addr==rd_addr) & wr & wr_bit)
       bit_out <= #1 bit_in;
-    else if ((wr_addr[7:3]==rd_addr[7:3]) & wr & !wr_bit)
+    else if ((wr_addr[7:3]==rd_addr[7:3]) & wr)
       bit_out <= #1 data_in[rd_addr[2:0]];
     else begin
       case (rd_addr[7:3])

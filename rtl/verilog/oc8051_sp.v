@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2002/11/05 17:23:54  simont
+// add module oc8051_sfr, 256 bytes internal ram
+//
 // Revision 1.3  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -57,56 +60,57 @@
 
 
 
-module oc8051_sp (clk, rst, ram_rd_sel, ram_wr_sel, wr_addr, wr, wr_bit, data_in, data_out);
-//
-// clk          (in)  clock
-// rst          (in)  reset
-// ram_rd_sel   (in)  ram read select, used tu calculate next value [oc8051_decoder.ram_rd_sel]
-// ram_wr_sel   (in)  ram write select, used tu calculate next value [oc8051_decoder.ram_wr_sel -r]
-// wr           (in)  write [oc8051_decoder.wr -r]
-// wr_bit       (in)  write bit addresable [oc8051_decoder.bit_addr -r]
-// data_in      (in)  data input [oc8051_alu.des1]
-// wr_addr      (in)  write address (if is addres of sp and white high must be written to sp)  [oc8051_ram_wr_sel.out]
-// data_out     (out) data output
-//
+module oc8051_sp (clk, rst, ram_rd_sel, ram_wr_sel, wr_addr, wr, wr_bit, data_in, data_out, sp_out, sp_w);
 
 
 input clk, rst, wr, wr_bit;
-input [1:0] ram_rd_sel;
-input [2:0] ram_wr_sel;
+input [2:0] ram_rd_sel, ram_wr_sel;
 input [7:0] data_in, wr_addr;
 output [7:0] data_out;
+output [7:0] sp_out, sp_w;
 
-reg [7:0] data_out;
-reg [7:0] temp;
-reg pop, write;
-wire [7:0] temp1;
+reg [7:0] sp_out, sp_w;
+reg pop;
+wire write;
+wire [7:0] sp_t;
 
-assign temp1 = write ? data_in : temp;
+reg [7:0] sp;
 
-always @(wr_addr or wr or wr_bit)
-begin
-  if ((wr_addr==`OC8051_SFR_SP) & (wr) & !(wr_bit))
-    write = 1'b1;
-  else
-    write = 1'b0;
-end
+
+assign write = ((wr_addr==`OC8051_SFR_SP) & (wr) & !(wr_bit));
+
+assign sp_t= write ? data_in : sp;
+
+assign data_out = sp;
 
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    temp <= #1 `OC8051_RST_SP;
+    sp <= #1 `OC8051_RST_SP;
+  else if (write)
+    sp <= #1 data_in;
   else
-    temp <= #1 data_out;
+    sp <= #1 sp_out;
 end
 
-always @(temp1 or ram_wr_sel or pop or write)
+
+always @(sp or ram_wr_sel)
 begin
 //
 // push
-  if (ram_wr_sel==`OC8051_RWS_SP) data_out = temp1+8'h01;
-  else if (write) data_out = temp1;
-  else data_out = temp1 - {7'b0, pop};
+  if (ram_wr_sel==`OC8051_RWS_SP) sp_w = sp + 8'h01;
+  else sp_w = sp;
+
+end
+
+
+always @(sp_t or ram_wr_sel or pop or write)
+begin
+//
+// push
+  if (write) sp_out = sp_t;
+  else if (ram_wr_sel==`OC8051_RWS_SP) sp_out = sp_t + 8'h01;
+  else sp_out = sp_t - {7'b0, pop};
 
 end
 

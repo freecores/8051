@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.9  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -56,7 +59,8 @@
 
 
 
-module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, des1, des2, des1_r, desCy, desAc, desOv);
+module oc8051_alu (clk, rst, op_code, rd, src1, src2, src3, srcCy, srcAc, bit_in, des1, des2, des1_r, desCy,
+                   desAc, desOv);
 //
 // op_code      (in)  operation code [oc8051_decoder.alu_op -r]
 // src1         (in)  first operand [oc8051_alu_src1_sel.des]
@@ -65,7 +69,7 @@ module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, de
 // srcCy        (in)  carry input [oc8051_cy_select.data_out]
 // srcAc        (in)  auxiliary carry input [oc8051_psw.data_out[6] ]
 // bit_in       (in)  bit input, used for logic operatins on bits [oc8051_ram_sel.bit_out]
-// des1         (out) 
+// des1         (out)
 // des1_r       (out)
 // des2         (out)
 // desCy        (out) carry output [oc8051_ram_top.bit_data_in, oc8051_acc.bit_in, oc8051_b_register.bit_in, oc8051_psw.cy_in, oc8051_ports.bit_in]
@@ -73,7 +77,9 @@ module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, de
 // desOv        (out) Overflow output [oc8051_psw.ov_in]
 //
 
-input srcCy, srcAc, bit_in, clk, rst; input [3:0] op_code; input [7:0] src1, src2, src3;
+input srcCy, srcAc, bit_in, clk, rst, rd;
+input [3:0] op_code;
+input [7:0] src1, src2, src3;
 output desCy, desAc, desOv;
 output [7:0] des1, des2;
 output [7:0] des1_r;
@@ -83,6 +89,8 @@ reg [7:0] des1, des2;
 
 reg [7:0] des1_r;
 
+
+reg rd_r;
 //
 //add
 //
@@ -201,15 +209,6 @@ begin
     end
 //operation decimal adjustment
     `OC8051_ALU_DA: begin
-/*      da1= {1'b0, src1};
-      if (srcAc==1'b1 | da1[3:0]>4'b1001) da1= da1+ 9'b0_0000_0110;
-
-      da1[8]= da1[8] | srcCy;
-
-      if (da1[8]==1'b1) da1=da1+ 9'b0_0110_0000;
-      des1=da1[7:0];
-      des2=8'h00;
-      desCy=da1[8];*/
 
       if (srcAc==1'b1 | src1[3:0]>4'b1001) {da_tmp, des1[3:0]} = {1'b0, src1[3:0]}+ 5'b00110;
       else {da_tmp, des1[3:0]} = {1'b0, src1[3:0]};
@@ -353,8 +352,15 @@ end
 always @(posedge clk or posedge rst)
   if (rst) begin
     des1_r <= #1 8'h0;
-  end else begin
+  end else if (rd_r) begin
     des1_r <= #1 des1;
+  end
+
+always @(posedge clk or posedge rst)
+  if (rst) begin
+    rd_r <= #1 8'h0;
+  end else begin
+    rd_r <= #1 rd;
   end
 
 endmodule

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -67,7 +70,8 @@ module oc8051_ram_top (clk, rst, rd_addr, rd_data, wr_addr, bit_addr, wr_data, w
 //
 
 input clk, wr, bit_addr, bit_data_in, rst;
-input [7:0] rd_addr, wr_addr, wr_data;
+input [7:0] wr_data;
+input [7:0] rd_addr, wr_addr;
 output bit_data_out;
 output [7:0] rd_data;
 
@@ -75,7 +79,8 @@ output [7:0] rd_data;
 // rd_addr_m    read address modified
 // wr_addr_m    write address modified
 // wr_data_m    write data modified
-reg [7:0] rd_addr_m, wr_addr_m, wr_data_m;
+reg [7:0] wr_data_m;
+reg [7:0] rd_addr_m, wr_addr_m;
 
 // bit_addr_r   bit addresable instruction (registerd)
 reg bit_addr_r;
@@ -110,8 +115,8 @@ end
 always @(wr_addr or bit_addr_r)
 begin
   casex ({bit_addr_r, wr_addr[7]})
-    2'b10: wr_addr_m = {4'b0010, wr_addr[6:3]};
-    2'b11: wr_addr_m = {1'b1, wr_addr[6:3], 3'b000};
+    2'b10: wr_addr_m = {8'h00, 4'b0010, wr_addr[6:3]};
+    2'b11: wr_addr_m = {8'h00, 1'b1, wr_addr[6:3], 3'b000};
     default: wr_addr_m = wr_addr;
   endcase
 end

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 `include "oc8051_defines.v"
@@ -56,10 +59,12 @@
 
 module oc8051_tc (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, ie0, ie1, tr0, tr1, t0, t1, data_out,
             tf0, tf1);
+
 input [7:0] wr_addr, data_in, rd_addr;
 input clk, rst, wr, wr_bit, ie0, ie1, tr0, tr1, t0, t1;
 output [7:0] data_out;
 output tf0, tf1;
+
 reg [7:0] tmod, tl0, th0, tl1, th1, data_out;
 reg tf0, tf1_0, tf1_1, t0_buff, t1_buff;
 
@@ -128,7 +133,7 @@ begin
 
 	 if (tc0_add)
 	   {tf0, tl0} <= #1 {1'b0, tl0} +1'b1;
-	   
+
          if (tr1)
 	   {tf1_0, th0} <= #1 {1'b0, th0} +1'b1;
 

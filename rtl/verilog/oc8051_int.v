@@ -46,26 +46,10 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2002/09/30 17:33:59  simont
+// prepared header
 //
-
-
-
-//clk  clock (pin)
-//rst  reset (pin)
-//wr_addr  address for selecting different registers (input)
-//data_in  data input (input)
-//wr   read/write signal (input)
-//tf0  signal for timer interrupt 0 (input)
-//tf1  signal for timer interrupt 1 (input)
-//ie0   signal for external interrupt 0 (input)
-//ie1   signal for external interrupt 1 (input)
-//reti  return from interrupt signal (input)
-//int_src  describes interrupt source (output)
-//ip  ip register (internal)
-//ie  ie register (internal)
-//tcon  tcon register (internal)
-
-
+//
 
 
 `include "oc8051_defines.v"
@@ -76,9 +60,19 @@
 
 
 
-module oc0851_int (clk, wr_addr, rd_addr, data_in, bit_in, data_out, bit_out, wr, wr_bit, tf0, tf1, intr, ie0, ie1, rst, reti, int_vec, tr0, tr1, uart, ack);
+module oc0851_int (clk, rst, wr_addr, rd_addr, data_in, bit_in, data_out, bit_out, wr, wr_bit,
+//timer interrupts
+        tf0, tf1, t2_int,
+	tr0, tr1,
+//external interrupts
+        ie0, ie1,
+//uart interrupts
+        uart_int,
+//to cpu
+        intr, reti, int_vec, ack);
+
 input [7:0] wr_addr, data_in, rd_addr;
-input wr, tf0, tf1, ie0, ie1, clk, rst, reti, wr_bit, bit_in, uart, ack;
+input wr, tf0, tf1, t2_int, ie0, ie1, clk, rst, reti, wr_bit, bit_in, ack, uart_int;
 
 output tr0, tr1, intr, bit_out;
 output [7:0] int_vec, data_out;
@@ -90,52 +84,80 @@ reg tcon_tf1, tcon_tf0, tcon_ie1, tcon_ie0, bit_out;
 wire [7:0] tcon;
 
 //
-// isrc_cur	current interrupt source
-// isrc_w	waiting interrupt source
-reg [2:0] isrc_cur, isrc_w;
+// isrc		processing interrupt sources
+// int_dept
+wire [2:0] isrc_cur;
+reg [2:0] isrc [1:0];
+reg int_dept;
+wire int_dept_1;
+reg int_proc;
+reg [1:0] int_lev [1:0];
+wire cur_lev;
+
+assign isrc_cur = int_proc ? isrc[int_dept_1] : 2'h0;
+assign int_dept_1 = int_dept - 1'b1;
+assign cur_lev = int_lev[int_dept_1];
 
 //
 // contains witch level of interrupts is running
-reg [1:0] int_levl, int_levl_w;
+//reg [1:0] int_levl, int_levl_w;
 
 //
-// int_l0	waiting interrupts on level 0
-// int_l1	waiting interrupts on level 1
-wire [4:0] int_l0, int_l1;
+// int_ln	waiting interrupts on level n
+// ip_ln	interrupts on level n
+// int_src	interrupt sources
+wire [5:0] int_l0, int_l1;
+wire [5:0] ip_l0, ip_l1;
+wire [5:0] int_src;
 wire il0, il1;
 
-//reg set_tf0, set_tf1, set_ie0, set_ie1;
-reg tf0_buff, tf1_buff, ie0_buff, ie1_buff;
-//reg tf0_ack, tf1_ack, ie0_ack, ie1_ack;
 
+reg tf0_buff, tf1_buff, ie0_buff, ie1_buff;
+
+//
+//interrupt priority
+assign ip_l0 = ~ip[5:0];
+assign ip_l1 = ip[5:0];
+
+assign int_src = {t2_int, uart_int, tcon_tf1, tcon_ie1, tcon_tf0, tcon_ie0};
+
+//
+// waiting interrupts
+assign int_l0 = ip_l0 & {ie[5:0]} & int_src;
+assign int_l1 = ip_l1 & {ie[5:0]} & int_src;
+assign il0 = |int_l0;
+assign il1 = |int_l1;
+
+//
+// TCON
 assign tcon = {tcon_tf1, tcon_s[3], tcon_tf0, tcon_s[2], tcon_ie1, tcon_s[1], tcon_ie0, tcon_s[0]};
 assign tr0 = tcon_s[2];
 assign tr1 = tcon_s[3];
 assign intr = |int_vec;
 
-assign int_l0 = ~ip[4:0] & ie[4:0] & {uart, tcon_tf1, tcon_ie1, tcon_tf0, tcon_ie0};
-assign int_l1 = ip[4:0] & ie[4:0] & {uart, tcon_tf1, tcon_ie1, tcon_tf0, tcon_ie0};
-assign il0 = |int_l0;
-assign il1 = |int_l1;
 
+//
+// IP
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
    ip <=#1 `OC8051_RST_IP;
  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_IP)) begin
-    ip <= #1 data_in;
+   ip <= #1 data_in;
  end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`OC8051_SFR_B_IP))
-    ip[wr_addr[2:0]] <= #1 bit_in;
+   ip[wr_addr[2:0]] <= #1 bit_in;
 end
 
+//
+// IE
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
    ie <=#1 `OC8051_RST_IE;
  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_IE)) begin
-    ie <= #1 data_in;
+   ie <= #1 data_in;
  end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`OC8051_SFR_B_IE))
-    ie[wr_addr[2:0]] <= #1 bit_in;
+   ie[wr_addr[2:0]] <= #1 bit_in;
 end
 
 //
@@ -144,7 +166,6 @@ end
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
-//   tcon_s <=#1 {`OC8051_RST_TCON[6], `OC8051_RST_TCON[4], `OC8051_RST_TCON[2], `OC8051_RST_TCON[0]};
    tcon_s <=#1 4'b0000;
  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
    tcon_s <= #1 {data_in[6], data_in[4], data_in[2], data_in[0]};
@@ -164,7 +185,6 @@ end
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
-//   tcon_tf1 <=#1 `OC8051_RST_TCON[7];
    tcon_tf1 <=#1 1'b0;
  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
    tcon_tf1 <= #1 data_in[7];
@@ -183,7 +203,6 @@ end
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
-//   tcon_tf0 <=#1 `OC8051_RST_TCON[5];
    tcon_tf0 <=#1 1'b0;
  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
    tcon_tf0 <= #1 data_in[5];
@@ -203,7 +222,6 @@ end
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
-//   tcon_ie0 <=#1 `OC8051_RST_TCON[1];
    tcon_ie0 <=#1 1'b0;
  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
    tcon_ie0 <= #1 data_in[1];
@@ -215,7 +233,7 @@ begin
    tcon_ie0 <= #1 1'b0;
  end else if (!(tcon_s[0]) & (ie0)) begin
    tcon_ie0 <= #1 1'b0;
- end 
+ end
 end
 
 
@@ -240,55 +258,68 @@ begin
  end
 end
 
-
+//
+// interrupt processing
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
    int_vec <= #1 8'h00;
-   isrc_cur <= #1 `OC8051_ISRC_NO;
-   isrc_w <= #1 `OC8051_ISRC_NO;
-   int_levl <= #1 `OC8051_ILEV_NO;
-   int_levl_w <= #1 `OC8051_ILEV_NO;
+   int_dept <= #1 1'b0;
+   isrc[0] <= #1 3'h0;
+   isrc[1] <= #1 3'h0;
+   int_proc <= #1 1'b0;
+   int_lev[0] <= #1 1'b0;
+   int_lev[1] <= #1 1'b0;
  end else if (reti) begin  // return from interrupt
-   isrc_cur <= #1 isrc_w;
-   int_levl <= #1 int_levl_w;
- end else if ((ie[7]) & (int_levl!=`OC8051_ILEV_L1) & (il1)) begin  // interrupt on level 1
-   isrc_w <= #1 isrc_cur;
-   int_levl <= #1 `OC8051_ILEV_L1;
-   int_levl_w <= #1 int_levl;
+   if (int_dept==2'b01)
+     int_proc <= #1 1'b0;
+   int_dept <= #1 int_dept - 2'b01;
+  end else if (((ie[7]) & (!cur_lev) || !int_proc) & il1) begin  // interrupt on level 1
+   int_proc <= #1 1'b1;
+   int_lev[int_dept] <= #1 `OC8051_ILEV_L1;
+   int_dept <= #1 int_dept + 2'b01;
    if (int_l1[0]) begin
      int_vec <= #1 `OC8051_INT_X0;
-     isrc_cur <= #1 `OC8051_ISRC_IE0;
+     isrc[int_dept] <= #1 `OC8051_ISRC_IE0;
    end else if (int_l1[1]) begin
      int_vec <= #1 `OC8051_INT_T0;
-     isrc_cur <= #1 `OC8051_ISRC_TF0;
+     isrc[int_dept] <= #1 `OC8051_ISRC_TF0;
    end else if (int_l1[2]) begin
      int_vec <= #1 `OC8051_INT_X1;
-     isrc_cur <= #1 `OC8051_ISRC_IE1;
+     isrc[int_dept] <= #1 `OC8051_ISRC_IE1;
    end else if (int_l1[3]) begin
      int_vec <= #1 `OC8051_INT_T1;
-     isrc_cur <= #1 `OC8051_ISRC_TF1;
+     isrc[int_dept] <= #1 `OC8051_ISRC_TF1;
    end else if (int_l1[4]) begin
      int_vec <= #1 `OC8051_INT_UART;
-     isrc_cur <= #1 `OC8051_ISRC_UART;
+     isrc[int_dept] <= #1 `OC8051_ISRC_UART;
+   end else if (int_l1[5]) begin
+     int_vec <= #1 `OC8051_INT_T2;
+     isrc[int_dept] <= #1 `OC8051_ISRC_T2;
    end
- end else if ((ie[7]) & (int_levl==`OC8051_ILEV_NO) & (il0)) begin  // interrupt on level 0
-   int_levl <= #1 `OC8051_ILEV_L0;
+
+ end else if ((ie[7]) & !int_proc & il0) begin  // interrupt on level 0
+   int_proc <= #1 1'b1;
+   int_lev[int_dept] <= #1 `OC8051_ILEV_L0;
+   int_dept <= #1 int_dept + 2'b01;
    if (int_l0[0]) begin
      int_vec <= #1 `OC8051_INT_X0;
-     isrc_cur <= #1 `OC8051_ISRC_IE0;
+     isrc[int_dept] <= #1 `OC8051_ISRC_IE0;
    end else if (int_l0[1]) begin
      int_vec <= #1 `OC8051_INT_T0;
-     isrc_cur <= #1 `OC8051_ISRC_TF0;
+     isrc[int_dept] <= #1 `OC8051_ISRC_TF0;
    end else if (int_l0[2]) begin
      int_vec <= #1 `OC8051_INT_X1;
-     isrc_cur <= #1 `OC8051_ISRC_IE1;
+     isrc[int_dept] <= #1 `OC8051_ISRC_IE1;
    end else if (int_l0[3]) begin
      int_vec <= #1 `OC8051_INT_T1;
-     isrc_cur <= #1 `OC8051_ISRC_TF1;
+     isrc[int_dept] <= #1 `OC8051_ISRC_TF1;
    end else if (int_l0[4]) begin
      int_vec <= #1 `OC8051_INT_UART;
-     isrc_cur <= #1 `OC8051_ISRC_UART;
+     isrc[int_dept] <= #1 `OC8051_ISRC_UART;
+   end else if (int_l0[5]) begin
+     int_vec <= #1 `OC8051_INT_T2;
+     isrc[int_dept] <= #1 `OC8051_ISRC_T2;
    end
  end else begin
    int_vec <= #1 8'h00;
@@ -305,7 +336,7 @@ begin
   end else begin
     case (rd_addr)
       `OC8051_SFR_IP: data_out <= #1 ip;
-      `OC8051_SFR_IE: data_out <= #1 ie;
+      `OC8051_SFR_IE: data_out <= #1 ie0;
       default: data_out <= #1 tcon;
     endcase
   end

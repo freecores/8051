@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2002/10/24 13:34:02  simont
+// add parameters for instruction cache
+//
 // Revision 1.1  2002/10/23 16:55:36  simont
 // fix bugs in instruction interface
 //
@@ -211,13 +214,13 @@ begin
     wr1 <= #1 1'b0;
     adr_w <= #1 6'd0;
     vaild <= #1 16'd0;
-  end if (stb_b && !hit && !stb_o && !wr1) begin
+  end else if (stb_b && !hit && !stb_o && !wr1) begin
     cyc <= #1 'd0;
     cyc_o <= #1 1'b1;
     stb_o <= #1 1'b1;
     data1_i<= #1 32'h0;
     wr1 <= #1 1'b0;
-  end if (stb_o && ack_i) begin
+  end else if (stb_o && ack_i) begin
     data1_i<= #1 dat_i;
     wr1 <= #1 1'b1;
     adr_w <= #1 adr_o[ADR_WIDTH+1:2];
@@ -232,32 +235,6 @@ begin
         cyc_o <= #1 1'b1;
         stb_o <= #1 1'b1;
     end
-
-
-/*    case (cyc)
-      2'b00: begin
-        cyc <= #1 2'b01;
-        cyc_o <= #1 1'b1;
-        stb_o <= #1 1'b1;
-      end
-      2'b01: begin
-        cyc <= #1 2'b10;
-        cyc_o <= #1 1'b1;
-        stb_o <= #1 1'b1;
-      end
-      2'b10: begin
-        cyc <= #1 2'b11;
-        cyc_o <= #1 1'b1;
-        stb_o <= #1 1'b1;
-      end
-      default: begin
-        cyc <= #1 2'b00;
-        cyc_o <= #1 1'b0;
-        stb_o <= #1 1'b0;
-        con_buf[mis_adr[7:4]] <= #1 mis_adr[15:8];
-        vaild[mis_adr[7:4]] <= #1 1'b1;
-      end
-    endcase*/
   end else begin
     wr1 <= #1 1'b0;
   end
