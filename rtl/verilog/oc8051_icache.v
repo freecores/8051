@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2003/04/03 19:15:37  simont
+// fix some bugs, use oc8051_cache_ram.
+//
 // Revision 1.5  2003/04/02 11:22:15  simont
 // fix bug.
 //
@@ -66,8 +69,10 @@
 // synopsys translate_on
 
 
-module oc8051_icache (rst, clk, adr_i, dat_o,stb_i, ack_o, cyc_i,
-        dat_i, cyc_o, adr_o, ack_i, stb_o);
+module oc8051_icache (rst, clk, 
+             adr_i, dat_o, stb_i, ack_o, cyc_i,
+             adr_o, dat_i, stb_o, ack_i, cyc_o
+	     );
 //
 // rst           (in)  reset - pin
 // clk           (in)  clock - pini
@@ -81,11 +86,12 @@ input rst, clk;
 // stb_i    (in)  strobe
 // ack_o    (out) acknowledge
 // cyc_i    (in)  cycle
-input stb_i, cyc_i;
-input [15:0] adr_i;
-output ack_o;
+input         stb_i,
+              cyc_i;
+input  [15:0] adr_i;
+output        ack_o;
 output [31:0] dat_o;
-reg [31:0] dat_o;
+reg    [31:0] dat_o;
 
 //
 // interface to instruction rom
@@ -95,12 +101,13 @@ reg [31:0] dat_o;
 // stb_o    (out) strobe
 // ack_i    (in) acknowledge
 // cyc_o    (out)  cycle
-input ack_i;
-input [31:0] dat_i;
-output stb_o, cyc_o;
+input         ack_i;
+input  [31:0] dat_i;
+output        stb_o, 
+              cyc_o;
 output [15:0] adr_o;
-//reg [15:0] adr_o;
-reg stb_o, cyc_o;
+reg           stb_o,
+              cyc_o;
 
 parameter ADR_WIDTH = 6; // cache address wihth
 parameter LINE_WIDTH = 2; // line address width (2 => 4x32)
@@ -158,15 +165,22 @@ assign addr1 = wr1 ? adr_w : adr_r;
 assign adr_r1 = adr_r[LINE_WIDTH-1:0] + 2'b01;
 assign ack_o = hit && stb_it;
 
-assign data1 = wr1_t ? tmp_data1 : data1_o[31:16];
+assign data1 = wr1_t ? tmp_data1 : data1_o[15:0];
 
 assign adr_o = {mis_adr[15:LINE_WIDTH+2], cyc, 2'b00};
 
 
 
-oc8051_cache_ram oc8051_cache_ram1(.clk(clk), .rst(rst), .addr0(adr_i[ADR_WIDTH+1:2]),
-       .addr1(addr1), .data0(data0), .data1_o(data1_o), .data1_i(data1_i),
-       .wr1(wr1));
+oc8051_cache_ram oc8051_cache_ram1(
+                          .clk(clk), 
+			  .rst(rst), 
+			  .addr0(adr_i[ADR_WIDTH+1:2]),
+			  .addr1(addr1), 
+			  .data0(data0), 
+			  .data1_o(data1_o), 
+			  .data1_i(data1_i),
+			  .wr1(wr1)
+			  );
 
 defparam oc8051_cache_ram1.ADR_WIDTH = ADR_WIDTH;
 defparam oc8051_cache_ram1.CACHE_RAM = CACHE_RAM;
@@ -199,9 +213,9 @@ begin
   if (stb_b) begin
     case (byte_sel)
       2'b00  : dat_o = data0;
-      2'b01  : dat_o = {data0[23:0], data1[15:8]};
-      2'b10  : dat_o = {data0[15:0], data1};
-      default: dat_o = {data0[ 7:0], data1, 8'h00};
+      2'b01  : dat_o = {data1[7:0],   data0[31:8]};
+      2'b10  : dat_o = {data1[15:0],  data0[31:16]};
+      default: dat_o = {8'h00, data1, data0[31:24]};
     endcase
   end else begin
     dat_o = 32'h0;
@@ -270,7 +284,7 @@ begin
     end
   else if (stb_o && ack_i)
     begin
-        data1_i<= #1 dat_i;
+        data1_i<= #1 dat_i; ///??
         wr1    <= #1 1'b1;
         adr_w  <= #1 adr_o[ADR_WIDTH+1:2];
 
@@ -314,9 +328,11 @@ begin
   if (rst)
     tmp_data1 <= #1 1'b0;
   else if (!hit_h && wr1 && (cyc==adr_r1))
-    tmp_data1 <= #1 dat_i[31:16];
+//    tmp_data1 <= #1 dat_i[31:16]; //???
+    tmp_data1 <= #1 dat_i[15:0]; //???
   else if (!hit_l && hit_h && wr1)
-    tmp_data1 <= #1 data1_o[31:16];
+//    tmp_data1 <= #1 data1_o[31:16];
+    tmp_data1 <= #1 data1_o[15:0]; //??
 end
 
 always @(posedge clk or posedge rst)
