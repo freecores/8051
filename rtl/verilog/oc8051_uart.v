@@ -64,8 +64,7 @@ begin
   end else if ((wr_addr==`OC8051_SFR_SBUF) & (wr) & !(wr_bit)) begin
     sbuf_txd <= #1 data_in;
     tr_start <= #1 1'b1;
-   end else
-    tr_start <= #1 1'b0;
+  end else tr_start <= #1 1'b0;
 end
 
 //
@@ -218,10 +217,10 @@ begin
 	  r_int <= #1 1'b1;
 	  sbuf_rxd <= #1 sbuf_rxd_tmp[8:1];
 	end else begin
-          sbuf_rxd_tmp[re_count+1] <= #1 rxd;
+          sbuf_rxd_tmp[re_count + 4'd1] <= #1 rxd;
 	  r_int <= #1 1'b0;
 	end
-        re_count <= #1 re_count + 4'b1;
+        re_count <= #1 re_count + 4'd1;
       end
       2'b01: begin // mode 1
         if ((t1_ow) & !(t1_ow_buf))
@@ -231,7 +230,7 @@ begin
             sam_cnt <= #1 3'b000;
             r_int <= #1 1'b0;
 
-	    re_count <= #1 re_count + 4'b1;
+	    re_count <= #1 re_count + 4'd1;
 	    smod_cnt_r <= #1 1'b0;
 	  end else smod_cnt_r <= #1 1'b1;
 	end else begin
@@ -240,7 +239,7 @@ begin
 	      sbuf_rxd_tmp[re_count] <= #1 sample[0];
 	    else
 	      sbuf_rxd_tmp[re_count] <= #1 sample[1];
-	    if (re_count==4'h9)
+	    if (re_count == 4'd9)
 	    begin
 	      sbuf_rxd <= #1 sbuf_rxd_tmp[8:1];
 	      receive <= #1 1'b0;
@@ -264,7 +263,7 @@ begin
 	    sample[0] <= #1 rxd;
 	    r_int <= #1 1'b0;
 	  end
-    re_count <= #1 re_count + 4'b1;
+    re_count <= #1 re_count + 4'd1;
 	end else begin
 	  r_int <= #1 1'b0;
 
@@ -295,7 +294,7 @@ begin
 	      r_int <= #1 1'b0;
 	    end
 
-	    re_count <= #1 re_count + 4'b1;
+	    re_count <= #1 re_count + 4'd1;
 	    smod_cnt_r <= #1 1'b0;
 	  end else smod_cnt_r <= #1 1'b1;
 	end else begin

@@ -89,17 +89,15 @@ begin
     data_out <= #1 `OC8051_RST_ACC;
   else if (wad2)
     data_out <= #1 data2_in;
-  else
-    case ({wr, wr_bit})
-      2'b10: begin
-        if (wr_addr==`OC8051_SFR_ACC)
-          data_out <= #1 data_in;
-      end
-      2'b11: begin
-        if (wr_addr[7:3]==`OC8051_SFR_B_ACC)
-          data_out[wr_addr[2:0]] <= #1 bit_in;
-      end
-    endcase
+  else if (wr) begin
+    if (!wr_bit) begin
+      if (wr_addr==`OC8051_SFR_ACC)
+        data_out <= #1 data_in;
+    end else begin
+      if (wr_addr[7:3]==`OC8051_SFR_B_ACC)
+        data_out[wr_addr[2:0]] <= #1 bit_in;
+    end
+  end
 end
 
 always @(posedge clk or posedge rst)

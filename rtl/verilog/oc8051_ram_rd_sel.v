@@ -73,11 +73,11 @@ reg [7:0] addr_out;
 always @(sel or sp or ri or rn or imm)
 begin
   case (sel)
-    `OC8051_RRS_RN : addr_out <= {3'b000, rn};
-    `OC8051_RRS_I : addr_out <= ri;
-    `OC8051_RRS_D : addr_out <= imm;
-    `OC8051_RRS_SP : addr_out <= sp;
-    default : addr_out <= 2'bxx;
+    `OC8051_RRS_RN : addr_out = {3'b000, rn};
+    `OC8051_RRS_I : addr_out = ri;
+    `OC8051_RRS_D : addr_out = imm;
+    `OC8051_RRS_SP : addr_out = sp;
+    default : addr_out = 2'bxx;
   endcase
 
 end

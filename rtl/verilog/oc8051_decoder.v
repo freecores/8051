@@ -114,7 +114,7 @@ assign rd = !state[0] & !state[1];
 //
 // main block
 // case of instruction set control signals
-always @(rst or op_in or eq or state or op)
+always @(op_in or eq or state or op)
 begin
     case (state)
       2'b01: begin

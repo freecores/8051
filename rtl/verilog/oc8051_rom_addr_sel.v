@@ -50,10 +50,8 @@
 // synopsys translate_on
 
 
-module oc8051_rom_addr_sel (clk, rst, sel, des1, des2, pc, out_addr);
+module oc8051_rom_addr_sel (sel, des1, des2, pc, out_addr);
 //
-// clk          (in)  clock
-// rst          (in)  reset
 // sel          (in)  output select [oc8051_decoder.rom_addr_sel]
 // des1, des2   (in)  alu destination input [{oc8051_alu.des1,oc8051_alu.des2}]
 // pc           (in)  pc input [oc8051_pc.pc_out]
@@ -61,7 +59,7 @@ module oc8051_rom_addr_sel (clk, rst, sel, des1, des2, pc, out_addr);
 //
 
 
-input clk, rst, sel;
+input sel;
 input [7:0] des1, des2;
 input [15:0] pc;
 output [15:0] out_addr;

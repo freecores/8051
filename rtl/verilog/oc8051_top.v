@@ -321,7 +321,7 @@ oc8051_indi_addr oc8051_indi_addr1 (.clk(clk), .rst(rst), .addr(wr_addr), .data_
 
 //
 //
-oc8051_rom_addr_sel oc8051_rom_addr_sel1(.rst(rst), .clk(clk), .sel(rom_addr_sel), 
+oc8051_rom_addr_sel oc8051_rom_addr_sel1(.sel(rom_addr_sel), 
 		.des1(des1), .des2(des2), .pc(pc), .out_addr(rom_addr));
 
 //

@@ -88,32 +88,31 @@ begin
     p1_out <= #1 `OC8051_RST_P1;
     p2_out <= #1 `OC8051_RST_P2;
     p3_out <= #1 `OC8051_RST_P3;
-  end else
-    case ({wr, wr_bit})
-      2'b10: begin
-        case (wr_addr)
+  end else if (wr) begin
+    if (!wr_bit) begin
+      case (wr_addr)
 //
-// byte addresable
-          `OC8051_SFR_P0: p0_out <= #1 data_in;
-          `OC8051_SFR_P1: p1_out <= #1 data_in;
-          `OC8051_SFR_P2: p2_out <= #1 data_in;
-          `OC8051_SFR_P3: p3_out <= #1 data_in;
-        endcase
-      end
-      2'b11: begin
-        case (wr_addr[7:3])
+// bytaddresable
+        `OC8051_SFR_P0: p0_out <= #1 data_in;
+        `OC8051_SFR_P1: p1_out <= #1 data_in;
+        `OC8051_SFR_P2: p2_out <= #1 data_in;
+        `OC8051_SFR_P3: p3_out <= #1 data_in;
+      endcase
+    end else begin
+      case (wr_addr[7:3])
+
 //
 // bit addressable
-          `OC8051_SFR_B_P0: p0_out[wr_addr[2:0]] <= #1 bit_in;
-          `OC8051_SFR_B_P1: p1_out[wr_addr[2:0]] <= #1 bit_in;
-          `OC8051_SFR_B_P2: p2_out[wr_addr[2:0]] <= #1 bit_in;
-          `OC8051_SFR_B_P3: p3_out[wr_addr[2:0]] <= #1 bit_in;
-        endcase
-      end
-    endcase
+        `OC8051_SFR_B_P0: p0_out[wr_addr[2:0]] <= #1 bit_in;
+        `OC8051_SFR_B_P1: p1_out[wr_addr[2:0]] <= #1 bit_in;
+        `OC8051_SFR_B_P2: p2_out[wr_addr[2:0]] <= #1 bit_in;
+        `OC8051_SFR_B_P3: p3_out[wr_addr[2:0]] <= #1 bit_in;
+      endcase
+    end
+  end
 end
 
-always @(p0_out or p0_in or p1_out or p1_in or p2_out or p2_in or p3_out or p3_in or rmw or rd_addr)
+always @(p0_out or p0_in or p1_out or p1_in or p2_out or p2_in or p3_out or p3_in or rmw)
 begin
   if (rmw) begin
     case (rd_addr[5:4])

@@ -69,7 +69,6 @@ input [1:0] bank;
 input [7:0] addr, data_in;
 
 output [7:0] data_out;
-reg [7:0] data_out;
 
 reg [7:0] buff [7:0];
 
@@ -78,25 +77,25 @@ reg [7:0] buff [7:0];
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    buff[3'b000] <= #1 8'h00;
-    buff[3'b001] <= #1 8'h00;
-    buff[3'b010] <= #1 8'h00;
-    buff[3'b011] <= #1 8'h00;
-    buff[3'b100] <= #1 8'h00;
-    buff[3'b101] <= #1 8'h00;
-    buff[3'b110] <= #1 8'h00;
-    buff[3'b111] <= #1 8'h00;
+    buff[3'b000] = #1 8'h00;
+    buff[3'b001] = #1 8'h00;
+    buff[3'b010] = #1 8'h00;
+    buff[3'b011] = #1 8'h00;
+    buff[3'b100] = #1 8'h00;
+    buff[3'b101] = #1 8'h00;
+    buff[3'b110] = #1 8'h00;
+    buff[3'b111] = #1 8'h00;
   end else begin
     if ((wr) & !(wr_bit)) begin
       case (addr)
-        8'h00: buff[3'b000] <= #1 data_in;
-        8'h01: buff[3'b001] <= #1 data_in;
-        8'h08: buff[3'b010] <= #1 data_in;
-        8'h09: buff[3'b011] <= #1 data_in;
-        8'h10: buff[3'b100] <= #1 data_in;
-        8'h11: buff[3'b101] <= #1 data_in;
-        8'h18: buff[3'b110] <= #1 data_in;
-        8'h19: buff[3'b111] <= #1 data_in;
+        8'h00: buff[3'b000] = #1 data_in;
+        8'h01: buff[3'b001] = #1 data_in;
+        8'h08: buff[3'b010] = #1 data_in;
+        8'h09: buff[3'b011] = #1 data_in;
+        8'h10: buff[3'b100] = #1 data_in;
+        8'h11: buff[3'b101] = #1 data_in;
+        8'h18: buff[3'b110] = #1 data_in;
+        8'h19: buff[3'b111] = #1 data_in;
       endcase
     end
   end
@@ -104,13 +103,7 @@ end
 
 //
 //read from buffer
-//always @(sel or bank or data_in or wr or addr or wr or buff)
-always @(sel or bank or data_in or wr or addr or wr)
-begin
-  if (({3'b000, bank, 2'b00, sel}==addr) & (wr))
-    data_out = data_in;
-  else
-    data_out = buff[{bank, sel}];
-end
+assign data_out = (({3'b000, bank, 2'b00, sel}==addr) & (wr)) ? 
+  data_in : buff[{bank, sel}];
 
 endmodule

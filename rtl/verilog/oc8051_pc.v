@@ -86,7 +86,7 @@ reg [15:0] pc;
 // ini_buff     interrupt buffer: used to prevent interrupting in the middle of executin instructions
 reg wr_lo, int_buff, int_buff1;
 
-always @(pc or op1 or rst or int_buff or int_buff1)
+always @(pc or op1 or rd or int_buff or int_buff1)
 begin
     if (int_buff | int_buff1)
 //

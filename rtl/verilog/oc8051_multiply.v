@@ -79,15 +79,17 @@ reg cycle;
 reg [11:0] tmp_mul;
 
 assign mul_result1 = src1 * (cycle ? src2[7:4] : src2[3:0]);
-assign mul_result = mul_result1 + tmp_mul;
+assign mul_result = mul_result1 + {4'b0, tmp_mul};
 assign des1 = mul_result[7:0];
 assign des2 = mul_result[15:8];
 assign desOv = des2 != 8'h0;
 
 always @(posedge clk or posedge rst)
 begin
-  if (rst) cycle <= #1 1'b0;
-  else begin
+  if (rst) begin
+    cycle <= #1 1'b0;
+    tmp_mul <= #1 12'b0;
+  end else begin
     if (enable && !cycle) cycle <= #1 1'b1;
     else cycle <= #1 1'b0;
     tmp_mul <= #1 mul_result1[11:0];

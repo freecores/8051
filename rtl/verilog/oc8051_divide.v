@@ -71,46 +71,45 @@ output [7:0] des1, des2;
 
 // wires
 reg desOv;
-reg div0, div1, div2, div3;
-reg [7:0] rem1, rem2, rem3;
-reg [15:0] cmp0, cmp1, cmp2, cmp3;
+wire div0, div1, div2, div3;
+wire [7:0] rem1, rem2, rem3, rem4;
+wire [15:0] cmp0, cmp1, cmp2, cmp3;
 reg [7:0] div_out, rem_out;
-wire [7:0] div, rem;
+wire [7:0] div;
 
 // real registers
 reg cycle;
 reg [3:0] tmp_div;
 reg [7:0] tmp_rem;
 
-assign rem = cycle ? tmp_rem : src1;
+/* This logic is very much redundant, but it should be optimized by
+   synthesizer */
+assign cmp3 = src2 << (cycle ? 3'h7 : 3'h3);
+assign cmp2 = src2 << (cycle ? 3'h6 : 3'h2);
+assign cmp1 = src2 << (cycle ? 3'h5 : 3'h1);
+assign cmp0 = src2 << (cycle ? 3'h4 : 3'h0);
 
+assign rem4 = cycle ? tmp_rem : src1;
+assign div3 = cmp3 <= rem4;
+assign rem3 = rem4 - (div3 ? cmp3[7:0] : 8'h0);
+assign div2 = cmp2 <= rem3;
+assign rem2 = rem3 - (div2 ? cmp2[7:0] : 8'h0);
+assign div1 = cmp1 <= rem2;
+assign rem1 = rem2 - (div1 ? cmp1[7:0] : 8'h0);
+assign div0 = cmp0 <= rem1;
 //
 // in clock cycle 0 we first calculate four MSB bits,
 // and four LSB in cycle 1
-always @(src2 or tmp_div or rem or cycle)
+always @(rem1 or div0 or div1 or div2 or div3 or cmp0 or tmp_div)
 begin
-  if (src2 == 8'b0000_0000) begin
-    desOv <= 1'b1;
-    div_out <= 8'hxxxx_xxxx;
-    rem_out <= 8'hxxxx_xxxx;
+  if (src2 == 8'h0) begin
+    desOv = 1'b1;
+    div_out = 8'hx;
+    rem_out = 8'hx;
   end else begin
-    desOv <= 1'b0;
-
-    /* This logic is very much redundant, but it should be optimized by
-       synthesizer */
-    cmp3 <= src2 << (cycle ? 3'h7 : 3'h3);
-    cmp2 <= src2 << (cycle ? 3'h6 : 3'h2);
-    cmp1 <= src2 << (cycle ? 3'h5 : 3'h1);
-    cmp0 <= src2 << (cycle ? 3'h4 : 3'h0);
-    div3 <= cmp3 <= rem;
-    div2 <= cmp2 <= rem3;
-    div1 <= cmp1 <= rem2;
-    div0 <= cmp0 <= rem1;
-    rem3 <= rem - (div3 ? cmp3 : 8'h0);
-    rem2 <= rem3 - (div2 ? cmp2 : 8'h0);
-    rem1 <= rem2 - (div1 ? cmp1 : 8'h0);
-    rem_out <= rem1 - (div0 ? cmp0 : 8'h0);
-    div_out <= {tmp_div, div3, div2, div1, div0};
+    desOv = 1'b0;
+    rem_out = rem1 - (div0 ? cmp0[7:0] : 8'h0);
+    div_out = {tmp_div, div3, div2, div1, div0};
   end
 end
 

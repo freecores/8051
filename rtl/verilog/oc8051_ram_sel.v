@@ -84,7 +84,7 @@ reg [7:0] out_data;
 
 //
 //set output in case of address (byte)
-always @(addr or in_ram or psw or acc or dptr_hi or ports_in or sp or b_reg or uart or tc or int or addr)
+always @(addr or in_ram or psw or acc or dptr_hi or ports_in or sp or b_reg or uart or tc or int)
 begin
   case (addr)
     `OC8051_SFR_ACC: out_data = acc;
@@ -99,14 +99,14 @@ begin
     `OC8051_SFR_SCON:  out_data = uart;
     `OC8051_SFR_SBUF:  out_data = uart;
     `OC8051_SFR_PCON:  out_data = uart;
-    `OC8051_SFR_TH0: out_data <= #1 tc;
-    `OC8051_SFR_TH1: out_data <= #1 tc;
-    `OC8051_SFR_TL0: out_data <= #1 tc;
-    `OC8051_SFR_TL1: out_data <= #1 tc;
-    `OC8051_SFR_TMOD: out_data <= #1 tc;
-    `OC8051_SFR_IP: out_data <= #1 int;
-    `OC8051_SFR_IE: out_data <= #1 int;
-    `OC8051_SFR_TCON: out_data <= #1 int;
+    `OC8051_SFR_TH0: out_data = #1 tc;
+    `OC8051_SFR_TH1: out_data = #1 tc;
+    `OC8051_SFR_TL0: out_data = #1 tc;
+    `OC8051_SFR_TL1: out_data = #1 tc;
+    `OC8051_SFR_TMOD: out_data = #1 tc;
+    `OC8051_SFR_IP: out_data = #1 int;
+    `OC8051_SFR_IE: out_data = #1 int;
+    `OC8051_SFR_TCON: out_data = #1 int;
     default: out_data = in_ram;
   endcase
 end

@@ -135,7 +135,7 @@ end
 
 always @(posedge clk or posedge rst)
 begin
-  if (rst) bit_out <= #1 8'h0;
+  if (rst) bit_out <= #1 1'b0;
   else bit_out <= #1 data_out[rd_addr];
 end
 
