@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2003/03/28 17:45:57  simont
+// change module name.
+//
 // Revision 1.3  2003/01/21 13:51:30  simont
 // add include oc8051_defines.v
 //
@@ -158,6 +161,7 @@ wire p, int_uart, tf0, tf1, tr0, tr1;
 wire dps, rclk, tclk, brate2, tc2_int;
 wire [7:0] b_reg, psw, ports, uart, int_out, tc_out, tc2, sp_out;
 
+wire pres_ow;
 
 assign cy = psw[7];
 assign srcAc = psw [6];
@@ -235,14 +239,14 @@ oc8051_int oc8051_int1 (.clk(clk), .rst(rst), .wr_addr(adr1), .rd_addr(adr0), .b
 // TH0, TH1, TL0, TH1, TMOD
 oc8051_tc oc8051_tc1(.clk(clk), .rst(rst), .wr_addr(adr1), .rd_addr(adr0),
 		.data_in(dat1), .wr(we), .wr_bit(wr_bit_r), .ie0(int0), .ie1(int1), .tr0(tr0),
-		.tr1(tr1), .t0(t0), .t1(t1), .data_out(tc_out), .tf0(tf0), .tf1(tf1));
+		.tr1(tr1), .t0(t0), .t1(t1), .data_out(tc_out), .tf0(tf0), .tf1(tf1), .pres_ow(pres_ow));
 
 //
 // timer/counter 2
-// TH2, TH2, RCAPL2L, RCAPL2H, T2CON, T2MOD
+// TH2, TH2, RCAPL2L, RCAPL2H, T2CON
 oc8051_tc2 oc8051_tc21(.clk(clk), .rst(rst), .wr_addr(adr1), .rd_addr(adr0_r), .data_in(dat1), .wr(we),
            .wr_bit(wr_bit_r), .bit_in(bit_in), .t2(t2), .t2ex(t2ex), .data_out(tc2), .bit_out(tc2_bit),
-           .rclk(rclk), .tclk(tclk), .brate2(brate2), .tc2_int(tc2_int));
+           .rclk(rclk), .tclk(tclk), .brate2(brate2), .tc2_int(tc2_int), .pres_ow(pres_ow));
 
 
 
@@ -288,9 +292,7 @@ begin
       `OC8051_SFR_RCAP2L: dat0 = tc2;
       `OC8051_SFR_TH2:    dat0 = tc2;
       `OC8051_SFR_TL2:    dat0 = tc2;
-      `OC8051_SFR_T2MOD:  dat0 = tc2;
       `OC8051_SFR_T2CON:  dat0 = tc2;
-
       default: dat0 = 8'h00;
     endcase
 end
