@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.12  2003/04/16 09:55:56  simont
+// add support for external rom from xilinx ramb4
+//
 // Revision 1.11  2003/04/10 12:45:06  simont
 // defines for pherypherals added
 //
@@ -78,6 +81,12 @@
 
 
 module oc8051_tb;
+
+
+//parameter FREQ  = 20000; // frequency in kHz
+parameter FREQ  = 12000; // frequency in kHz
+
+parameter DELAY = 500000/FREQ;
 
 reg  rst, clk;
 reg  [7:0] p0_in, p1_in, p2_in;
@@ -166,6 +175,20 @@ oc8051_xram oc8051_xram1 (.clk(clk), .rst(rst), .wr(write_xram), .addr(ext_addr)
 
 defparam oc8051_xram1.DELAY = 2;
 
+`ifdef OC8051_SERIAL
+
+//
+// test programs with serial interface
+//
+oc8051_serial oc8051_serial1(.clk(clk), .rst(rst), .rxd(txd), .txd(rxd));
+
+defparam oc8051_serial1.FREQ  = FREQ;
+//defparam oc8051_serial1.BRATE = 9.6;
+defparam oc8051_serial1.BRATE = 4.8;
+
+
+`else
+
 //
 // external uart
 //
@@ -173,6 +196,8 @@ oc8051_uart_test oc8051_uart_test1(.clk(clk), .rst(rst), .addr(ext_addr[7:0]), .
                   .wr_bit(p3_out[0]), .data_in(data_out), .data_out(data_out_uart), .bit_out(bit_out), .rxd(txd),
 		  .txd(rxd), .ow(p3_out[1]), .intr(int_uart), .stb(stb_o), .ack(ack_uart));
 
+
+`endif
 
 
 `ifdef OC8051_XILINX_RAMB
@@ -243,26 +268,13 @@ end
   oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_o), .data(idat_i),
                .stb_i(istb_o), .cyc_i(icyc_o), .ack_o(iack_i));
 
-   defparam oc8051_xrom1.DELAY = 5;
+   defparam oc8051_xrom1.DELAY = 0;
 
 `endif
 //
 //
 //
 
-
-
-//
-// test wb interface
-//
-
-reg [31:0] log_file;
-
-initial
-begin
-  log_file = $fopen("log_file");
-  $fdisplay(log_file, "file open");
-end
 
 
 assign write_xram = p3_out[7] & write;
@@ -286,8 +298,7 @@ initial begin
 #220
   rst = 1'b0;
 
-#40000000
-  $fclose(log_file);
+#80000000
   $display("time ",$time, "\n faulire: end of time\n \n");
   $finish;
 end
@@ -296,7 +307,7 @@ end
 initial
 begin
   clk = 0;
-  forever #30 clk <= ~clk;
+  forever #DELAY clk <= ~clk;
 end
 
 
@@ -319,7 +330,6 @@ begin
     $display(" testvecp %h", buff[num]);
     $display(" p_out   %h%h%h", p0_out, p1_out, p2_out);
 #22
-    $fclose(log_file);
     $finish;
   end
   else begin
@@ -329,7 +339,6 @@ begin
     begin
       $display("");
       $display(" Done!");
-      $fclose(log_file);
       $finish;
     end
   end
