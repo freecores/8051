@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2003/05/05 15:46:37  simont
+// add aditional alu destination to solve critical path.
+//
 // Revision 1.5  2003/04/25 17:15:51  simont
 // change branch instruction execution (reduse needed clock periods).
 //
@@ -225,10 +228,9 @@ assign wr_o = wr_i;
 assign wr_bit_o = wr_bit_i;
 
 assign mem_wait = dmem_wait || imem_wait;
-//assign istb_o = (istb || istb_t || (!iack_i)) && !dstb_o && !ea_rom_sel;
 assign istb_o = (istb || istb_t) && !dstb_o && !ea_rom_sel;
 
-assign pc_wait = rd && (ea_rom_sel || (!istb_t && !(istb_o && !iack_i)));
+assign pc_wait = rd && (ea_rom_sel || (!istb_t && iack_i));
 
 assign wr_dat = des1;
 
@@ -237,7 +239,7 @@ assign wr_dat = des1;
 //
 //  ram_select
 //
-///////////////////////////// ??????????????????????
+/////////////////////////////
 always @(rd_addr_r or in_ram or sfr or bit_in or sfr_bit or rd_ind)
 begin
   if (rd_addr_r && !rd_ind) begin
@@ -255,7 +257,7 @@ end
 //
 /////////////////////////////
 
-always @(rd_sel or sp or ri or rn or imm or op1_out or dadr_o[15:0] or bank)
+always @(rd_sel or sp or ri or rn or imm or dadr_o[15:0] or bank)
 begin
   case (rd_sel)
     `OC8051_RRS_RN   : rd_addr = {3'h0, rn};
