@@ -151,7 +151,7 @@ wire [7:0] immediate1_r, immediate2_r;
 //
 // rd           read program rom
 // pc_wr_sel    program counter write select (from decoder to pc)
-wire rd;
+wire rd, pc_wr;
 wire [1:0] pc_wr_sel;
 
 //
@@ -207,7 +207,7 @@ oc8051_reg4 oc8051_reg4_alu_op(.clk(clk), .rst(rst), .din(alu_op), .dout(alu_op_
 oc8051_reg1 oc8051_reg1_bit_addr(.clk(clk), .rst(rst), .din(bit_addr), .dout(bit_addr_r));
 
 oc8051_reg1 oc8051_reg1_wad2(.clk(clk), .rst(rst), .din(wad2), .dout(wad2_r));
-oc8051_reg8 oc8051_reg8_des1(.clk(clk), .rst(rst), .din(des1), .dout(des1_r));
+//oc8051_reg8 oc8051_reg8_des1(.clk(clk), .rst(rst), .din(des1), .dout(des1_r));
 oc8051_reg2 oc8051_reg2_cy(.clk(clk), .rst(rst), .din(cy_sel), .dout(cy_sel_r));
 oc8051_reg2 oc8051_psw_reg (.clk(clk), .rst(rst), .din(psw_set), .dout(psw_set_r));
 //oc8051_reg8 oc8051_op2_dr_reg (.clk(clk), .rst(rst), .din(op2_dr), .dout(op2_dr_r));
@@ -242,13 +242,13 @@ oc8051_ram_wr_sel oc8051_ram_wr_sel1 (.sel(ram_wr_sel_r),  .sp(sp_r),
 //
 //alu
 oc8051_alu oc8051_alu1(.rst(rst), .clk(clk), .op_code(alu_op_r), .src1(src1), .src2(src2), .src3(src3),
-         .srcCy(alu_cy), .srcAc(psw_r[6]), .des1(des1), .des2(des2), .desCy(desCy),
+         .srcCy(alu_cy), .srcAc(psw_r[6]), .des1(des1), .des2(des2), .des1_r(des1_r), .desCy(desCy),
 	 .desAc(desAc), .desOv(desOv), .bit_in(bit_out));
 
 
 //
 //
-oc8051_immediate_sel oc8051_immediate_sel1(.clk(clr), .rst(rst), .sel(imm_sel), .op1(op1_n), .op2(op2_n),
+oc8051_immediate_sel oc8051_immediate_sel1(.clk(clk), .rst(rst), .sel(imm_sel), .op1(op1_n), .op2(op2_n),
           .op3(op3_n), .pch(pc_hi_r), .pcl(pc[7:0]), .out1(immediate1_r), .out2(immediate2_r));
 
 //
