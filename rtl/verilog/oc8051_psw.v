@@ -81,18 +81,12 @@ output [7:0] data_out_r;
 
 reg bit_out;
 reg [7:0] data;
-reg wr_psw_r;
 wire wr_psw;
 
 assign wr_psw = (wr & (wr_addr==`OC8051_SFR_PSW) && !wr_bit);
 
-always @(posedge clk or posedge rst)
-  if (rst) wr_psw_r <= #1 1'b0;
-  else wr_psw_r <= #1 wr_psw;
-
 assign data_out = wr_psw ? {data_in[7:1],p}:{data[7:1], p};
-assign data_out_r = wr_psw_r ? {data_in[7:1],p}:{data[7:1], p};
-
+assign data_out_r = data;
 
 //
 //case writing to psw
@@ -103,33 +97,37 @@ begin
 
 //
 // write to psw (byte addressable)
-  else if (wr & (wr_bit==1'b0) & (wr_addr==`OC8051_SFR_PSW))
-    data <= #1 data_in;
+  else begin
+    if (wr & (wr_bit==1'b0) & (wr_addr==`OC8051_SFR_PSW))
+      data[7:1] <= #1 data_in[7:1];
 //
 // write to psw (bit addressable)
-  else if (wr & wr_bit & (wr_addr[7:3]==`OC8051_SFR_B_PSW))
-    data[wr_addr[2:0]] <= #1 cy_in;
-  else begin
-    case (set)
-      `OC8051_PS_CY: begin
+    else if (wr & wr_bit & (wr_addr[7:3]==`OC8051_SFR_B_PSW))
+      data[wr_addr[2:0]] <= #1 cy_in;
+    else begin
+      case (set)
+        `OC8051_PS_CY: begin
 //
 //write carry
-        data[7] <= #1 cy_in;
-      end
-      `OC8051_PS_OV: begin
+          data[7] <= #1 cy_in;
+        end
+        `OC8051_PS_OV: begin
 //
 //write carry and overflov
-        data[7] <= #1 cy_in;
-        data[2] <= #1 ov_in;
-      end
-      `OC8051_PS_AC:begin
+          data[7] <= #1 cy_in;
+          data[2] <= #1 ov_in;
+        end
+        `OC8051_PS_AC:begin
 //
 //write carry, overflov and ac
-        data[7] <= #1 cy_in;
-        data[6] <= #1 ac_in;
-        data[2] <= #1 ov_in;
-      end
-    endcase
+          data[7] <= #1 cy_in;
+          data[6] <= #1 ac_in;
+          data[2] <= #1 ov_in;
+
+        end
+      endcase
+    end
+    data[0] <= #1 p;
   end
 end
 
