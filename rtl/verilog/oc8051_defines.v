@@ -79,6 +79,12 @@
 //`define OC8051_SERIAL
 
 //
+// oc8051 bist
+//
+//`define OC8051_BIST
+
+
+//
 // operation codes for alu
 //
 

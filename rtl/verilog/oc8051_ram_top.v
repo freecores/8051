@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.8  2003/04/02 16:12:04  simont
+// generic_dpram used
+//
 // Revision 1.7  2003/04/02 11:26:21  simont
 // updating...
 //
@@ -65,7 +68,25 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_ram_top (clk, rst, rd_addr, rd_data, wr_addr, bit_addr, wr_data, wr, bit_data_in, bit_data_out);
+module oc8051_ram_top (clk, 
+                       rst, 
+		       rd_addr, 
+		       rd_data, 
+		       wr_addr, 
+		       bit_addr, 
+		       wr_data, 
+		       wr, 
+		       bit_data_in, 
+		       bit_data_out
+`ifdef OC8051_BIST
+         ,
+         scanb_rst,
+         scanb_clk,
+         scanb_si,
+         scanb_so,
+         scanb_en
+`endif
+		       );
 
 // on-chip ram-size (2**ram_aw bytes)
 parameter ram_aw = 8; // default 256 bytes
@@ -89,6 +110,13 @@ input [7:0] rd_addr, wr_addr;
 output bit_data_out;
 output [7:0] rd_data;
 
+`ifdef OC8051_BIST
+input   scanb_rst;
+input   scanb_clk;
+input   scanb_si;
+output  scanb_so;
+input   scanb_en;
+`endif
 
 // rd_addr_m    read address modified
 // wr_addr_m    write address modified

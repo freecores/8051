@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.30  2003/06/03 16:51:24  simont
+// include "8051_defines" added.
+//
 // Revision 1.29  2003/05/07 12:36:03  simont
 // chsnge comp.des to des1
 //
@@ -164,6 +167,14 @@ module oc8051_top (wb_rst_i, wb_clk_i,
 		t2_i, t2ex_i,
 	`endif
 
+// BIST
+`ifdef OC8051_BIST
+         scanb_rst,
+         scanb_clk,
+         scanb_si,
+         scanb_so,
+         scanb_en,
+`endif
 // external access (active low)
 		ea_in
 		);
@@ -236,6 +247,14 @@ input         t0_i,		// counter 0 input
 `ifdef OC8051_TC2
 input         t2_i,		// counter 2 input
               t2ex_i;		//
+`endif
+
+`ifdef OC8051_BIST
+input   scanb_rst;
+input   scanb_clk;
+input   scanb_si;
+output  scanb_so;
+input   scanb_en;
 `endif
 
 wire [7:0]  dptr_hi,
@@ -398,7 +417,16 @@ oc8051_ram_top oc8051_ram_top1(.clk(wb_clk_i),
 			       .wr_data(wr_dat),
 			       .wr(wr_o && (!wr_addr[7] || wr_ind)),
 			       .bit_data_in(desCy),
-			       .bit_data_out(bit_data));
+			       .bit_data_out(bit_data)
+`ifdef OC8051_BIST
+         ,
+         .scanb_rst(scanb_rst),
+         .scanb_clk(scanb_clk),
+         .scanb_si(scanb_si),
+         .scanb_so(scanb_so),
+         .scanb_en(scanb_en)
+`endif
+			       );
 
 //
 
@@ -581,7 +609,7 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 		       .srcAc(srcAc), 
 		       .cy(cy),
 // ports
-		       .rmw(rmw), 
+		       .rmw(rmw),
 
   `ifdef OC8051_PORTS
 	`ifdef OC8051_PORT0
@@ -611,9 +639,9 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 	`endif
 
 // int
-		       .int_ack(int_ack), 
-		       .intr(intr), 
-		       .int0(int0_i), 
+		       .int_ack(int_ack),
+		       .intr(intr),
+		       .int0(int0_i),
 		       .int1(int1_i),
 		       .reti(reti),
 		       .int_src(int_src),
@@ -626,12 +654,12 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 
 // t/c 2
 	`ifdef OC8051_TC2
-		       .t2(t2_i), 
+		       .t2(t2_i),
 		       .t2ex(t2ex_i),
 	`endif
 
 // dptr
-		       .dptr_hi(dptr_hi), 
+		       .dptr_hi(dptr_hi),
 		       .dptr_lo(dptr_lo),
 		       .wait_data(wait_data)
 		       );
