@@ -339,13 +339,12 @@
 //
 // alu source 2 select
 //
-`define OC8051_AS2_RAM   3'b000 // RAM
-`define OC8051_AS2_ACC   3'b001 // accumulator
-`define OC8051_AS2_ZERO  3'b010 // 8'h00
-`define OC8051_AS2_OP2   3'b011 //
-`define OC8051_AS2_PCL   3'b100 //
+`define OC8051_AS2_RAM   3'b00 // RAM
+`define OC8051_AS2_ACC   3'b01 // accumulator
+`define OC8051_AS2_ZERO  3'b10 // 8'h00
+`define OC8051_AS2_OP2   3'b11 //
 
-`define OC8051_AS2_DC    3'b000 //
+`define OC8051_AS2_DC    3'b00 //
 
 //
 // alu source 3 select

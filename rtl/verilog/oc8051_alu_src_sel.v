@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2003/01/13 14:13:12  simont
+// initial import
+//
 //
 //
 
@@ -63,7 +66,8 @@ module oc8051_alu_src_sel (clk, rst, rd, sel1, sel2, sel3,
 
 
 input clk, rst, rd, sel3;
-input [2:0] sel1, sel2;
+input [1:0] sel2;
+input [2:0] sel1;
 input [7:0] acc, ram;
 input [15:0] dptr;
 input [15:0] pc;
@@ -102,14 +106,13 @@ end
 // src2
 //
 ///////
-always @(sel2 or op2_r or pc_r or acc or ram or op1_r or pc)
+always @(sel2 or op2_r or acc or ram or op1_r or pc)
 begin
   case (sel2)
     `OC8051_AS2_ACC: src2= acc;
     `OC8051_AS2_ZERO: src2= 8'h00;
     `OC8051_AS2_RAM: src2= ram;
     `OC8051_AS2_OP2: src2= op2_r;
-    `OC8051_AS2_PCL: src2= pc_r[7:0];
     default: src2= 8'h00;
   endcase
 end

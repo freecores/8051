@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.18  2003/05/05 15:46:36  simont
+// add aditional alu destination to solve critical path.
+//
 // Revision 1.17  2003/04/25 17:15:51  simont
 // change branch instruction execution (reduse needed clock periods).
 //
@@ -111,16 +114,16 @@ input clk, rst, eq, mem_wait, wait_data;
 input [7:0] op_in;
 
 output wr_o, bit_addr, pc_wr, rmw, istb, src_sel3;
-output [1:0] psw_set, cy_sel, wr_sfr_o, comp_sel;
-output [2:0] mem_act, src_sel1, src_sel2, ram_rd_sel_o, ram_wr_sel_o, pc_sel, op1_c;
+output [1:0] psw_set, cy_sel, wr_sfr_o, src_sel2, comp_sel;
+output [2:0] mem_act, src_sel1, ram_rd_sel_o, ram_wr_sel_o, pc_sel, op1_c;
 output [3:0] alu_op_o;
 output rd;
 
 reg rmw;
 reg src_sel3, wr,  bit_addr, pc_wr;
-reg [1:0] comp_sel, psw_set, cy_sel, wr_sfr;
 reg [3:0] alu_op;
-reg [2:0] src_sel2, mem_act, src_sel1, ram_wr_sel, ram_rd_sel, pc_sel;
+reg [1:0] src_sel2, comp_sel, psw_set, cy_sel, wr_sfr;
+reg [2:0] mem_act, src_sel1, ram_wr_sel, ram_rd_sel, pc_sel;
 
 //
 // state        if 2'b00 then normal execution, sle instructin that need more than one clock

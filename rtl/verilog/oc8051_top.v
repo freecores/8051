@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.27  2003/05/05 15:46:37  simont
+// add aditional alu destination to solve critical path.
+//
 // Revision 1.26  2003/04/29 11:24:31  simont
 // fix bug in case execution of two data dependent instructions.
 //
@@ -250,10 +253,10 @@ wire [15:0] pc;
 assign wbd_cyc_o = wbd_stb_o;
 
 wire        src_sel3;
-wire [1:0]  wr_sfr;
+wire [1:0]  wr_sfr,
+            src_sel2;
 wire [2:0]  ram_rd_sel,	// ram read
             ram_wr_sel,	// ram write
-            src_sel2,
             src_sel1;
 
 wire [7:0]  ram_data,
