@@ -8,7 +8,7 @@ set all_testsx = 0;
 
 set internal_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m timer_test counter_test interrupt_test serial_test r_bank)
 
-set external_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m interrupt_test r_bank)
+set external_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m interrupt_test r_bank xrom_test)
 
 # Prepare all .args files
 iteration:
