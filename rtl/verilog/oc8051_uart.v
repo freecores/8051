@@ -241,7 +241,7 @@ begin
 	  end else smod_cnt_r <= #1 1'b1;
 	end else begin
 	  if (sam_cnt==3'b011) begin
-	    if ((sample[0] % sample[1]) | (sample[0] % sample[2]))
+	    if ((sample[0] ^ sample[1]) | (sample[0] ^ sample[2]))
 	      sbuf_rxd_tmp[re_count] <= #1 sample[0];
 	    else
 	      sbuf_rxd_tmp[re_count] <= #1 sample[1];
@@ -274,7 +274,7 @@ begin
 	  r_int <= #1 1'b0;
 
 	  if (sam_cnt==3'b011) begin
-	    if ((sample[0] % sample[1]) | (sample[0] % sample[2]))
+	    if ((sample[0] ^ sample[1]) | (sample[0] ^ sample[2]))
 	      sbuf_rxd_tmp[re_count] <= #1 sample[0];
 	    else
 	      sbuf_rxd_tmp[re_count] <= #1 sample[1];
@@ -306,13 +306,13 @@ begin
 	end else begin
 	  r_int <= #1 1'b0;
 	  if (sam_cnt==3'b011)
-	    if ((sample[0] % sample[1]) | (sample[0] % sample[2]))
+	    if ((sample[0] ^ sample[1]) | (sample[0] ^ sample[2]))
 	      sbuf_rxd_tmp[re_count] <= #1 sample[0];
 	    else
 	      sbuf_rxd_tmp[re_count] <= #1 sample[1];
 	  else begin
 	    sample[sam_cnt[1:0]] <= #1 rxd;
-	    sam_cnt <= #1 sam_cnt +1'b1;
+	    sam_cnt <= #1 sam_cnt + 1'b1;
 	  end
 	end
       end

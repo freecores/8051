@@ -10,7 +10,7 @@
 ////   Is used for conditional jumps.                             ////
 ////                                                              ////
 ////  To Do:                                                      ////
-////   nothing                                                    ////
+////   replace CSS_AZ with CSS_DES                                ////
 ////                                                              ////
 ////  Author(s):                                                  ////
 ////      - Simon Teran, simont@opencores.org                     ////

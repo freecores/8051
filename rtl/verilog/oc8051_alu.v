@@ -310,13 +310,10 @@ begin
     end
 //operation pcs Add
     `OC8051_ALU_PCS: begin
-       case (src1[7])
-        1'b1: begin
-          des1 = src2+src1;
-          des2 = src3;
-        end
-        default: {des2, des1} = {src3,src2} + {8'h00, src1};
-      endcase
+      if (src1[7]) begin
+        des1 = src2+src1;
+        des2 = src3;
+      end else {des2, des1} = {src3,src2} + {8'h00, src1};
       desCy = 1'b0;
       desAc = 1'b0;
       desOv = 1'b0;

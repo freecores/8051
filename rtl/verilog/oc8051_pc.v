@@ -88,7 +88,7 @@ reg wr_lo, int_buff, int_buff1;
 
 always @(pc or op1 or rd or int_buff or int_buff1)
 begin
-    if (int_buff | int_buff1)
+    if (int_buff || int_buff1)
 //
 //in case of interrupt hold valut, to be written to stack
        pc_out= pc;

@@ -99,14 +99,14 @@ begin
     `OC8051_SFR_SCON:  out_data = uart;
     `OC8051_SFR_SBUF:  out_data = uart;
     `OC8051_SFR_PCON:  out_data = uart;
-    `OC8051_SFR_TH0: out_data = #1 tc;
-    `OC8051_SFR_TH1: out_data = #1 tc;
-    `OC8051_SFR_TL0: out_data = #1 tc;
-    `OC8051_SFR_TL1: out_data = #1 tc;
-    `OC8051_SFR_TMOD: out_data = #1 tc;
-    `OC8051_SFR_IP: out_data = #1 int;
-    `OC8051_SFR_IE: out_data = #1 int;
-    `OC8051_SFR_TCON: out_data = #1 int;
+    `OC8051_SFR_TH0: out_data = tc;
+    `OC8051_SFR_TH1: out_data = tc;
+    `OC8051_SFR_TL0: out_data = tc;
+    `OC8051_SFR_TL1: out_data = tc;
+    `OC8051_SFR_TMOD: out_data = tc;
+    `OC8051_SFR_IP: out_data = int;
+    `OC8051_SFR_IE: out_data = int;
+    `OC8051_SFR_TCON: out_data = int;
     default: out_data = in_ram;
   endcase
 end
