@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2003/01/21 14:08:18  simont
+// fix bugs
+//
 // Revision 1.3  2003/01/13 14:14:41  simont
 // replace some modules
 //
@@ -283,7 +286,7 @@ end
 
 //rih
 always @(posedge clk)
-  if ( ~(stb_b && !hit && !stb_o && !wr1) & (stb_o && ack_i & &cyc) )
+  if ( ~(stb_b && !hit && !stb_o && !wr1) & (stb_o && ack_i && cyc) )
     con_buf[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 mis_adr[15:ADR_WIDTH+2];
 
 
