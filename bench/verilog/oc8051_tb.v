@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.14  2003/06/05 12:54:38  simont
+// remove dumpvars.
+//
 // Revision 1.13  2003/06/05 11:13:39  simont
 // add FREQ paremeter.
 //
@@ -314,39 +317,21 @@ begin
 end
 
 
-
-initial
-  $readmemh("../../../bench/vec/oc8051_test.vec", buff);
-
-initial
-  $readmemb("../oc8051_ea.in", ea);
-
-
-initial num= 0;
-
-always @(p0_out or p1_out or p2_out)
+always @(ext_addr or write or stb_o or data_out)
 begin
-  if ({p0_out, p1_out, p2_out} != buff[num])
-  begin
-    $display("time ",$time, " faulire: mismatch on ports in step %d", num);
-    $display(" p0_out %h", p0_out, " p1_out %h", p1_out, " p2_out %h", p2_out);
-    $display(" testvecp %h", buff[num]);
-    $display(" p_out   %h%h%h", p0_out, p1_out, p2_out);
-#22
-    $finish;
-  end
-  else begin
-    $display("time ",$time, " step %d", num, ": pass");
-    num =  num+1;
-    if (buff[num]===24'hxxxxxx)
-    begin
+  if ((ext_addr==16'h0010) & write & stb_o) begin
+    if (data_out==8'h7f) begin
       $display("");
-      $display(" Done!");
+      $display("time ",$time, " Passed");
+      $finish;
+
+    end else begin
+      $display("");
+      $display("time ",$time," Error: %h", data_out);
       $finish;
     end
   end
 end
-
 
 
 endmodule
