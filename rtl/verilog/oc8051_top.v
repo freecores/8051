@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.13  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -51,13 +54,13 @@
 // synopsys translate_on
 
 
-module oc8051_top (rst, clk, int0, int1, ea, rom_addr, op1, op2, op3, dat_i,
-		dat_o, adr_o, we_o, ack_i, stb_o, cyc_o, p0_in, p1_in, p2_in, p3_in, p0_out,
+module oc8051_top (rst, clk, int0, int1, ea, iadr_o, idat_i,istb_o, iack_i, dat_i,
+		icyc_o, dat_o, adr_o, we_o, ack_i, stb_o, cyc_o, p0_in, p1_in, p2_in, p3_in, p0_out,
 		p1_out, p2_out, p3_out, rxd, txd, t0, t1);
 //
 // rst           (in)  reset - pin
 // clk           (in)  clock - pin
-// rom_addr      (out) program rom addres (pin + internal)
+// iadr_o        (out) program rom addres (pin + internal)
 // int0          (in)  external interrupt 0
 // int1          (in)  external interrupt 1
 // dat_i         (in)  exteranal ram input
@@ -66,6 +69,10 @@ module oc8051_top (rst, clk, int0, int1, ea, rom_addr, op1, op2, op3, dat_i,
 // we_o          (out) write to external ram
 // stb_o
 // ack_i
+// idat_i        (in)  data from external program rom
+// istb_o        (out) strobe to program rom
+// iack_i        (in)  acknowlage from external rom
+// icyc_o        (out)
 // p0_in, p1_in, p2_in, p3_in           (in)  port inputs
 // p0_out, p1_out, p2_out, p3_out       (out) port outputs
 // rxd		 (in) receive
@@ -76,15 +83,17 @@ module oc8051_top (rst, clk, int0, int1, ea, rom_addr, op1, op2, op3, dat_i,
 
 
 
-input rst, clk, int0, int1, ea, rxd, t0, t1, ack_i;
-input [7:0] dat_i, p0_in, p1_in, p2_in, p3_in, op1, op2, op3;
+input rst, clk, int0, int1, ea, rxd, t0, t1, ack_i, iack_i;
+input [7:0] dat_i, p0_in, p1_in, p2_in, p3_in;
+input [31:0] idat_i;
 
-output we_o, txd, stb_o, cyc_o;
+output we_o, txd, stb_o, cyc_o, istb_o, icyc_o;
 output [7:0] dat_o, p0_out, p1_out, p2_out, p3_out;
 //output [15:0] rom_addr, ext_addr;
-output [15:0] adr_o, rom_addr;
+output [15:0] adr_o, iadr_o;
 
 wire [7:0] op1_i, op2_i, op3_i, dptr_hi, dptr_lo, ri, data_out;
+wire [7:0] op1, op2, op3;
 wire [7:0] acc, b_reg, p0_out, p1_out, p2_out, p3_out, uart, tc_out, int_out;
 
 wire [15:0] pc;
@@ -94,6 +103,12 @@ wire [15:0] pc;
 assign dat_o = acc;
 
 assign cyc_o = stb_o;
+assign icyc_o = istb_o;
+
+
+assign op1 = idat_i[31:24];
+assign op2 = idat_i[23:16];
+assign op3 = idat_i[15:8];
 
 //
 // ram_rd_sel    ram read (internal)
@@ -127,7 +142,7 @@ wire src_sel3, src_sel3_r, rom_addr_sel, ext_addr_sel, rmw, ea_int, wr_xaddr;
 // tf1		interrupt from t/c 1
 // tr0		timer 0 run
 // tr1		timer 1 run
-wire int_uart, tf0, tf1, tr0, tr1, reti, intr, ack;
+wire int_uart, tf0, tf1, tr0, tr1, reti, intr, ack, istb;
 wire [7:0] int_src;
 
 //
@@ -220,7 +235,7 @@ oc8051_reg8 oc8051_reg8_rd_ram (.clk(clk), .rst(rst), .din(rd_addr), .dout(rd_ad
 //program counter
 oc8051_pc oc8051_pc1(.rst(rst), .clk(clk), .pc_out(pc), .alu({des2,des1}),
        .pc_wr_sel(pc_wr_sel), .op1(op1_n), .op2(op2_n), .op3(op3_n), .wr(pc_wr),
-       .rd(rd), .intr(intr));
+       .rd((rd && !(istb_o && !iack_i))), .intr(intr));
 
 //
 // decoder
@@ -229,7 +244,8 @@ oc8051_decoder oc8051_decoder1(.clk(clk), .rst(rst), .op_in(op1_n), .ram_rd_sel(
 		 .src_sel2(src_sel2), .src_sel3(src_sel3), .alu_op(alu_op), .psw_set(psw_set),
 		 .imm_sel(imm_sel), .cy_sel(cy_sel), .wr(wr), .pc_wr(pc_wr), .pc_sel(pc_wr_sel),
 		 .comp_sel(comp_sel), .eq(eq), .rom_addr_sel(rom_addr_sel), .ext_addr_sel(ext_addr_sel),
-		.wad2(wad2), .rd(rd), .we_o(we_o), .reti(reti), .rmw(rmw), .stb_o(stb_o), .ack_i(ack_i));
+		.wad2(wad2), .rd(rd), .we_o(we_o), .reti(reti), .rmw(rmw), .stb_o(stb_o), .ack_i(ack_i),
+    .istb(istb), .ea(ea && ea_int), .iack(iack_i));
 
 
 
@@ -294,7 +310,7 @@ oc8051_sp oc8051_sp1(.clk(clk), .rst(rst), .ram_rd_sel(ram_rd_sel), .ram_wr_sel(
 
 //
 //program rom
-oc8051_rom oc8051_rom1(.rst(rst), .clk(clk), .ea_int(ea_int), .addr(rom_addr), 
+oc8051_rom oc8051_rom1(.rst(rst), .clk(clk), .ea_int(ea_int), .addr(iadr_o), 
 		.data1(op1_i), .data2(op2_i), .data3(op3_i));
 
 //
@@ -316,14 +332,15 @@ oc8051_psw oc8051_psw1 (.clk(clk), .rst(rst), .wr_addr(wr_addr), .rd_addr(rd_add
 
 //
 //
-oc8051_indi_addr oc8051_indi_addr1 (.clk(clk), .rst(rst), .addr(wr_addr), .data_in(des1),
-		 .wr(wr_r), .wr_bit(bit_addr_r), .data_out(ri), .sel(op1_n[0]), 
-		 .bank(psw[4:3]));
+oc8051_indi_addr oc8051_indi_addr1 (.clk(clk), .rst(rst), .addr(wr_addr), 
+      .data_in(des1), .wr(wr_r), .wr_bit(bit_addr_r), .data_out(ri), 
+      .sel(op1_n[0]), .bank(psw[4:3]));
 
 //
 //
-oc8051_rom_addr_sel oc8051_rom_addr_sel1(.sel(rom_addr_sel), 
-		.des1(des1), .des2(des2), .pc(pc), .out_addr(rom_addr));
+oc8051_rom_addr_sel oc8051_rom_addr_sel1(.clk(clk), .rst(rst), .iack_i(iack_i),
+               .ea(ea && ea_int), .sel(rom_addr_sel), .des1(des1), .des2(des2), 
+               .pc(pc), .out_addr(iadr_o));
 
 //
 //
@@ -350,7 +367,8 @@ oc8051_ports oc8051_ports1(.clk(clk), .rst(rst), .bit_in(desCy), .data_in(des1),
 oc8051_op_select oc8051_op_select1(.clk(clk), .rst(rst), .ea(ea), .ea_int(ea_int), .op1_i(op1_i),
 		.op2_i(op2_i), .op3_i(op3_i), .op1_x(op1), .op2_x(op2), .op3_x(op3),
 		.op1_out(op1_n), .op2_out(op2_n), .op2_direct(op2_dr), .op3_out(op3_n),
-		.intr(intr), .int_v(int_src), .rd(rd), .ack(ack));
+		.intr(intr), .int_v(int_src), .rd(rd), .ack(ack), .istb(istb), .istb_o(istb_o), 
+    .iack_i(iack_i));
 
 //
 // serial interface

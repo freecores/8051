@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 
@@ -55,7 +58,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_op_select (clk, rst, intr, rd, ea, ea_int, int_v, op1_i, op2_i, op3_i, op1_x, op2_x, op3_x, op1_out, op2_out, op2_direct, op3_out, ack);
+module oc8051_op_select (clk, rst, intr, rd, ea, ea_int, int_v, op1_i, op2_i, op3_i, op1_x, op2_x, op3_x, op1_out, op2_out, op2_direct, op3_out, ack, istb, istb_o, iack_i);
 //
 // clk          (in)  clock
 // intr          (in)  interrupt [pin]
@@ -67,38 +70,56 @@ module oc8051_op_select (clk, rst, intr, rd, ea, ea_int, int_v, op1_i, op2_i, op
 // op2_out      (out) byte 2 output [oc8051_pc.op2, oc8051_immediate_sel.op2, oc8051_comp.op2 -r]
 // op2_direct   (out) byte 2 output (used for direct addressing) [oc8051_ram_rd_sel.imm, oc8051_ram_wr_sel.imm -r]
 // op3_out      (out) byte 3 output [oc8051_pc.op3, oc8051_ram_wr_sel.imm2, oc8051_immediate_sel.op3
+// istb         (in)  strobe from decoder
+// istb_o       (out) strobe to external instruction rom
+// iack_i       (in)  acknowlage from external instruction rom
 //
 
 
-input clk, intr, rd, ea, ea_int, rst;
+input clk, intr, rd, ea, ea_int, rst, istb, iack_i;
 input [7:0] op1_i, op2_i, op3_i, op1_x, op2_x, op3_x, int_v;
-output ack;
+output ack, istb_o;
 output [7:0] op1_out, op3_out, op2_out, op2_direct;
 
 reg int_ack, ack, int_ack_buff;
 reg [7:0] op2_direct_in, int_vec_buff, op2_direct_buff;
 reg [7:0] op2_buff, op3_buff;
 reg [7:0] op1_o, op2_o, op3_o;
+reg [7:0] op1_xt, op2_xt, op3_xt;
 
 wire [7:0] op1, op2, op3;
 wire sel;
 
 assign sel = ea & ea_int;
 
-assign op1 = sel ? op1_i: op1_x;
-assign op2 = sel ? op2_i: op2_x;
-assign op3 = sel ? op3_i: op3_x;
+assign istb_o = sel ? 1'b0 : istb;
+
+assign op1 = sel ? op1_i: op1_xt;
+assign op2 = sel ? op2_i: op2_xt;
+assign op3 = sel ? op3_i: op3_xt;
 
 //
 // assigning outputs
 // case rd = 1'b0 don't change output
 
 assign op1_out = op1_o;
-
 assign op3_out = rd ? op3_o : op3_buff;
-//assign op2_tmp = rd ? op2_o : op2_buff;
 assign op2_out = rd ? op2_o : op2_buff;
 assign op2_direct = rd ? op2_direct_in : op2_direct_buff;
+
+
+always @(op1_x or op2_x or op3_x or istb or iack_i)
+begin
+  if (istb && iack_i) begin
+    op1_xt = op1_x;
+    op2_xt = op2_x;
+    op3_xt = op3_x;
+  end else begin
+    op1_xt = 8'h00;
+    op2_xt = 8'h00;
+    op3_xt = 8'h00;
+  end
+end
 
 //
 // in case of interrupts

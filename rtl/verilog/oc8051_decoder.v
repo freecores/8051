@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.11  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -58,7 +61,8 @@
 module oc8051_decoder (clk, rst, op_in, eq, ram_rd_sel, ram_wr_sel, bit_addr,
 wr, src_sel1, src_sel2, src_sel3, alu_op, psw_set, cy_sel, imm_sel, pc_wr,
 pc_sel, comp_sel, rom_addr_sel, ext_addr_sel, wad2, rd, we_o, reti,
-rmw, stb_o, ack_i, wr_xaddr);
+rmw, stb_o, ack_i, wr_xaddr, istb, ea, iack);
+
 //
 // clk          (in)  clock
 // rst          (in)  reset
@@ -85,19 +89,22 @@ rmw, stb_o, ack_i, wr_xaddr);
 // we_o         (out) write to external rom [pin]
 // reti         (out) return from interrupt [pin]
 // rmw          (out) read modify write feature [oc8051_ports.rmw]
+// istb         (out) strobe to instruction rom
+// ea           (in)  extrnal access
+// iack         (in)  scknowlage from external rom
 //
 
-input clk, rst, eq, ack_i;
+input clk, rst, eq, ack_i, iack, ea;
 input [7:0] op_in;
 
 output wr, reti, we_o, bit_addr, src_sel3, rom_addr_sel, ext_addr_sel,
-pc_wr, wad2, rmw, stb_o, wr_xaddr;
+pc_wr, wad2, rmw, stb_o, wr_xaddr, istb;
 output [1:0] ram_rd_sel, src_sel1, src_sel2, psw_set, cy_sel, pc_sel, comp_sel;
 output [2:0] ram_wr_sel, imm_sel;
 output [3:0] alu_op;
 output rd;
 
-reg reti, write_x, rmw, stb_buff, we_buff;
+reg reti, write_x, rmw, stb_buff, we_buff, istb_t;
 reg wr,  bit_addr, src_sel3, rom_addr_sel, ext_addr_sel, pc_wr, wad2, stb, stbw, wr_xaddr;
 reg [1:0] comp_sel, psw_set, ram_rd_sel, src_sel1, src_sel2, pc_sel, cy_sel;
 reg [3:0] alu_op;
@@ -113,6 +120,8 @@ reg [7:0] op;
 // if state = 2'b00 then read nex instruction
 assign rd = !state[0] && !state[1] && !stb_o;
 
+assign istb = (!state[1]) || istb_t;
+
 assign stb_o = stb_buff || stbw;
 assign we_o = we_buff;
 //assign we_o = write_x || we_buff;
@@ -120,7 +129,7 @@ assign we_o = we_buff;
 //
 // main block
 // case of instruction set control signals
-always @(op_in or eq or state or op or stb_o)
+always @(op_in or eq or state or op or stb_o or istb_t)
 begin
   if (stb_o) begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -3051,7 +3060,9 @@ always @(posedge clk or posedge rst)
 begin
   if (rst)
     state <= #1 2'b01;
-  else begin
+  else if (istb_t && !iack) begin
+    state <= #1 2'b01;
+  end else begin
     case (state)
       2'b10: state <= #1 2'b01;
       2'b11: state <= #1 2'b10;
@@ -3182,6 +3193,16 @@ begin
   end
 end
 
+
+always @(posedge clk or posedge rst)
+begin
+  if (rst)
+    istb_t <= #1 1'b0;
+  else if (((op_in == `OC8051_MOVC_DP) || (op_in == `OC8051_MOVC_PC)) && !ea)
+    istb_t <= #1 1'b1;
+  else if (iack)
+    istb_t <= #1 1'b0;
+end
 
 endmodule
 
