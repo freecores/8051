@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2003/04/02 11:38:40  simont
+// initial inport
+//
 // Revision 1.4  2002/09/30 17:34:01  simont
 // prepared header
 //
@@ -77,21 +80,34 @@ input [7:0] addr, data_in;
 
 output txd, intr, bit_out, ack;
 output [7:0] data_out;
+reg [7:0] data_out;
+
 
 wire syn;
 reg wr_r, ack;
 reg [7:0] addr_r, data_in_r;
 
+wire tclk, rclk, brate2;
+assign tclk   = 0;
+assign rclk   = 0;
+assign brate2 = 0;
 
-oc8051_uart oc8051_uart_test(.rst(rst), .clk(clk), .bit_in(data_in[0]), .rd_addr(addr), .data_in(data_in_r),
-                    .wr(wr_r), .wr_bit(wr_bit), .wr_addr(addr_r), .data_out(data_out), .bit_out(bit_out),
-                    .rxd(rxd), .txd(txd), .intr(intr), .t1_ow(ow));
+reg       pres_ow;
+reg [3:0] prescaler;
 
+wire [7:0] scon, pcon, sbuf;
+
+oc8051_uart oc8051_uart_test(.rst(rst), .clk(clk), .bit_in(data_in[0]),
+             .data_in(data_in_r), .wr(wr_r), .wr_bit(wr_bit), .wr_addr(addr_r),
+             .rxd(rxd), .txd(txd), .intr(intr), .t1_ow(ow),
+	     .rclk(rclk), .tclk(tclk),
+	     .pres_ow(pres_ow), .brate2(brate2),
+	     .scon(scon), .pcon(pcon), .sbuf(sbuf));
 
 always @(posedge clk)
 begin
   if (ack) ack <= #1 1'b0;
-  else 
+  else
     ack <= #1 stb;
 end
 
@@ -101,6 +117,34 @@ begin
   addr_r <= #1 addr;
   data_in_r <= #1 data_in;
 end
+
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    prescaler <= #1 4'h5;
+    pres_ow <= #1 1'b0;
+  end else if (prescaler==4'b1011) begin
+    prescaler <= #1 4'h0;
+    pres_ow <= #1 1'b1;
+  end else begin
+    prescaler <= #1 prescaler + 4'h1;
+    pres_ow <= #1 1'b0;
+  end
+end
+
+always @(addr or
+// serial interface
+         scon or pcon or sbuf)
+begin
+    case (addr)
+      `OC8051_SFR_SCON: 	data_out = scon;
+      `OC8051_SFR_SBUF: 	data_out = sbuf;
+      `OC8051_SFR_PCON: 	data_out = pcon;
+      default: 			data_out = 8'h00;
+    endcase
+end
+
+assign bit_out = scon[addr[2:0]];
 
 
 endmodule
