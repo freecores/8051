@@ -1,12 +1,14 @@
 #!/bin/csh -f
 
-set iter = 1;
-set failed = 0;
-set all_tests = 0;
+set failedi = 0;
+set failedx = 0;
+set all_testsi = 0;
+set all_testsx = 0;
 
 
-set tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m timer_test counter_test interrupt_test serial_test r_bank)
+set internal_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m timer_test counter_test interrupt_test serial_test r_bank)
 
+set external_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m interrupt_test r_bank)
 
 # Prepare all .args files
 iteration:
@@ -55,28 +57,77 @@ else
 endif
 
 # Run the NC-Verilog simulator (simulate the design)
+
+echo ""
+echo "\t@@@"
+echo "\t@@@ Tesing programs from internal rom"
+echo "\t@@@"
+
+cp ../oc8051_eai.in ../oc8051_ea.in
 set i = 0;
-foreach test ($tests)
+foreach internal_test ($internal_tests)
 	@ i += 1;
 	echo ""
 	echo "\t###"
-	echo "\t### Running test ${i}: ${test}"
+	echo "\t### Running test ${i}: ${internal_test}"
 	echo "\t###"
 
-	cp ../src/${test}.in ../src/oc8051_rom.in
-	cp ../src/${test}.vec ../src/oc8051_test.vec
+	cp ../../../asm/in/${internal_test}.in ../../../asm/in/oc8051_rom.in
+	cp ../../../asm/vec/${internal_test}.vec ../../../asm/vec/oc8051_test.vec
 	ncsim -NOCOPYRIGHT -f ncsim.args > ../out/ncsim.out
 	if ($status != 0) then
 	  cat ../out/ncsim.out
 	  exit
 	else if (`tail -4 ../out/ncsim.out | grep Done` == "") then
           echo "\t### FAILED"
+          @ failedi += 1;
+          @ all_testsi += 1;
         else
           echo "\t### Passed"
+          @ all_testsi += 1;
 	endif
-        mv ../out/ncsim.out ../out/${test}.out
-        mv verilog.dump ../out/wave/${test}.dump
+  mv ../out/ncsim.out ../out/${internal_test}.out
+  mv verilog.dump ../out/wave/${internal_test}.dump
 end
+
+echo ""
+echo "\t@@@"
+echo "\t@@@ tesing programs from external rom"
+echo "\t@@@"
+
+cp ../oc8051_eax.in ../oc8051_ea.in
+set i = 0;
+foreach external_test ($external_tests)
+	@ i += 1;
+	echo ""
+	echo "\t###"
+	echo "\t### Running test ${i}: ${external_test}"
+	echo "\t###"
+	
+  cp ../../../asm/in/${external_test}.in ../../../asm/in/oc8051_xrom.in
+	cp ../../../asm/vec/${external_test}.vec ../../../asm/vec/oc8051_test.vec
+  cp ../oc8051_eax.in ../oc8051_ea.in
+	ncsim -NOCOPYRIGHT -f ncsim.args > ../out/ncsim.out
+	if ($status != 0) then
+	  cat ../out/ncsim.out
+	  exit
+	else if (`tail -4 ../out/ncsim.out | grep Done` == "") then
+          echo "\t### FAILED"
+          @ failedx += 1;
+          @ all_testsx += 1;
+        else
+          echo "\t### Passed"
+          @ all_testsx += 1;
+	endif
+  mv ../out/ncsim.out ../out/x_${external_test}.out
+end
+
+	echo ""
+	echo "\t###"
+	echo "\t### Failed $failedi of $all_testsi internal tests"
+	echo "\t###"
+	echo "\t### Failed $failedx of $all_testsx external tests"
+	echo "\t###"
 
 rm cds.lib hdl.var RUN_NC
 rm nc*
