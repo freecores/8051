@@ -74,7 +74,7 @@ output p, bit_out;
 output [7:0] data_out;
 
 reg [7:0] data_out;
-reg bit_out, wr_x_buff;
+reg bit_out;
 
 //
 //calculates parity
