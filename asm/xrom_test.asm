@@ -49,6 +49,7 @@ loop1:
     mov b, #05;
     
 loop2:
+    clr c;
     mov a, @r1;
     subb a, b;
     jnz error3;
@@ -72,7 +73,7 @@ _end:
     mov p0, #0eeh;
     ajmp _end;
 
-    .org 0f000h;
+    .org 9000h;
 data:
     .db 5;
     .db 6;

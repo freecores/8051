@@ -61,7 +61,7 @@ done1:
 
 	mov  a,#10
 	add  a,r7
-	jnc  fail2 
+	jnc  fail2
 	clr  c
 	subb a,#4
 	jnz  fail2
@@ -154,7 +154,7 @@ done2:
 	mov  a,#127
 	mov  100,#10
 	add  a,100
-	jc   fail3 
+	jc   fail3
 	subb a,#137
 	jnz  fail3
 
@@ -232,7 +232,7 @@ done4:
 
 	mov  a,#10
 	add  a,#127
-	jc   fail5 
+	jc   fail5
 	subb a,#137
 	jnz  fail5
 
@@ -591,7 +591,7 @@ done12:
 ;;;;;;;;;;;;;;;;  INST 13 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; anl a,@Ri (13)
-	mov  r0,127
+	mov  r0,#127
 	clr  c
 	clr  a
 	mov  127,#171
@@ -1749,12 +1749,12 @@ done68:
 ;;;;;;;;;;;;;;;;;  INST 69 ;;;;;;;;;;;;;;;;;;;;;;
 
 ;; mov dptr,#data (69)
-	mov  dptr,#0x1234
+	mov  dptr,#1234h
 	mov  a,DPH
-	subb a,#0x12
+	subb a,#12h
 	jnz  fail69
 	mov  a,DPL
-	subb a,#0x34
+	subb a,#34h
 	jz   done69
 fail69:
 	mov  P1,#69
@@ -1768,16 +1768,16 @@ done69:
 	clr  a
 	mov  dptr,#DB_TBL
 	movc a,@a+dptr
-	subb a,#0x66
+	subb a,#66h
 	jnz  fail70
 	mov  a,#1
 	movc a,@a+dptr
-	subb a,#0x77
+	subb a,#77h
 	jz   done70
 	jnz  fail70
 DB_TBL:
-	.db   0x66
-	.db   0x77
+	db   66h
+	db   77h
 fail70:	
 	mov  P1,#70
 	ljmp failed
@@ -1789,15 +1789,15 @@ done70:
 ;; movc a,@a+PC (71)
 	mov  a,#13
 	movc a,@a+pc
-	subb a,#0x66
+	subb a,#66h
 	jnz  fail71
 	mov  a,#7
 	movc a,@a+pc
-	subb a,#0x77
+	subb a,#77h
 	jz   done71
 	jnz  fail71
-	.db   0x66
-	.db   0x77
+	db   66h
+	db   77h
 fail71:	
 	mov  P1,#71
 	ljmp failed
@@ -1809,7 +1809,7 @@ done71:
 ;; mul AB (76)
 	mov  a,#80
 	mov  B,#160
-	mul  AB	; = 0x3200
+	mul  AB	; = 3200h
 	jc   fail76
 	jnz  fail76
   mov  c, ov
@@ -1821,10 +1821,11 @@ done71:
 
 	mov  a,#111
 	mov  B,#87
-	mul  AB	; = 0x25b9
+	mul  AB	; = 25b9h
 	jc   fail76
   mov  c, ov
   jnc  fail76
+
 	clr  c
 	subb a,#0b9h
 	jnz  fail76
@@ -1834,7 +1835,7 @@ done71:
 
 	mov  a,#11
 	mov  B,#17
-	mul  AB	; = 0x00BB
+	mul  AB	; = 00BBh
 	jc   fail76
   mov  c, ov 
   jc   fail76
@@ -1875,21 +1876,21 @@ done77:
 ;;;;;;;;;;;;;;;;  INST 78 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; orl a,Rn (78)
-	mov  a,#0x90
-	mov  r0,#0x09
+	mov  a,#90h
+	mov  r0,#09h
 	setb c
 	orl  a,r0
 	jnc  fail78
 	clr  c
-	subb a,#0x99
+	subb a,#99h
 	jnz  fail78
 
-	mov  a,#0x48
-	mov  r0,#0x19
+	mov  a,#48h
+	mov  r0,#19h
 	clr  c
 	orl  a,r0
 	jc   fail78
-	subb a,#0x59
+	subb a,#59h
 	jz   done78
 fail78:
 	mov  P1,#78
@@ -1899,21 +1900,21 @@ done78:
 ;;;;;;;;;;;;;;;;  INST 79 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; orl a,direct (79)
-	mov  a,#0x90
-	mov  127,#0x09
+	mov  a,#90h
+	mov  127,#09h
 	setb c
 	orl  a,127
 	jnc  fail79
 	clr  c
-	subb a,#0x99
+	subb a,#99h
 	jnz  fail79
 
-	mov  a,#0x48
-	mov  127,#0x19
+	mov  a,#48h
+	mov  127,#19h
 	clr  c
 	orl  a,127
 	jc   fail79
-	subb a,#0x59
+	subb a,#59h
 	jz   done79
 fail79:
 	mov  P1,#79
@@ -1922,22 +1923,22 @@ done79:
 
 ;;;;;;;;;;;;;;;;  INST 80 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; orl a,@Ri (80)
-	mov  a,#0x90
+	mov  a,#90h
 	mov  r1,#127
-	mov  @r1,#0x9
+	mov  @r1,#09h
 	setb c
 	orl  a,@r1
 	jnc  fail80
 	clr  c
-	subb a,#0x99
+	subb a,#99h
 	jnz  fail80
 
-	mov  a,#0x48
-	mov  @r1,#0x19
+	mov  a,#48h
+	mov  @r1,#19h
 	clr  c
 	orl  a,@r1
 	jc   fail80
-	subb a,#0x59
+	subb a,#59h
 	jz   done80
 fail80:
 	mov  P1,#80
@@ -1947,19 +1948,19 @@ done80:
 ;;;;;;;;;;;;;;;;  INST 81 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; orl a,#data (81)
-	mov  a,#0x90
+	mov  a,#90h
 	setb c
-	orl  a,#0x9
+	orl  a,#09h
 	jnc  fail81
 	clr  c
-	subb a,#0x99
+	subb a,#99h
 	jnz  fail81
 
-	mov  a,#0x48
+	mov  a,#48h
 	clr  c
-	orl  a,#0x19
+	orl  a,#19h
 	jc   fail81
-	subb a,#0x59
+	subb a,#59h
 	jz   done81
 fail81:
 	mov  P1,#81
@@ -1969,29 +1970,29 @@ done81:
 ;;;;;;;;;;;;;;;;  INST 82 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; orl direct,a (82)
-	mov  a,#0x90
-	mov  127,#0x9
+	mov  a,#90h
+	mov  127,#09h
 	setb c
 	orl  127,a
 	jnc  fail82
 	clr  c
-	subb a,#0x90
+	subb a,#90h
 	jnz  fail82
 	mov  a,127
 	clr  c
-	subb a,#0x99
+	subb a,#99h
 	jnz  fail82
 
-	mov  a,#0x48
-	mov  127,#0x19
+	mov  a,#48h
+	mov  127,#19h
 	clr  c
 	orl  127,a
 	jc   fail82
-	subb a,#0x48
+	subb a,#48h
 	jnz  fail82
 	mov  a,127
 	clr  c
-	subb a,#0x59
+	subb a,#59h
 	jz   done82
 fail82:
 	mov  P1,#82
@@ -2000,29 +2001,29 @@ done82:
 
 ;;;;;;;;;;;;;;;;  INST 83 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; orl direct,#data (83)
-	mov  a,#0x91
-	mov  127,#0x9
+	mov  a,#91h
+	mov  127,#09h
 	setb c
-	orl  127,#0x90
+	orl  127,#90h
 	jnc  fail83
 	clr  c
-	subb a,#0x91
+	subb a,#91h
 	jnz  fail83
 	mov  a,127
 	clr  c
-	subb a,#0x99
+	subb a,#99h
 	jnz  fail83
 
-	mov  a,#0x49
-	mov  127,#0x19
+	mov  a,#49h
+	mov  127,#19h
 	clr  c
-	orl  127,#0x48
+	orl  127,#48h
 	jc   fail83
-	subb a,#0x49
+	subb a,#49h
 	jnz  fail83
 	mov  a,127
 	clr  c
-	subb a,#0x59
+	subb a,#59h
 	jz   done83
 fail83:
 	mov  P1,#83
@@ -2446,5 +2447,8 @@ done111:
 
 
 failed:
+  nop;
+  nop;
+  sjmp failed;
 
-
+end
