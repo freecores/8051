@@ -9,9 +9,7 @@
 ////  8051 definitions.                                           ////
 ////                                                              ////
 ////  To Do:                                                      ////
-////   Interrupt prioriti register                                ////
-////   timer/counter                                              ////
-////   serial port                                                ////
+////    nothing                                                   ////
 ////                                                              ////
 ////  Author(s):                                                  ////
 ////      - Simon Teran, simont@opencores.org                     ////
@@ -51,19 +49,21 @@
 // synopsys translate_on
 
 
-module oc8051_top (rst, clk, int0, int1, ea, rom_addr, op1, op2, op3, data_in,
-		data_out, ext_addr, write, p0_in, p1_in, p2_in, p3_in, p0_out,
+module oc8051_top (rst, clk, int0, int1, ea, rom_addr, op1, op2, op3, dat_i,
+		dat_o, adr_o, we_o, ack_i, stb_o, cyc_o, p0_in, p1_in, p2_in, p3_in, p0_out,
 		p1_out, p2_out, p3_out, rxd, txd, t0, t1);
 //
 // rst           (in)  reset - pin
 // clk           (in)  clock - pin
 // rom_addr      (out) program rom addres (pin + internal)
-// int0           (in)  external interrupt 0
-// int1           (in)  external interrupt 1
-// data_in       (in)  exteranal ram input
-// data_out      (out) exteranal ram output
-// ext_addr      (out) external address
-// write         (out) write to external ram
+// int0          (in)  external interrupt 0
+// int1          (in)  external interrupt 1
+// dat_i         (in)  exteranal ram input
+// dat_o         (out) exteranal ram output
+// adr_o         (out) external address
+// we_o          (out) write to external ram
+// stb_o
+// ack_i
 // p0_in, p1_in, p2_in, p3_in           (in)  port inputs
 // p0_out, p1_out, p2_out, p3_out       (out) port outputs
 // rxd		 (in) receive
@@ -74,22 +74,24 @@ module oc8051_top (rst, clk, int0, int1, ea, rom_addr, op1, op2, op3, data_in,
 
 
 
-input rst, clk, int0, int1, ea, rxd, t0, t1;
-input [7:0] data_in, p0_in, p1_in, p2_in, p3_in, op1, op2, op3;
+input rst, clk, int0, int1, ea, rxd, t0, t1, ack_i;
+input [7:0] dat_i, p0_in, p1_in, p2_in, p3_in, op1, op2, op3;
 
-output write, txd;
-output [7:0] data_out, p0_out, p1_out, p2_out, p3_out;
+output we_o, txd, stb_o, cyc_o;
+output [7:0] dat_o, p0_out, p1_out, p2_out, p3_out;
 //output [15:0] rom_addr, ext_addr;
-output [15:0] ext_addr, rom_addr;
+output [15:0] adr_o, rom_addr;
 
 wire [7:0] op1_i, op2_i, op3_i, dptr_hi, dptr_lo, ri, data_out;
 wire [7:0] acc, b_reg, p0_out, p1_out, p2_out, p3_out, uart, tc_out, int_out;
 
-wire [15:0] rom_addr, pc, ext_addr;
+wire [15:0] pc;
 
 //
 // data output is always from accumulator
-assign data_out = acc;
+assign dat_o = acc;
+
+assign cyc_o = stb_o;
 
 //
 // ram_rd_sel    ram read (internal)
@@ -115,7 +117,7 @@ wire [7:0] wr_addr, ram_data, ram_out, sp, sp_r, rd_addr, rd_addr_r, ports_in;
 // ext_adddr_sel        external addres select; data pointer or Ri
 // write_p      output from decoder; write to external ram, go to register;
 wire [1:0] src_sel1_r, src_sel2_r, cy_sel, cy_sel_r;
-wire src_sel3, src_sel3_r, rom_addr_sel, ext_addr_sel, write_p, rmw, ea_int;
+wire src_sel3, src_sel3_r, rom_addr_sel, ext_addr_sel, rmw, ea_int, wr_xaddr;
 
 //
 // int_uart	interrupt from uart
@@ -186,7 +188,7 @@ wire b_bit, acc_bit, psw_bit, int_bit, port_bit, uart_bit;
 //
 //registers
 oc8051_reg8 oc8051_reg8_pc_hi(.clk(clk), .rst(rst), .din(pc[15:8]), .dout(pc_hi_r));
-oc8051_reg1 oc8051_reg1_write(.clk(clk), .rst(rst), .din(write_p), .dout(write));
+//oc8051_reg1 oc8051_reg1_write(.clk(clk), .rst(rst), .din(write_p), .dout(we_o));
 
 oc8051_reg2 oc8051_reg2_src_sel1(.clk(clk), .rst(rst), .din(src_sel1), .dout(src_sel1_r));
 oc8051_reg2 oc8051_reg2_src_sel2(.clk(clk), .rst(rst), .din(src_sel2), .dout(src_sel2_r));
@@ -221,11 +223,11 @@ oc8051_pc oc8051_pc1(.rst(rst), .clk(clk), .pc_out(pc), .alu({des2,des1}),
 //
 // decoder
 oc8051_decoder oc8051_decoder1(.clk(clk), .rst(rst), .op_in(op1_n), .ram_rd_sel(ram_rd_sel),
-		 .ram_wr_sel(ram_wr_sel), .bit_addr(bit_addr), .src_sel1(src_sel1),
+		 .ram_wr_sel(ram_wr_sel), .bit_addr(bit_addr), .src_sel1(src_sel1), .wr_xaddr(wr_xaddr),
 		 .src_sel2(src_sel2), .src_sel3(src_sel3), .alu_op(alu_op), .psw_set(psw_set),
 		 .imm_sel(imm_sel), .cy_sel(cy_sel), .wr(wr), .pc_wr(pc_wr), .pc_sel(pc_wr_sel),
 		 .comp_sel(comp_sel), .eq(eq), .rom_addr_sel(rom_addr_sel), .ext_addr_sel(ext_addr_sel),
-		.wad2(wad2), .rd(rd), .write_x(write_p), .reti(reti), .rmw(rmw));
+		.wad2(wad2), .rd(rd), .we_o(we_o), .reti(reti), .rmw(rmw), .stb_o(stb_o), .ack_i(ack_i));
 
 
 
@@ -260,7 +262,8 @@ oc8051_ram_top oc8051_ram_top1(.clk(clk), .rst(rst), .rd_addr(rd_addr), .rd_data
 //
 oc8051_acc oc8051_acc1(.clk(clk), .rst(rst), .bit_in(desCy), .data_in(des1),
            .data2_in(des2), .wr(wr_r), .wr_bit(bit_addr_r), .wad2(wad2_r),
-	   .wr_addr(wr_addr), .rd_addr(rd_addr[2:0]), .data_out(acc), .bit_out(acc_bit), .p(p));
+	   .wr_addr(wr_addr), .rd_addr(rd_addr[2:0]), .data_out(acc), .bit_out(acc_bit), .p(p),
+     .stb_o(stb_o), .we_o(we_o), .ack_i(ack_i), .xdata(dat_i));
 
 
 //
@@ -271,7 +274,7 @@ oc8051_b_register oc8051_b_register (.clk(clk), .rst(rst), .bit_in(desCy), .bit_
 //
 //
 oc8051_alu_src1_sel oc8051_alu_src1_sel1(.sel(src_sel1_r), .immediate(immediate1_r),
-		.acc(acc), .ram(ram_out), .ext(data_in), .des(src1));
+		.acc(acc), .ram(ram_out), .ext(dat_i), .des(src1));
 oc8051_alu_src2_sel oc8051_alu_src2_sel1(.sel(src_sel2_r), .immediate(immediate2_r),
 		.acc(acc), .ram(ram_out), .des(src2));
 oc8051_alu_src3_sel oc8051_alu_src3_sel1(.sel(src_sel3_r), .pc(pc_hi_r),
@@ -322,8 +325,8 @@ oc8051_rom_addr_sel oc8051_rom_addr_sel1(.sel(rom_addr_sel),
 
 //
 //
-oc8051_ext_addr_sel oc8051_ext_addr_sel1(.clk(clk), .rst(rst), .sel(ext_addr_sel), .write(write_p),
-		 .dptr_hi(dptr_hi), .dptr_lo(dptr_lo), .ri(ri), .addr_out(ext_addr));
+oc8051_ext_addr_sel oc8051_ext_addr_sel1(.clk(clk), .rst(rst), .sel(ext_addr_sel),
+		 .dptr_hi(dptr_hi), .dptr_lo(dptr_lo), .ri(ri), .addr_out(adr_o), .wr(wr_xaddr));
 
 //
 //

@@ -50,7 +50,7 @@
 // synopsys translate_on
 
 
-module oc8051_uart_test (clk, rst, addr, wr, wr_bit, data_in, data_out, bit_out, rxd, txd, ow, intr);
+module oc8051_uart_test (clk, rst, addr, wr, wr_bit, data_in, data_out, bit_out, rxd, txd, ow, intr, ack, stb);
 //
 // serial interface simulation. part of oc8051_tb
 //
@@ -67,13 +67,14 @@ module oc8051_uart_test (clk, rst, addr, wr, wr_bit, data_in, data_out, bit_out,
 // intr		(out) interrupt request [oc8051.p3_in.0]
 //
 
-input clk, rst, wr, wr_bit, rxd, ow;
+input clk, rst, wr, wr_bit, rxd, ow, stb;
 input [7:0] addr, data_in;
 
-output txd, intr, bit_out;
+output txd, intr, bit_out, ack;
 output [7:0] data_out;
 
-reg wr_r;
+wire syn;
+reg wr_r, ack;
 reg [7:0] addr_r, data_in_r;
 
 
@@ -81,6 +82,13 @@ oc8051_uart oc8051_uart_test(.rst(rst), .clk(clk), .bit_in(data_in[0]), .rd_addr
                     .wr(wr_r), .wr_bit(wr_bit), .wr_addr(addr_r), .data_out(data_out), .bit_out(bit_out),
                     .rxd(rxd), .txd(txd), .intr(intr), .t1_ow(ow));
 
+
+always @(posedge clk)
+begin
+  if (ack) ack <= #1 1'b0;
+  else 
+    ack <= #1 stb;
+end
 
 always @(posedge clk)
 begin

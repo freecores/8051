@@ -52,7 +52,7 @@
 
 
 module oc8051_acc (clk, rst, bit_in, data_in, data2_in, wr, wr_bit, wad2, wr_addr, rd_addr,
-		data_out, bit_out, p);
+		data_out, bit_out, p, stb_o, we_o, ack_i, xdata);
 // clk          (in)  clock
 // rst          (in)  reset
 // bit_in       (in)  bit input - used in case of writing bits to acc (bit adddressable memory space - alu carry) [oc8051_alu.desCy]
@@ -66,15 +66,15 @@ module oc8051_acc (clk, rst, bit_in, data_in, data2_in, wr, wr_bit, wad2, wr_add
 // p            (out) parity [oc8051_psw.p]
 
 
-input clk, rst, wr, wr_bit, wad2, bit_in;
+input clk, rst, wr, wr_bit, wad2, bit_in, stb_o, we_o, ack_i;
 input [2:0] rd_addr;
-input [7:0] wr_addr, data_in, data2_in;
+input [7:0] wr_addr, data_in, data2_in, xdata;
 
 output p, bit_out;
 output [7:0] data_out;
 
 reg [7:0] data_out;
-reg bit_out;
+reg bit_out, wr_x_buff;
 
 //
 //calculates parity
@@ -87,6 +87,8 @@ always @(posedge clk or posedge rst)
 begin
   if (rst)
     data_out <= #1 `OC8051_RST_ACC;
+  else if (stb_o && !we_o && ack_i)
+    data_out <= #1 xdata;
   else if (wad2)
     data_out <= #1 data2_in;
   else if (wr) begin

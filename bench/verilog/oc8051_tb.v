@@ -53,7 +53,7 @@ reg rst, clk, ea;
 reg [15:0] pc_in;
 reg [7:0] p0_in, p1_in, p2_in, op1, op2, op3;
 wire [15:0] ext_addr, rom_addr;
-wire  write, write_xram, write_uart, txd, rxd, int_uart, int0, int1, t0, t1, bit_out;
+wire  write, write_xram, write_uart, txd, rxd, int_uart, int0, int1, t0, t1, bit_out, stb_o, ack_i, ack_xram, ack_uart, cyc_o;
 wire [7:0] data_in, data_out, p0_out, p1_out, p2_out, p3_out, data_out_uart, data_out_xram, p3_in;
 
 ///
@@ -67,23 +67,25 @@ integer num;
 
 
 oc8051_top oc8051_top_1(.rst(rst), .clk(clk), .int0(int0), .int1(int1),
-         .data_in(data_in), .data_out(data_out),
-         .ext_addr(ext_addr), .rom_addr(rom_addr), .write(write), .p0_in(p0_in),
+         .dat_i(data_in), .dat_o(data_out),
+         .adr_o(ext_addr), .rom_addr(rom_addr), .we_o(write), .p0_in(p0_in),
+         .ack_i(ack_i), .stb_o(stb_o), .cyc_o(cyc_o),
 	 .p1_in(p1_in), .p2_in(p2_in), .p3_in(p3_in), .p0_out(p0_out), .p1_out(p1_out),
 	 .p2_out(p2_out), .p3_out(p3_out), .op1(op1), .op2(op2), .op3(op3), .ea(ea),
 	 .rxd(rxd), .txd(txd), .t0(t0), .t1(t1));
 
 
-oc8051_xram oc8051_xram1 (.clk(clk), .wr(write_xram), .addr(ext_addr), .data_in(data_out), .data_out(data_out_xram));
+oc8051_xram oc8051_xram1 (.clk(clk), .wr(write_xram), .addr(ext_addr), .data_in(data_out), .data_out(data_out_xram), .ack(ack_xram), .stb(stb_o));
 
 oc8051_uart_test oc8051_uart_test1(.clk(clk), .rst(rst), .addr(ext_addr[7:0]), .wr(write_uart),
                   .wr_bit(p3_out[0]), .data_in(data_out), .data_out(data_out_uart), .bit_out(bit_out), .rxd(txd),
-		  .txd(rxd), .ow(p3_out[1]), .intr(int_uart));
+		  .txd(rxd), .ow(p3_out[1]), .intr(int_uart), .stb(stb_o), .ack(ack_uart));
 
 
 assign write_xram = p3_out[7] & write;
 assign write_uart = !p3_out[7] & write;
 assign data_in = p3_out[7] ? data_out_xram : data_out_uart;
+assign ack_i = p3_out[7] ? ack_xram : ack_uart;
 assign p3_in = {7'b000000, bit_out, int_uart};
 assign t0 = p3_out[5];
 assign t1 = p3_out[6];
@@ -107,7 +109,9 @@ initial begin
   ea =1'b1;
 #22
   rst = 1'b0;
-#2000000
+//#2000000
+#4444000
+
 //#500000
   $display("time ",$time, "\n faulire: end of time\n \n");
   $finish;
@@ -159,7 +163,7 @@ initial $dumpvars;
 
 //initial $monitor("time ",$time," acc %h", data_out, " dptr %h", ext_addr, " write ", write, " p0_out %h", p0_out, " p1_out %h", p1_out);
 
-//initial $monitor("time ",$time," write ", write, " p0_out ", p0_out, " p1_out ", p1_out, " p2_out ", p2_out, " p3_out ", p3_out);
+//initial $monitor("time ",$time, " p0_out ", p0_out);
 
 //initial $monitor("time ",$time," write ", write, " p0_out %h", p0_out, " p1_out %h", p1_out, " p2_out %h", p2_out, " p3_out %h", p3_out);
 

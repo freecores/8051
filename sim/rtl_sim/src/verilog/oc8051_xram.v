@@ -49,7 +49,7 @@
 // synopsys translate_on
 
 
-module oc8051_xram (clk, wr, addr, data_in, data_out);
+module oc8051_xram (clk, wr, addr, data_in, data_out, ack, stb);
 //
 // external data ram for simulation. part of oc8051_tb
 // it's tehnology dependent
@@ -62,11 +62,13 @@ module oc8051_xram (clk, wr, addr, data_in, data_out);
 //
 
 
-input clk, wr;
+input clk, wr, stb;
 input [7:0] data_in;
 input [15:0] addr;
 output [7:0] data_out;
+output ack;
 
+reg ackw, ackr;
 reg [7:0] data_out;
 reg [16:0] count;
 
@@ -75,25 +77,29 @@ reg [16:0] count;
 reg [7:0] buff [65535:0];
 
 
-/*initial
-begin
+assign ack =  ackw || ackr;
 
-  for (count = 0; count < 65536; count = count + 1)
-  begin
-    buff[count] <= 8'h00;
-  end
-end */
 
 //
 // writing to ram
 always @(posedge clk)
 begin
-  if (wr)
+
+  if (wr && stb && !ackw) begin
     buff[addr] <= #1 data_in;
+    ackw <= #1 1'b1;
+  end else ackw <= #1 1'b0;
+
 end
 
 always @(posedge clk)
+  if (stb && !wr && !ackr) begin
     data_out <= #1 buff[addr];
+    ackr <= #1 1'b1;
+  end else begin
+    ackr <= #1 1'b0;
+    data_out <= #1 8'h00;
+  end
 
 
 endmodule
