@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2003/01/13 14:14:41  simont
+// replace some modules
+//
 // Revision 1.2  2002/10/24 13:34:02  simont
 // add parameters for instruction cache
 //
@@ -104,8 +107,8 @@ parameter CACHE_RAM = 64; // cache ram x 32 (2^ADR_WIDTH)
 //
 // con_buf control buffer, contains upper addresses [15:ADDR_WIDTH1] in cache
 reg [13-ADR_WIDTH:0] con_buf [BL_NUM:0];
-// viald[x]=1 if block x is vaild;
-reg [BL_NUM:0] vaild;
+// valid[x]=1 if block x is valid;
+reg [BL_NUM:0] valid;
 // con0, con2 contain temporal control information of current address and corrent address+2
 // part of con_buf memory
 reg [14-ADR_WIDTH:0] con0, con2;
@@ -161,10 +164,10 @@ always @(stb_b or data0 or data1 or byte_sel)
 begin
   if (stb_b) begin
     case (byte_sel)
-      2'b00: dat_o = data0;
-      2'b01: dat_o = {data0[23:0], data1[15:8]};
-      2'b10: dat_o = {data0[15:0], data1};
-      default: dat_o = {data0[7:0], data1, 8'h00};
+      2'b00  : dat_o = data0;
+      2'b01  : dat_o = {data0[23:0], data1[15:8]};
+      2'b10  : dat_o = {data0[15:0], data1};
+      default: dat_o = {data0[ 7:0], data1, 8'h00};
     endcase
   end else begin
     dat_o = 32'h0;
@@ -173,13 +176,16 @@ end
 
 always @(posedge clk or posedge rst)
 begin
-  if (rst) begin
-    con0 <= #1 9'h0;
-    con2 <= #1 9'h0;
-  end else begin
-    con0 <= #1 {con_buf[adr_i[ADR_WIDTH+1:LINE_WIDTH+2]], vaild[adr_i[ADR_WIDTH+1:LINE_WIDTH+2]]};
-    con2 <= #1 {con_buf[adr_i2], vaild[adr_i2]};
-  end
+  if (rst)
+    begin
+        con0 <= #1 9'h0;
+        con2 <= #1 9'h0;
+    end
+  else
+    begin
+        con0 <= #1 {con_buf[adr_i[ADR_WIDTH+1:LINE_WIDTH+2]], valid[adr_i[ADR_WIDTH+1:LINE_WIDTH+2]]};
+        con2 <= #1 {con_buf[adr_i2], valid[adr_i2]};
+    end
 end
 
 always @(posedge clk or posedge rst)
@@ -206,44 +212,85 @@ end
 
 always @(posedge clk or posedge rst)
 begin
-  if (rst) begin
-    cyc <= #1 2'b00;
-    cyc_o <= #1 1'b0;
-    stb_o <= #1 1'b0;
-    data1_i<= #1 32'd0;
-    wr1 <= #1 1'b0;
-    adr_w <= #1 6'd0;
-    vaild <= #1 16'd0;
-  end else if (stb_b && !hit && !stb_o && !wr1) begin
-    cyc <= #1 'd0;
-    cyc_o <= #1 1'b1;
-    stb_o <= #1 1'b1;
-    data1_i<= #1 32'h0;
-    wr1 <= #1 1'b0;
-  end else if (stb_o && ack_i) begin
-    data1_i<= #1 dat_i;
-    wr1 <= #1 1'b1;
-    adr_w <= #1 adr_o[ADR_WIDTH+1:2];
-    if (&cyc) begin
+  if (rst)
+    begin
+        cyc    <= #1 2'b00;
+        cyc_o  <= #1 1'b0;
+        stb_o  <= #1 1'b0;
+        data1_i<= #1 32'h0;
+        wr1    <= #1 1'b0;
+        adr_w  <= #1 6'h0;
+        valid  <= #1 16'h0;
+    end 
+  else if (stb_b && !hit && !stb_o && !wr1)
+    begin
+        cyc     <= #1 2'b00;
+        cyc_o   <= #1 1'b1;
+        stb_o   <= #1 1'b1;
+        data1_i <= #1 32'h0;
+        wr1     <= #1 1'b0;
+    end
+  else if (stb_o && ack_i)
+    begin
+        data1_i<= #1 dat_i;
+        wr1    <= #1 1'b1;
+        adr_w  <= #1 adr_o[ADR_WIDTH+1:2];
+
+        if (&cyc)
+          begin
+              cyc   <= #1 2'b00;
+              cyc_o <= #1 1'b0;
+              stb_o <= #1 1'b0;
+//              con_buf[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 mis_adr[15:ADR_WIDTH+2];
+              valid[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 1'b1;
+          end
+        else
+          begin
+              cyc   <= #1 cyc + 1'b1;
+              cyc_o <= #1 1'b1;
+              stb_o <= #1 1'b1;
+          end
+
+
+/*    case (cyc)
+      2'b00: begin
+        cyc <= #1 2'b01;
+        cyc_o <= #1 1'b1;
+        stb_o <= #1 1'b1;
+      end
+      2'b01: begin
+        cyc <= #1 2'b10;
+        cyc_o <= #1 1'b1;
+        stb_o <= #1 1'b1;
+      end
+      2'b10: begin
+        cyc <= #1 2'b11;
+        cyc_o <= #1 1'b1;
+        stb_o <= #1 1'b1;
+      end
+      default: begin
         cyc <= #1 2'b00;
         cyc_o <= #1 1'b0;
         stb_o <= #1 1'b0;
-        con_buf[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 mis_adr[15:ADR_WIDTH+2];
-        vaild[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 1'b1;
-    end else begin
-        cyc <= #1 cyc + 1'b1;
-        cyc_o <= #1 1'b1;
-        stb_o <= #1 1'b1;
+        con_buf[mis_adr[7:4]] <= #1 mis_adr[15:8];
+        valid[mis_adr[7:4]] <= #1 1'b1;
+      end
+    endcase*/
     end
-  end else begin
+  else
     wr1 <= #1 1'b0;
-  end
 end
+
+//rih
+always @(posedge clk)
+  if ( ~(stb_b && !hit && !stb_o && !wr1) & (stb_o && ack_i & &cyc) )
+    con_buf[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 mis_adr[15:ADR_WIDTH+2];
+
 
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    mis_adr <= #1 'd0;
+    mis_adr <= #1 1'b0;
   else if (!hit_l)
     mis_adr <= #1 adr_i;
   else if (!hit_h)
@@ -253,7 +300,7 @@ end
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    tmp_data1 <= #1 'd0;
+    tmp_data1 <= #1 1'b0;
   else if (!hit_h && wr1 && (cyc==adr_r1))
     tmp_data1 <= #1 dat_i[31:16];
   else if (!hit_l && hit_h && wr1)
@@ -272,3 +319,4 @@ begin
 end
 
 endmodule
+
