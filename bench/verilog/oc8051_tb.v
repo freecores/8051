@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.8  2003/01/13 14:35:25  simont
+// remove wb_bus_mon
+//
 // Revision 1.7  2002/10/28 16:43:12  simont
 // add module oc8051_wb_iinterface
 //
@@ -67,14 +70,14 @@
 
 module oc8051_tb;
 
-reg rst, clk;
-reg [7:0] p0_in, p1_in, p2_in;
+reg  rst, clk;
+reg  [7:0] p0_in, p1_in, p2_in;
 wire [31:0] idat_i;
 wire [15:0] ext_addr, iadr_o;
 wire write, write_xram, write_uart, txd, rxd, int_uart, int0, int1, t0, t1, bit_out, stb_o, ack_i;
 wire ack_xram, ack_uart, cyc_o, iack_i, istb_o, icyc_o, t2, t2ex;
 wire [7:0] data_in, data_out, p0_out, p1_out, p2_out, p3_out, data_out_uart, data_out_xram, p3_in;
-
+wire wbi_err_i, wbd_err_i;
 
 
 ///
@@ -82,23 +85,33 @@ wire [7:0] data_in, data_out, p0_out, p1_out, p2_out, p3_out, data_out_uart, dat
 ///
 //
 // buffer
-reg [23:0] buff [255:0];
-reg ea [1:0];
+reg [23:0] buff [0:255];
+reg ea [0:1];
 
 integer num;
 
+assign wbd_err_i = 1'b0;
+assign wbi_err_i = 1'b0;
 
 //
 // oc8051 controller
 //
-oc8051_top oc8051_top_1(.rst_i(rst), .clk(clk), .int0(int0), .int1(int1),
-         .ddat_i(data_in), .ddat_o(data_out),
-         .dadr_o(ext_addr), .iadr_o(iadr_o), .istb_o(istb_o), .iack_i(iack_i),
-         .icyc_o(icyc_o), .dwe_o(write), .p0_in(p0_in),
-         .dack_i(ack_i), .dstb_o(stb_o), .dcyc_o(cyc_o),
-	 .p1_in(p1_in), .p2_in(p2_in), .p3_in(p3_in), .p0_out(p0_out), .p1_out(p1_out),
-	 .p2_out(p2_out), .p3_out(p3_out), .idat_i(idat_i), .ea(ea[0]),
-	 .rxd(rxd), .txd(txd), .t0(t0), .t1(t1), .t2(t2), .t2ex(t2ex));
+oc8051_top oc8051_top_1(.wb_rst_i(rst), .wb_clk_i(clk),
+         .int0_i(int0), .int1_i(int1),
+
+         .wbd_dat_i(data_in), .wbd_we_o(write), .wbd_dat_o(data_out),
+         .wbd_adr_o(ext_addr), .wbd_err_i(wbd_err_i),
+         .wbd_ack_i(ack_i), .wbd_stb_o(stb_o), .wbd_cyc_o(cyc_o),
+
+	 .wbi_adr_o(iadr_o), .wbi_stb_o(istb_o), .wbi_ack_i(iack_i),
+         .wbi_cyc_o(icyc_o), .wbi_dat_i(idat_i), .wbi_err_i(wbi_err_i),
+
+	 .p0_i(p0_in), .p1_i(p1_in), .p2_i(p2_in), .p3_i(p3_in),
+	 .p0_o(p0_out), .p1_o(p1_out), .p2_o(p2_out), .p3_o(p3_out),
+
+	 .ea_in(ea[0]),
+	 .rxd_i(rxd), .txd_o(txd),
+	 .t0_i(t0), .t1_i(t1), .t2_i(t2), .t2ex_i(t2ex));
 
 
 //
@@ -140,10 +153,10 @@ oc8051_icache oc8051_icache1(.rst(rst), .clk(clk),
 oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_i), .data(idat_o),
              .stb_i(istb_i), .cyc_i(icyc_i), .ack_o(iack_o));
 
-defparam oc8051_icache1.ADR_WIDTH = 6;  // cache address wihth
+defparam oc8051_icache1.ADR_WIDTH = 7;  // cache address wihth
 defparam oc8051_icache1.LINE_WIDTH = 2; // line address width (2 => 4x32)
 defparam oc8051_icache1.BL_NUM = 15; // number of blocks (2^BL_WIDTH-1); BL_WIDTH = ADR_WIDTH - LINE_WIDTH
-defparam oc8051_icache1.CACHE_RAM = 64; // cache ram x 32 (2^ADR_WIDTH)
+defparam oc8051_icache1.CACHE_RAM = 128; // cache ram x 32 (2^ADR_WIDTH)
 
 
 //
@@ -197,12 +210,11 @@ assign t2 = p3_out[5];
 assign t2ex = p3_out[2];
 
 initial begin
-  clk= 1'b0;
   rst= 1'b1;
   p0_in = 8'h00;
   p1_in = 8'h00;
   p2_in = 8'h00;
-#22
+#220
   rst = 1'b0;
 
 #7000000
@@ -212,12 +224,16 @@ initial begin
 end
 
 
-always clk = #5 ~clk;
+initial
+begin
+  clk = 0;
+  forever #70 clk <= ~clk;
+end
 
 
 
 initial
-  $readmemh("../../../asm/vec/oc8051_test.vec", buff);
+  $readmemh("../../../bench/vec/oc8051_test.vec", buff);
 
 initial
   $readmemb("../oc8051_ea.in", ea);
