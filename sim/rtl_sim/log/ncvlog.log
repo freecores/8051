@@ -1,0 +1,156 @@
+TOOL:	ncvlog	04.10-b001: Started on May 29, 2003 at 15:15:52
+ncvlog
+    -f ncvlog.args
+        -CDSLIB ../bin/cds.lib
+        -HDLVAR ../bin/hdl.var
+        -MESSAGES
+        -INCDIR ../../../bench/verilog
+        -INCDIR ../../../rtl/verilog
+        -NOCOPYRIGHT
+        -LOGFILE ../log/ncvlog.log
+        ../../../bench/verilog/oc8051_tb.v
+        ../../../bench/verilog/oc8051_xram.v
+        ../../../bench/verilog/oc8051_uart_test.v
+        ../../../bench/verilog/oc8051_serial.v
+        ../../../bench/verilog/oc8051_xrom.v
+        ../../../rtl/verilog/oc8051_top.v
+        ../../../rtl/verilog/oc8051_alu_src_sel.v
+        ../../../rtl/verilog/oc8051_alu.v
+        ../../../rtl/verilog/oc8051_decoder.v
+        ../../../rtl/verilog/oc8051_divide.v
+        ../../../rtl/verilog/oc8051_multiply.v
+        ../../../rtl/verilog/oc8051_memory_interface.v
+        ../../../rtl/verilog/oc8051_ram_top.v
+        ../../../rtl/verilog/oc8051_acc.v
+        ../../../rtl/verilog/oc8051_comp.v
+        ../../../rtl/verilog/oc8051_sp.v
+        ../../../rtl/verilog/oc8051_dptr.v
+        ../../../rtl/verilog/oc8051_cy_select.v
+        ../../../rtl/verilog/oc8051_psw.v
+        ../../../rtl/verilog/oc8051_indi_addr.v
+        ../../../rtl/verilog/oc8051_ports.v
+        ../../../rtl/verilog/oc8051_b_register.v
+        ../../../rtl/verilog/oc8051_uart.v
+        ../../../rtl/verilog/oc8051_int.v
+        ../../../rtl/verilog/oc8051_tc.v
+        ../../../rtl/verilog/oc8051_tc2.v
+        ../../../rtl/verilog/oc8051_icache.v
+        ../../../rtl/verilog/oc8051_wb_iinterface.v
+        ../../../rtl/verilog/oc8051_sfr.v
+        ../../../rtl/verilog/oc8051_rom.v
+        ../../../rtl/verilog/oc8051_cache_ram.v
+        ../../../asm/testall.v
+        ../../../../libs/xilinx/RAMB4_S1.v
+        ../../../../rom_8kx16/rtl/verilog/rom_8kx16.v
+        ../../../../rom_8kx16/rtl/verilog/rom_8kx16_top.v
+        ../../../../common/generic_memories/rtl/verilog/generic_dpram.v
+
+file: ../../../bench/verilog/oc8051_tb.v
+	module worklib.oc8051_tb:v
+		errors: 0, warnings: 0
+file: ../../../bench/verilog/oc8051_xram.v
+	module worklib.oc8051_xram:v
+		errors: 0, warnings: 0
+file: ../../../bench/verilog/oc8051_uart_test.v
+	module worklib.oc8051_uart_test:v
+		errors: 0, warnings: 0
+file: ../../../bench/verilog/oc8051_serial.v
+	module worklib.oc8051_serial:v
+		errors: 0, warnings: 0
+file: ../../../bench/verilog/oc8051_xrom.v
+	module worklib.oc8051_xrom:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_top.v
+	module worklib.oc8051_top:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_alu_src_sel.v
+	module worklib.oc8051_alu_src_sel:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_alu.v
+	module worklib.oc8051_alu:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_decoder.v
+	module worklib.oc8051_decoder:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_divide.v
+	module worklib.oc8051_divide:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_multiply.v
+	module worklib.oc8051_multiply:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_memory_interface.v
+	module worklib.oc8051_memory_interface:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_ram_top.v
+	module worklib.oc8051_ram_top:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_acc.v
+	module worklib.oc8051_acc:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_comp.v
+	module worklib.oc8051_comp:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_sp.v
+	module worklib.oc8051_sp:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_dptr.v
+	module worklib.oc8051_dptr:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_cy_select.v
+	module worklib.oc8051_cy_select:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_psw.v
+	module worklib.oc8051_psw:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_indi_addr.v
+	module worklib.oc8051_indi_addr:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_ports.v
+	module worklib.oc8051_ports:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_b_register.v
+	module worklib.oc8051_b_register:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_uart.v
+	module worklib.oc8051_uart:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_int.v
+	module worklib.oc8051_int:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_tc.v
+	module worklib.oc8051_tc:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_tc2.v
+	module worklib.oc8051_tc2:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_icache.v
+	module worklib.oc8051_icache:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_wb_iinterface.v
+	module worklib.oc8051_wb_iinterface:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_sfr.v
+	module worklib.oc8051_sfr:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_rom.v
+	module worklib.oc8051_rom:v
+		errors: 0, warnings: 0
+file: ../../../rtl/verilog/oc8051_cache_ram.v
+	module worklib.oc8051_cache_ram:v
+		errors: 0, warnings: 0
+ncvlog: *E,COFILE: cannot open source file '../../../asm/testall.v'.
+file: ../../../../libs/xilinx/RAMB4_S1.v
+	module worklib.RAMB4_S1:v
+		errors: 0, warnings: 0
+file: ../../../../rom_8kx16/rtl/verilog/rom_8kx16.v
+	module worklib.rom_8kx16:v
+		errors: 0, warnings: 0
+file: ../../../../rom_8kx16/rtl/verilog/rom_8kx16_top.v
+	module worklib.rom_8kx16_top:v
+		errors: 0, warnings: 0
+file: ../../../../common/generic_memories/rtl/verilog/generic_dpram.v
+	module worklib.generic_dpram:v
+		errors: 0, warnings: 0
+	Total errors/warnings found outside modules and primitives:
+		errors: 1, warnings: 0
+TOOL:	ncvlog	04.10-b001: Exiting on May 29, 2003 at 15:15:53  (total: 00:00:01)

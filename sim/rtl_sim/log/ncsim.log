@@ -1,0 +1,58 @@
+TOOL:	ncsim	04.10-b001: Started on May 29, 2003 at 15:15:55
+ncsim
+    -LICQUEUE
+    -f ./ncsim.args
+        -MESSAGES
+        -NOCOPYRIGHT
+        -CDSLIB ../bin/cds.lib
+        -HDLVAR ../bin/hdl.var
+        -INPUT ncsim.tcl
+        -LOGFILE ../log/ncsim.log
+        worklib.bench:rtl
+
+Loading snapshot worklib.bench:rtl .................... Done
+ncsim> source /shared/tools/ncsim/tools/inca/files/ncsimrc
+ncsim> run
+$readmem error: invalid syntax in file "../../../serial.txt" at line 1
+time                    1 step           0: pass
+ receive:  I , 49
+ receive:  n , 6e
+ receive:    , 20
+ receive:  N , 4e
+ receive:  u , 75
+ receive:  m , 6d
+ receive:    , 20
+ receive:  ? , 3f
+ receive:    , 20
+ receive:  3 , 33
+ receive:  6 , 36
+ receive:   , 0d
+ receive:  
+ , 0a
+ receive:  0 , 30
+ receive:    , 20
+ receive:  + , 2b
+ receive:    , 20
+ receive:  3 , 33
+ receive:    , 20
+ receive:  = , 3d
+ receive:  TOOL:	ncsim	04.10-b001: Exiting on May 30, 2003 at 15:27:29  (total: 48:04:57)
+ receive:  3 , 33
+ receive:  0 , 30
+ receive:    , 20
+ receive:  + , 2b
+ receive:    , 20
+ receive:  6 , 36
+ receive:    , 20
+ receive:  = , 3d
+ receive:    , 20
+ receive:  3 , 33
+ receive:  6 , 36
+time             80000220
+ faulire: end of time
+ 
+
+Simulation complete via $finish(1) at time 80000220 NS + 0
+/projects/oc8051/simont/oc8051/bench/verilog/oc8051_tb.v:303   $finish;
+ncsim> quit
+TOOL:	ncsim	04.10-b001: Exiting on May 29, 2003 at 15:18:34  (total: 00:02:39)

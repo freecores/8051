@@ -1,0 +1,91 @@
+TOOL:	ncelab	04.10-b001: Started on May 29, 2003 at 15:15:53
+ncelab
+    -f ncelab.args
+        -MESSAGES
+        -NOCOPYRIGHT
+        -CDSLIB ../bin/cds.lib
+        -HDLVAR ../bin/hdl.var
+        -LOGFILE ../log/ncelab.log
+        -SNAPSHOT worklib.bench:rtl
+        -NO_TCHK_MSG
+        -ACCESS +RWC
+        worklib.oc8051_tb
+
+	Elaborating the design hierarchy:
+		Caching library 'worklib' ....... Done
+	Building instance overlay tables: .................... Done
+	Generating native compiled code:
+		worklib.generic_dpram:v <0x0d189c4e>
+			streams:   5, words:  2853
+		worklib.oc8051_acc:v <0x42025906>
+			streams:   9, words:  7468
+		worklib.oc8051_alu:v <0x153fe0a0>
+			streams:  18, words: 31765
+		worklib.oc8051_alu_src_sel:v <0x1cfcd9ef>
+			streams:   6, words:  6066
+		worklib.oc8051_b_register:v <0x7e2da7e0>
+			streams:   4, words:  3480
+		worklib.oc8051_comp:v <0x1b124a65>
+			streams:   1, words:  1402
+		worklib.oc8051_cy_select:v <0x017504b8>
+			streams:   1, words:  1052
+		worklib.oc8051_decoder:v <0x1cf48ebe>
+			streams: 158, words: 308070
+		worklib.oc8051_divide:v <0x3689e128>
+			streams:  18, words:  8032
+		worklib.oc8051_dptr:v <0x76514cb4>
+			streams:   7, words:  6274
+		worklib.oc8051_indi_addr:v <0x133e424a>
+			streams:  21, words: 18542
+		worklib.oc8051_int:v <0x005905c7>
+			streams: 101, words: 85572
+		worklib.oc8051_memory_interface:v <0x4a5d1c3c>
+			streams: 116, words: 98793
+		worklib.oc8051_multiply:v <0x7b824821>
+			streams:  10, words:  6078
+		worklib.oc8051_ports:v <0x41951f9e>
+			streams:  17, words: 15207
+		worklib.oc8051_psw:v <0x572695b1>
+			streams:  13, words: 11026
+		worklib.oc8051_ram_top:v <0x3946aa7b>
+			streams:  11, words:  8541
+		worklib.oc8051_rom:v <0x7361036b>
+			streams:   7, words:  4040
+		worklib.oc8051_serial:v <0x01907758>
+			streams:  35, words: 28288
+		worklib.oc8051_sfr:v <0x503295ba>
+			streams:  65, words: 60730
+		worklib.oc8051_sp:v <0x043a682d>
+			streams:  12, words:  7854
+		worklib.oc8051_tb:v <0x6e27a095>
+			streams:  20, words: 11937
+		worklib.oc8051_tc2:v <0x014e0196>
+			streams:  45, words: 37958
+		worklib.oc8051_tc:v <0x4ce5fd3a>
+			streams:  32, words: 27944
+		worklib.oc8051_top:v <0x2a56d675>
+			streams:   7, words:  1852
+		worklib.oc8051_uart:v <0x5d6b0338>
+			streams:  76, words: 62075
+		worklib.oc8051_wb_iinterface:v <0x1fe9cb07>
+			streams:   6, words:  3810
+		worklib.oc8051_xram:v <0x61d669be>
+			streams:  17, words: 12371
+		worklib.oc8051_xrom:v <0x4289cabd>
+			streams:  12, words:  8786
+	Loading native compiled code:     .................... Done
+	Building instance specific data structures.
+	Design hierarchy summary:
+		                  Instances  Unique
+		Modules:                 29      29
+		Registers:              224     224
+		Scalar wires:           126       -
+		Expanded wires:           3       1
+		Vectored wires:         150       -
+		Always blocks:          106     106
+		Initial blocks:           9       9
+		Cont. assignments:      110     150
+		Pseudo assignments:      19      19
+		Simulation timescale:  10ps
+	Writing initial simulation snapshot: worklib.bench:rtl
+TOOL:	ncelab	04.10-b001: Exiting on May 29, 2003 at 15:15:55  (total: 00:00:02)
