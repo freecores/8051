@@ -76,7 +76,6 @@ wire [7:0] rem0, rem1, rem2;
 wire [8:0] sub0, sub1;
 wire [15:0] cmp0, cmp1;
 wire [7:0] div_out, rem_out;
-wire [7:0] div;
 
 // real registers
 reg [1:0] cycle;
@@ -91,11 +90,11 @@ assign rem2 = cycle != 0 ? tmp_rem : src1;
 
 assign sub1 = {1'b0, rem2} - {1'b0, cmp1[7:0]};
 assign div1 = |cmp1[15:8] ? 1'b0 : !sub1[8];
-assign rem1 = div1 ? sub1[7:0] : cmp1[7:0];
+assign rem1 = div1 ? sub1[7:0] : rem2[7:0];
 
 assign sub0 = {1'b0, rem1} - {1'b0, cmp0[7:0]};
 assign div0 = |cmp0[15:8] ? 1'b0 : !sub0[8];
-assign rem0 = div0 ? sub0[7:0] : cmp0[7:0];
+assign rem0 = div0 ? sub0[7:0] : rem1[7:0];
 
 //
 // in clock cycle 0 we first calculate two MSB bits, ...
