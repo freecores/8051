@@ -16,6 +16,8 @@ input rst, clk;
 input [15:0] addr;
 output ea_int;
 output [7:0] data1, data2, data3;
+
+reg ea_int;
 reg [7:0] data1, data2, data3;
 reg [7:0] buff [65535:0];
 integer i;
@@ -23,7 +25,7 @@ integer i;
 wire ea;
 
 assign ea = | addr[15:INT_ROM_WID];
-assign ea_int = ! ea;
+//assign ea_int = ! ea;
 
 initial
 begin
@@ -31,6 +33,11 @@ begin
     buff [i] = 8'h00;
   $readmemh("../src/oc8051_rom.in", buff);
 end
+
+always @(posedge clk or posedge rst)
+ if (rst)
+   ea_int <= #1 1'b1;
+  else ea_int <= #1 !ea;
 
 always @(posedge clk)
 begin
