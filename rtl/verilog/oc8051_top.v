@@ -123,7 +123,7 @@ wire src_sel3, src_sel3_r, rom_addr_sel, ext_addr_sel, write_p, rmw, ea_int;
 // tf1		interrupt from t/c 1
 // tr0		timer 0 run
 // tr1		timer 1 run
-wire int_uart, tf0, tf1, tr0, tr1, reti, intr, ack, syn;
+wire int_uart, tf0, tf1, tr0, tr1, reti, intr, ack;
 wire [7:0] int_src;
 
 //
@@ -351,7 +351,7 @@ oc8051_op_select oc8051_op_select1(.clk(clk), .rst(rst), .ea(ea), .ea_int(ea_int
 // serial interface
 oc8051_uart oc8051_uatr1 (.clk(clk), .rst(rst), .bit_in(desCy), .rd_addr(rd_addr),
 		.data_in(des1), .wr(wr_r), .wr_bit(bit_addr_r), .wr_addr(wr_addr),
-		.data_out(uart), .bit_out(uart_bit), .rxd(rxd), .txd(txd), .intr(int_uart), .t1_ow(tf1), .syn(syn));
+		.data_out(uart), .bit_out(uart_bit), .rxd(rxd), .txd(txd), .intr(int_uart), .t1_ow(tf1));
 
 
 oc0851_int oc8051_int1(.clk(clk), .rst(rst), .wr_addr(wr_addr), .rd_addr(rd_addr), .bit_in(desCy), .ack(ack),
@@ -360,6 +360,6 @@ oc0851_int oc8051_int1(.clk(clk), .rst(rst), .wr_addr(wr_addr), .rd_addr(rd_addr
 
 oc8051_tc oc8051_tc1(.clk(clk), .rst(rst), .wr_addr(wr_addr), .rd_addr(rd_addr),
 		.data_in(des1), .wr(wr_r), .wr_bit(bit_addr_r), .ie0(int0), .ie1(int1), .tr0(tr0),
-		.tr1(tr1), .t0(t0), .t1(t1), .data_out(tc_out), .tf0(tf0), .tf1(tf1), .syn(syn));
+		.tr1(tr1), .t0(t0), .t1(t1), .data_out(tc_out), .tf0(tf0), .tf1(tf1));
 
 endmodule
