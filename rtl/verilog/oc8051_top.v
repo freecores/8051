@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.29  2003/05/07 12:36:03  simont
+// chsnge comp.des to des1
+//
 // Revision 1.28  2003/05/06 09:41:35  simont
 // remove define OC8051_AS2_PCL, chane signal src_sel2 to 2 bit wide.
 //
@@ -98,6 +101,7 @@
 `include "oc8051_timescale.v"
 // synopsys translate_on
 
+`include "oc8051_defines.v"
 
 module oc8051_top (wb_rst_i, wb_clk_i,
 //interface to instruction rom
@@ -122,8 +126,6 @@ module oc8051_top (wb_rst_i, wb_clk_i,
 		int0_i, 
 		int1_i,
 
-// external access (active low)
-		ea_in,
 
 // port interface
   `ifdef OC8051_PORTS
@@ -159,8 +161,11 @@ module oc8051_top (wb_rst_i, wb_clk_i,
 	`endif
 
 	`ifdef OC8051_TC2
-		t2_i, t2ex_i
+		t2_i, t2ex_i,
 	`endif
+
+// external access (active low)
+		ea_in
 		);
 
 
@@ -233,10 +238,7 @@ input         t2_i,		// counter 2 input
               t2ex_i;		//
 `endif
 
-wire [7:0]  op1_i, 
-            op2_i, 
-	    op3_i, 
-	    dptr_hi, 
+wire [7:0]  dptr_hi,
 	    dptr_lo, 
 	    ri, 
 	    data_out,
@@ -250,6 +252,8 @@ wire [7:0]  op1_i,
 	    p3_out,
             sp,
             sp_w;
+
+wire [31:0] idat_onchip;
 
 wire [15:0] pc;
 
@@ -363,41 +367,43 @@ oc8051_decoder oc8051_decoder1(.clk(wb_clk_i),
 			       .wait_data(wait_data));
 
 
+wire [7:0] sub_result;
 //
 //alu
-oc8051_alu oc8051_alu1(.rst(wb_rst_i), 
+oc8051_alu oc8051_alu1(.rst(wb_rst_i),
                        .clk(wb_clk_i),
 		       .op_code(alu_op),
 		       .src1(src1),
-		       .src2(src2), 
-		       .src3(src3), 
-		       .srcCy(alu_cy), 
+		       .src2(src2),
+		       .src3(src3),
+		       .srcCy(alu_cy),
 		       .srcAc(srcAc),
 		       .des_acc(des_acc),
+		       .sub_result(sub_result),
 		       .des1(des1),
 		       .des2(des2),
 		       .desCy(desCy),
-		       .desAc(desAc), 
-		       .desOv(desOv), 
+		       .desAc(desAc),
+		       .desOv(desOv),
 		       .bit_in(bit_out));
 
 //
 //data ram
 oc8051_ram_top oc8051_ram_top1(.clk(wb_clk_i),
-                               .rst(wb_rst_i), 
-			       .rd_addr(rd_addr), 
+                               .rst(wb_rst_i),
+			       .rd_addr(rd_addr),
 			       .rd_data(ram_data),
-			       .wr_addr(wr_addr), 
-			       .bit_addr(bit_addr_o), 
-			       .wr_data(wr_dat), 
+			       .wr_addr(wr_addr),
+			       .bit_addr(bit_addr_o),
+			       .wr_data(wr_dat),
 			       .wr(wr_o && (!wr_addr[7] || wr_ind)),
-			       .bit_data_in(desCy), 
+			       .bit_data_in(desCy),
 			       .bit_data_out(bit_data));
 
 //
 
-oc8051_alu_src_sel oc8051_alu_src_sel1(.clk(wb_clk_i), 
-                                       .rst(wb_rst_i), 
+oc8051_alu_src_sel oc8051_alu_src_sel1(.clk(wb_clk_i),
+                                       .rst(wb_rst_i),
 				       .rd(rd),
 
 				       .sel1(src_sel1),
@@ -424,7 +430,7 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
 			 .b_in(bit_out),
 			 .cy(cy),
 			 .acc(acc),
-			 .des(des1)
+			 .des(sub_result)
 			 );
 
 
@@ -435,14 +441,11 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
                        .clk(wb_clk_i),
 		       .ea_int(ea_int),
 		       .addr(iadr_o),
-		       .data1(op1_i),
-		       .data2(op2_i),
-		       .data3(op3_i));
+		       .data_o(idat_onchip)
+		       );
 `else
   assign ea_int = 1'b0;
-  assign op1_i = 8'h00;
-  assign op2_i = 8'h00;
-  assign op3_i = 8'h00;
+  assign idat_onchip = 32'h0;
 `endif
 
 //
@@ -496,9 +499,7 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i),
                        .istb_o(istb_o),
 
 // internal instruction rom
-                       .op1_i(op1_i),
-		       .op2_i(op2_i),
-		       .op3_i(op3_i),
+		       .idat_onchip(idat_onchip),
 
 // data memory
                        .dadr_o(wbd_adr_o),
@@ -614,7 +615,7 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 		       .intr(intr), 
 		       .int0(int0_i), 
 		       .int1(int1_i),
-		       .reti(reti), 
+		       .reti(reti),
 		       .int_src(int_src),
 
 // t/c 0,1
@@ -641,44 +642,55 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 `ifdef OC8051_CACHE
 
 
-oc8051_icache oc8051_icache1(.rst(wb_rst_i), .clk(wb_clk_i),
-// cpu
+  oc8051_icache oc8051_icache1(.rst(wb_rst_i), .clk(wb_clk_i),
+  // cpu
         .adr_i(iadr_o),
 	.dat_o(idat_i),
 	.stb_i(istb_o),
 	.ack_o(iack_i),
         .cyc_i(icyc_o),
-// pins
+  // pins
         .dat_i(wbi_dat_i),
 	.stb_o(wbi_stb_o),
 	.adr_o(wbi_adr_o),
 	.ack_i(wbi_ack_i),
         .cyc_o(wbi_cyc_o));
 
-defparam oc8051_icache1.ADR_WIDTH = 7;  // cache address wihth
-defparam oc8051_icache1.LINE_WIDTH = 2; // line address width (2 => 4x32)
-defparam oc8051_icache1.BL_NUM = 31; // number of blocks (2^BL_WIDTH-1); BL_WIDTH = ADR_WIDTH - LINE_WIDTH
-defparam oc8051_icache1.CACHE_RAM = 128; // cache ram x 32 (2^ADR_WIDTH)
+  defparam oc8051_icache1.ADR_WIDTH = 6;  // cache address wihth
+  defparam oc8051_icache1.LINE_WIDTH = 2; // line address width (2 => 4x32)
+  defparam oc8051_icache1.BL_NUM = 15; // number of blocks (2^BL_WIDTH-1); BL_WIDTH = ADR_WIDTH - LINE_WIDTH
+  defparam oc8051_icache1.CACHE_RAM = 64; // cache ram x 32 (2^ADR_WIDTH)
 
 //
 //    no cache
 //
 `else
 
-oc8051_wb_iinterface oc8051_wb_iinterface(.rst(wb_rst_i), .clk(wb_clk_i),
-// cpu
+  `ifdef OC8051_WB
+
+    oc8051_wb_iinterface oc8051_wb_iinterface(.rst(wb_rst_i), .clk(wb_clk_i),
+    // cpu
         .adr_i(iadr_o),
 	.dat_o(idat_i),
 	.stb_i(istb_o),
 	.ack_o(iack_i),
         .cyc_i(icyc_o),
-// external rom
+    // external rom
         .dat_i(wbi_dat_i),
 	.stb_o(wbi_stb_o),
 	.adr_o(wbi_adr_o),
 	.ack_i(wbi_ack_i),
         .cyc_o(wbi_cyc_o));
 
+  `else
+
+    assign wbi_adr_o = iadr_o    ;
+    assign idat_i    = wbi_dat_i ;
+    assign wbi_stb_o = 1'b1      ;
+    assign iack_i    = wbi_ack_i ;
+    assign wbi_cyc_o = 1'b1      ;
+
+  `endif
 
 `endif
 
