@@ -63,8 +63,10 @@ module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, de
 // srcCy        (in)  carry input [oc8051_cy_select.data_out]
 // srcAc        (in)  auxiliary carry input [oc8051_psw.data_out[6] ]
 // bit_in       (in)  bit input, used for logic operatins on bits [oc8051_ram_sel.bit_out]
-// des1         (out) first result [oc8051_pc.alu, oc8051_ram_top.wr_data, oc8051_acc.data_in, oc8051_b_register.data_in, oc8051_comp.des -r, oc8051_sp.data_in, oc8051_dptr.data_in, oc8051_psw.data_in, oc8051_indi_addr.data_in, oc8051_rom_addr_sel.des1, oc8051_ports.data_in]
-// des2         (out) second result [oc8051_pc.alu, oc8051_rom_addr_sel.des1]
+// des1         (out) 
+// des1_r       (out)
+// des2         (out)
+// des2_r       (out)
 // desCy        (out) carry output [oc8051_ram_top.bit_data_in, oc8051_acc.bit_in, oc8051_b_register.bit_in, oc8051_psw.cy_in, oc8051_ports.bit_in]
 // desAc        (out) auxiliary carry output [oc8051_psw.ac_in]
 // desOv        (out) Overflow output [oc8051_psw.ov_in]
@@ -73,9 +75,13 @@ module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, de
 input srcCy, srcAc, bit_in, clk, rst; input [3:0] op_code; input [7:0] src1, src2, src3;
 output desCy, desAc, desOv;
 output [7:0] des1, des2;
+output [7:0] des1_r, des2_r;
 
-  reg desCy, desAc, desOv;
-  reg [7:0] des1, des2;
+reg desCy, desAc, desOv;
+reg [7:0] des1, des2;
+
+reg [7:0] des1_r, des2_r;
+
 //
 //add
 //
@@ -344,8 +350,15 @@ begin
       enable_div = 1'b0;
     end
   endcase
-
 end
 
+always @(posedge clk or posedge rst)
+  if (rst) begin
+    dst1_r <= #1 8'h0;
+    dst2_r <= #1 8'h0;
+  else begin
+    dst1_r <= #1 dst1;
+    dst2_r <= #1 dst2;
+  end
 
 endmodule

@@ -73,7 +73,6 @@ begin
     `OC8051_ASS_ACC: des = acc;
     `OC8051_ASS_XRAM: des = ext;
     `OC8051_ASS_IMM: des = immediate;
-    default: des = 2'bxx;
   endcase
 end
 

@@ -10,7 +10,7 @@
 ////   (byte 2, byte 3, program counter high or low)              ////
 ////                                                              ////
 ////  To Do:                                                      ////
-////   nothing                                                    ////
+////   set out1 and out2 to x when it should not be used          ////
 ////                                                              ////
 ////  Author(s):                                                  ////
 ////      - Simon Teran, simont@opencores.org                     ////
@@ -52,8 +52,10 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_immediate_sel (sel, op1, op2, op3, pch, pcl, out1, out2);
+module oc8051_immediate_sel (clk, rst, sel, op1, op2, op3, pch, pcl, out1, out2);
 //
+// clk          (in)
+// rst          (in)
 // sel          (in)  select (from decoder) [oc8051_decoder.imm_sel]
 // op1          (in)  byte 1 [oc8051_op_select.op1_out]
 // op2          (in)  byte 2 [oc8051_op_select.op2_out]
@@ -64,47 +66,51 @@ module oc8051_immediate_sel (sel, op1, op2, op3, pch, pcl, out1, out2);
 // out2         (out) output to alu source select 2 [oc8051_alu_src2_sel.immediate]
 //
 
-
+input clk, rst;
 input [2:0] sel; input [7:0] op1, op2, op3, pch, pcl;
 output [7:0] out1, out2;
 reg [7:0] out1, out2;
 
-always @(sel or op1 or op2 or op3 or pch or pcl)
+always @(posedge clk or posedge rst)
 begin
-  case (sel)
-    `OC8051_IDS_OP3: begin
-      out1= op3;
-      out2= op3;
-    end
-    `OC8051_IDS_PCH: begin
-      out1= pch;
-      out2= pch;
-    end
-    `OC8051_IDS_PCL: begin
-      out1= pcl;
-      out2= pcl;
-    end
-    `OC8051_IDS_OP3_PCL: begin
-      out1= op3;
-      out2= pcl;
-    end
-    `OC8051_IDS_OP3_OP2: begin
-      out1= op3;
-      out2= op2;
-    end
-    `OC8051_IDS_OP2_PCL: begin
-      out1= op2;
-      out2= pcl;
-    end
-    `OC8051_IDS_OP1: begin
-      out1= op1;
-      out2= op1;
-    end
-    default: begin
-      out1= op2;
-      out2= op2;
-    end
-  endcase
+  if (rst) begin
+    out1 <= #1 8'h0;
+    out2 <= #1 8'h0;
+  end else
+    case (sel)
+      `OC8051_IDS_OP3: begin
+        out1 <= #1 op3;
+        out2 <= #1 op3;
+      end
+      `OC8051_IDS_PCH: begin
+        out1 <= #1 pch;
+        out2 <= #1 pch;
+      end
+      `OC8051_IDS_PCL: begin
+        out1 <= #1 pcl;
+        out2 <= #1 pcl;
+      end
+      `OC8051_IDS_OP3_PCL: begin
+        out1 <= #1 op3;
+        out2 <= #1 pcl;
+      end
+      `OC8051_IDS_OP3_OP2: begin
+        out1 <= #1 op3;
+        out2 <= #1 op2;
+      end
+      `OC8051_IDS_OP2_PCL: begin
+        out1 <= #1 op2;
+        out2 <= #1 pcl;
+      end
+      `OC8051_IDS_OP1: begin
+        out1 <= #1 op1;
+        out2 <= #1 op1;
+      end
+      default: begin
+        out1 <= #1 op2;
+        out2 <= #1 op2;
+      end
+    endcase
 end
 
 endmodule

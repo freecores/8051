@@ -133,8 +133,8 @@ wire [7:0] int_src;
 wire [3:0] alu_op, alu_op_r; wire [1:0] psw_set, psw_set_r;
 
 //
-// immediate1, immediate1_r        from imediate_sel1 to alu_src1_sel1
-// immediate2, immediate2_r        from imediate_sel1 to alu_src2_sel1
+// immediate1_r         from imediate_sel1 to alu_src1_sel1
+// immediate2_r         from imediate_sel1 to alu_src2_sel1
 // src1. src2, src2     alu sources
 // des2, des2           alu destinations
 // des1_r               destination 1 registerd (to comp1)
@@ -145,7 +145,7 @@ wire [3:0] alu_op, alu_op_r; wire [1:0] psw_set, psw_set_r;
 // wr, wr_r             write to data ram
 wire [7:0] src1, src2, src3, des1, des2, des1_r, psw, psw_r;
 wire desCy, desAc, desOv, alu_cy, wr, wr_r;
-wire [7:0] immediate1, immediate1_r, immediate2, immediate2_r;
+wire [7:0] immediate1_r, immediate2_r;
 
 
 //
@@ -204,8 +204,6 @@ oc8051_reg8 oc8051_reg8_op3(.clk(clk), .rst(rst), .din(op3_n), .dout(op3_nr));
 
 oc8051_reg4 oc8051_reg4_alu_op(.clk(clk), .rst(rst), .din(alu_op), .dout(alu_op_r));
 
-oc8051_reg8 oc8051_reg8_imm1(.clk(clk), .rst(rst), .din(immediate1), .dout(immediate1_r));
-oc8051_reg8 oc8051_reg8_imm2(.clk(clk), .rst(rst), .din(immediate2), .dout(immediate2_r));
 oc8051_reg1 oc8051_reg1_bit_addr(.clk(clk), .rst(rst), .din(bit_addr), .dout(bit_addr_r));
 
 oc8051_reg1 oc8051_reg1_wad2(.clk(clk), .rst(rst), .din(wad2), .dout(wad2_r));
@@ -250,8 +248,8 @@ oc8051_alu oc8051_alu1(.rst(rst), .clk(clk), .op_code(alu_op_r), .src1(src1), .s
 
 //
 //
-oc8051_immediate_sel oc8051_immediate_sel1(.sel(imm_sel), .op1(op1_n), .op2(op2_n),
-          .op3(op3_n), .pch(pc_hi_r), .pcl(pc[7:0]), .out1(immediate1), .out2(immediate2));
+oc8051_immediate_sel oc8051_immediate_sel1(.clk(clr), .rst(rst), .sel(imm_sel), .op1(op1_n), .op2(op2_n),
+          .op3(op3_n), .pch(pc_hi_r), .pcl(pc[7:0]), .out1(immediate1_r), .out2(immediate2_r));
 
 //
 //data ram
