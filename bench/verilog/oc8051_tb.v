@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.15  2003/06/05 17:14:27  simont
+// Change test monitor from ports to external data memory.
+//
 // Revision 1.14  2003/06/05 12:54:38  simont
 // remove dumpvars.
 //
@@ -306,6 +309,7 @@ initial begin
 
 #80000000
   $display("time ",$time, "\n faulire: end of time\n \n");
+  $display("");
   $finish;
 end
 
@@ -323,15 +327,23 @@ begin
     if (data_out==8'h7f) begin
       $display("");
       $display("time ",$time, " Passed");
+      $display("");
       $finish;
 
     end else begin
       $display("");
       $display("time ",$time," Error: %h", data_out);
+      $display("");
       $finish;
     end
   end
 end
+
+
+initial
+  $readmemb("../oc8051_ea.in", ea);
+
+
 
 
 endmodule
