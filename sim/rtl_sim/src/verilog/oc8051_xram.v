@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2002/09/30 17:34:01  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -51,7 +54,7 @@
 // synopsys translate_on
 
 
-module oc8051_xram (clk, wr, addr, data_in, data_out, ack, stb);
+module oc8051_xram (clk, rst, wr, addr, data_in, data_out, ack, stb);
 //
 // external data ram for simulation. part of oc8051_tb
 // it's tehnology dependent
@@ -61,10 +64,14 @@ module oc8051_xram (clk, wr, addr, data_in, data_out, ack, stb);
 // data_in      (out) data input
 // data_out     (in)  data output
 // wr           (in)  write
+// ack          (out) acknowlage
+// stb          (in)  strobe
 //
 
+parameter DELAY=1;
 
-input clk, wr, stb;
+
+input clk, wr, stb, rst;
 input [7:0] data_in;
 input [15:0] addr;
 output [7:0] data_out;
@@ -72,7 +79,7 @@ output ack;
 
 reg ackw, ackr;
 reg [7:0] data_out;
-reg [16:0] count;
+reg [2:0] cnt;
 
 //
 // buffer
@@ -84,24 +91,37 @@ assign ack =  ackw || ackr;
 
 //
 // writing to ram
-always @(posedge clk)
+always @(posedge clk or posedge rst)
 begin
-
-  if (wr && stb && !ackw) begin
+  if (rst)
+    ackw <= #1 1'b0;
+  else if (wr && stb && ((DELAY==3'b000) || (cnt==3'b000))) begin
     buff[addr] <= #1 data_in;
     ackw <= #1 1'b1;
   end else ackw <= #1 1'b0;
-
 end
 
-always @(posedge clk)
-  if (stb && !wr && !ackr) begin
+always @(posedge clk or posedge rst)
+  if (rst)
+    ackr <= #1 1'b0;
+  else if (stb && !wr && ((DELAY==3'b000) || (cnt==3'b000))) begin
     data_out <= #1 buff[addr];
     ackr <= #1 1'b1;
   end else begin
     ackr <= #1 1'b0;
     data_out <= #1 8'h00;
   end
+
+always @(posedge clk or posedge rst)
+begin
+  if (rst)
+    cnt <= #1 DELAY;
+  else if (cnt==3'b000)
+    cnt <= #1 DELAY;
+  else if (stb)
+    cnt <= #1 cnt - 3'b001;
+  else cnt <= #1 DELAY;
+end
 
 
 endmodule
