@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2003/01/13 14:14:41  simont
+// replace some modules
+//
 // Revision 1.1  2002/11/05 17:22:27  simont
 // initial import
 //
@@ -52,6 +55,8 @@
 // synopsys translate_off
 `include "oc8051_timescale.v"
 // synopsys translate_on
+
+`include "oc8051_defines.v"
 
 
 module oc8051_sfr (rst, clk, adr0, adr1, dat0, dat1, dat2, we, bit_in, bit_out, wr_bit,
