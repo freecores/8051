@@ -54,7 +54,7 @@
 
 
 
-module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, des1, des2, desCy, desAc, desOv);
+module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, des1, des2, des1_r, des2_r, desCy, desAc, desOv);
 //
 // op_code      (in)  operation code [oc8051_decoder.alu_op -r]
 // src1         (in)  first operand [oc8051_alu_src1_sel.des]
@@ -354,11 +354,11 @@ end
 
 always @(posedge clk or posedge rst)
   if (rst) begin
-    dst1_r <= #1 8'h0;
-    dst2_r <= #1 8'h0;
-  else begin
-    dst1_r <= #1 dst1;
-    dst2_r <= #1 dst2;
+    des1_r <= #1 8'h0;
+    des2_r <= #1 8'h0;
+  end else begin
+    des1_r <= #1 des1;
+    des2_r <= #1 des2;
   end
 
 endmodule

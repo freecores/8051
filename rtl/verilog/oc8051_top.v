@@ -231,7 +231,7 @@ oc8051_decoder oc8051_decoder1(.clk(clk), .rst(rst), .op_in(op1_n), .ram_rd_sel(
 
 
 //
-// ram red and ram write select
+// ram read and ram write select
 oc8051_ram_rd_sel oc8051_ram_rd_sel1 (.sel(ram_rd_sel),  .sp(sp), .ri(ri),
 		.rn({psw[4:3], op1_n[2:0]}), .imm(op2_dr), .addr_out(rd_addr));
 

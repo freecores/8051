@@ -10,7 +10,7 @@
 ////   control sigals.                                            ////
 ////                                                              ////
 ////  To Do:                                                      ////
-////   nothing                                                    ////
+////   optimize state machine, especially IDS ASS and AS3         ////
 ////                                                              ////
 ////  Author(s):                                                  ////
 ////      - Simon Teran, simont@opencores.org                     ////
@@ -2333,8 +2333,8 @@ begin
       `OC8051_MOVC_PC : begin
           ram_rd_sel = `OC8051_RRS_DC;
           ram_wr_sel = `OC8051_RWS_DC;
-          src_sel1 = `OC8051_ASS_ACC;
-          src_sel2 = `OC8051_ASS_IMM;
+          src_sel1 = `OC8051_ASS_IMM;
+          src_sel2 = `OC8051_ASS_ACC;
           alu_op = `OC8051_ALU_ADD;
           wr = 1'b0;
           psw_set = `OC8051_PS_NOT;
