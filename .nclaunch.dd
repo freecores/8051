@@ -1,0 +1,15 @@
+# DO NOT EDIT -- automatically generated design data file -- DO NOT EDIT!!!
+list \
+workdir {/root/verilog/oc8051} \
+cdslib {/root/verilog/oc8051/cds.lib} \
+worklib {oc8051} \
+ToolOption_NCVhdl {-logfile ncvhdl.log -errormax 15 -update -messages -status} \
+ToolOption_NCVlog { -work oc8051 -cdslib /root/verilog/oc8051/cds.lib -logfile ncvlog.log -errormax 15 -update -messages -status} \
+ToolOption_NCVlog/AMS { -work oc8051 -cdslib /root/verilog/oc8051/cds.lib -logfile ncvlog.log -errormax 15 -update -messages -status} \
+ToolOption_NCElab {-logfile ncelab.log -errormax 15 -messages -status -v93} \
+ToolOption_NCSim {-gui -logfile ncsim.log -errormax 15 -messages -status} \
+ToolOption_NCSdfc {-logfile ncsdfc.log -compile -messages -status} \
+ToolOption_Update {-errormax 15} \
+ToolOption_Comparescan {} \
+ToolOption_NCBrowse {} \
+ToolOption_Signalscan {} \

@@ -1,0 +1,14 @@
+////
+////
+//// test vectors for int2bin
+////
+////
+ffffffff
+00xxxxxx
+01xxxxxx
+00xxxxxx
+01xxxxxx
+00xxxxxx
+01xxxxxx
+00xxxxxx
+01xxxxxx

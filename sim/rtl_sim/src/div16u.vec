@@ -1,0 +1,11 @@
+
+////
+////
+//// test vectors for div16u
+////
+////
+ffffffff
+00xxxxxx
+70xxxxxx
+00xxxxxx
+54xxxxxx

@@ -1,0 +1,285 @@
+Host command: /shared/tools/ncsim/tools/verilog/bin/verilog.exe
+Command arguments:
+    ../../../bench/verilog/oc8051_tb.v
+    ../../../rtl/verilog/oc8051_top.v
+    ../../../rtl/verilog/oc8051_alu_src1_sel.v
+    ../../../rtl/verilog/oc8051_alu_src2_sel.v
+    ../../../rtl/verilog/oc8051_alu_src3_sel.v
+    ../../../rtl/verilog/oc8051_alu.v
+    ../../../rtl/verilog/oc8051_decoder.v
+    ../../../rtl/verilog/oc8051_divide.v
+    ../../../rtl/verilog/oc8051_immediate_sel.v
+    ../../../rtl/verilog/oc8051_multiply.v
+    ../../../rtl/verilog/oc8051_op_select.v
+    ../../../rtl/verilog/oc8051_pc.v
+    ../../../rtl/verilog/oc8051_reg8.v
+    ../../../rtl/verilog/oc8051_reg2.v
+    ../../../rtl/verilog/oc8051_reg1.v
+    ../../../rtl/verilog/oc8051_reg4.v
+    ../../../rtl/verilog/oc8051_ram_wr_sel.v
+    ../../../rtl/verilog/oc8051_ram_rd_sel.v
+    ../../../rtl/verilog/oc8051_ram_top.v
+    ../../../sim/rtl_sim/src/verilog/oc8051_ram.v
+    ../../../sim/rtl_sim/src/verilog/oc8051_xram.v
+    ../../../rtl/verilog/oc8051_acc.v
+    ../../../rtl/verilog/oc8051_comp.v
+    ../../../rtl/verilog/oc8051_sp.v
+    ../../../sim/rtl_sim/src/verilog/oc8051_uart_test.v
+    ../../../sim/rtl_sim/src/verilog/oc8051_rom.v
+    ../../../rtl/verilog/oc8051_dptr.v
+    ../../../rtl/verilog/oc8051_cy_select.v
+    ../../../rtl/verilog/oc8051_psw.v
+    ../../../rtl/verilog/oc8051_indi_addr.v
+    ../../../rtl/verilog/oc8051_rom_addr_sel.v
+    ../../../rtl/verilog/oc8051_ext_addr_sel.v
+    ../../../rtl/verilog/oc8051_reg3.v
+    ../../../rtl/verilog/oc8051_ram_sel.v
+    ../../../rtl/verilog/oc8051_ports.v
+    ../../../rtl/verilog/oc8051_b_register.v
+    ../../../rtl/verilog/oc8051_uart.v
+    ../../../rtl/verilog/oc8051_int.v
+    ../../../rtl/verilog/oc8051_tc.v
+
+VERILOG-XL 3.30.p001 log file created Aug 14, 2001  13:00:46
+VERILOG-XL 3.30.p001   Aug 14, 2001  13:00:46
+
+Copyright (c) 1995 Cadence Design Systems, Inc.  All Rights Reserved.
+Unpublished -- rights reserved under the copyright laws of the United States.
+
+Copyright (c) 1995 UNIX Systems Laboratories, Inc.  Reproduced with Permission.
+
+THIS SOFTWARE AND ON-LINE DOCUMENTATION CONTAIN CONFIDENTIAL INFORMATION
+AND TRADE SECRETS OF CADENCE DESIGN SYSTEMS, INC.  USE, DISCLOSURE, OR
+REPRODUCTION IS PROHIBITED WITHOUT THE PRIOR EXPRESS WRITTEN PERMISSION OF
+CADENCE DESIGN SYSTEMS, INC.
+RESTRICTED RIGHTS LEGEND
+
+Use, duplication, or disclosure by the Government is subject to
+restrictions as set forth in subparagraph (c)(1)(ii) of the Rights in
+Technical Data and Computer Software clause at DFARS 252.227-7013 or
+subparagraphs (c)(1) and (2) of Commercial Computer Software -- Restricted
+Rights at 48 CFR 52.227-19, as applicable.
+
+                Cadence Design Systems, Inc.
+                555 River Oaks Parkway
+                San Jose, California  95134
+
+For technical assistance please contact the Cadence Response Center at
+1-877-CDS-4911 or send email to support@cadence.com
+
+For more information on Cadence's Verilog-XL product line send email to
+talkv@cadence.com
+
+Compiling source file "../../../bench/verilog/oc8051_tb.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../bench/verilog/oc8051_tb.v"
+Compiling source file "../../../rtl/verilog/oc8051_top.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_top.v"
+Compiling source file "../../../rtl/verilog/oc8051_alu_src1_sel.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_alu_src1_sel.v",                        
+          48: 
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_alu_src1_sel.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_alu_src1_sel.v",                        
+          51: 
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_alu_src1_sel.v"
+Compiling source file "../../../rtl/verilog/oc8051_alu_src2_sel.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_alu_src2_sel.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_alu_src2_sel.v"
+Compiling source file "../../../rtl/verilog/oc8051_alu_src3_sel.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_alu_src3_sel.v"
+Compiling source file "../../../rtl/verilog/oc8051_alu.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_alu.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_alu.v"
+Compiling source file "../../../rtl/verilog/oc8051_decoder.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_decoder.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_decoder.v"
+Compiling source file "../../../rtl/verilog/oc8051_divide.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_divide.v", 48: 
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_divide.v"
+Compiling source file "../../../rtl/verilog/oc8051_immediate_sel.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_immediate_sel.v",                       
+          49: 
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_immediate_sel.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_immediate_sel.v",                       
+          52: 
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_immediate_sel.v"
+Compiling source file "../../../rtl/verilog/oc8051_multiply.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_multiply.v", 49: 
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_multiply.v"
+Compiling source file "../../../rtl/verilog/oc8051_op_select.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_op_select.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_op_select.v"
+Compiling source file "../../../rtl/verilog/oc8051_pc.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_pc.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_pc.v"
+Compiling source file "../../../rtl/verilog/oc8051_reg8.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_reg8.v", 48: 
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_reg8.v"
+Compiling source file "../../../rtl/verilog/oc8051_reg2.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_reg2.v"
+Compiling source file "../../../rtl/verilog/oc8051_reg1.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_reg1.v"
+Compiling source file "../../../rtl/verilog/oc8051_reg4.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_reg4.v"
+Compiling source file "../../../rtl/verilog/oc8051_ram_wr_sel.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_ram_wr_sel.v", 48: 
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ram_wr_sel.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_ram_wr_sel.v", 51: 
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ram_wr_sel.v"
+Compiling source file "../../../rtl/verilog/oc8051_ram_rd_sel.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_ram_rd_sel.v", 48: 
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ram_rd_sel.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_ram_rd_sel.v", 51: 
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ram_rd_sel.v"
+Compiling source file "../../../rtl/verilog/oc8051_ram_top.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ram_top.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ram_top.v"
+Compiling source file "../../../sim/rtl_sim/src/verilog/oc8051_ram.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../sim/rtl_sim/src/verilog/oc8051_ram.v"
+Compiling source file "../../../sim/rtl_sim/src/verilog/oc8051_xram.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../sim/rtl_sim/src/verilog/oc8051_xram.v"
+Compiling source file "../../../rtl/verilog/oc8051_acc.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_acc.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_acc.v"
+Compiling source file "../../../rtl/verilog/oc8051_comp.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_comp.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_comp.v"
+Compiling source file "../../../rtl/verilog/oc8051_sp.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_sp.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_sp.v"
+Compiling source file "../../../sim/rtl_sim/src/verilog/oc8051_uart_test.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../sim/rtl_sim/src/verilog/oc8051_uart_test.v"
+Compiling source file "../../../sim/rtl_sim/src/verilog/oc8051_rom.v"
+Compiling source file "../../../rtl/verilog/oc8051_dptr.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_dptr.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_dptr.v"
+Compiling source file "../../../rtl/verilog/oc8051_cy_select.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_cy_select.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_cy_select.v"
+Compiling source file "../../../rtl/verilog/oc8051_psw.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_psw.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_psw.v"
+Compiling source file "../../../rtl/verilog/oc8051_indi_addr.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_indi_addr.v", 49: 
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_indi_addr.v"
+Compiling source file "../../../rtl/verilog/oc8051_rom_addr_sel.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_rom_addr_sel.v"
+Compiling source file "../../../rtl/verilog/oc8051_ext_addr_sel.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ext_addr_sel.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ext_addr_sel.v"
+Compiling source file "../../../rtl/verilog/oc8051_reg3.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_reg3.v"
+Compiling source file "../../../rtl/verilog/oc8051_ram_sel.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ram_sel.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ram_sel.v"
+Compiling source file "../../../rtl/verilog/oc8051_ports.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ports.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_ports.v"
+Compiling source file "../../../rtl/verilog/oc8051_b_register.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_b_register.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_b_register.v"
+Compiling source file "../../../rtl/verilog/oc8051_uart.v"
+Compiling source file "../../../rtl/verilog/oc8051_int.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_int.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_int.v"
+Compiling source file "../../../rtl/verilog/oc8051_tc.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_tc.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_tc.v"
+Highest level modules:
+oc8051_tb
+
+time                    1 step           0: pass
+time                  176 step           1: pass
+time                  296 step           2: pass
+time                  416 step           3: pass
+time                  536 step           4: pass
+time                  646 step           5: pass
+
+ Done!
+L151 "../../../bench/verilog/oc8051_tb.v": $finish at simulation time 64600
+12 warnings
+0 simulation events (use +profile or +listcounts option to count)
+CPU time: 0.2 secs to compile + 0.1 secs to link + 0.1 secs in simulation
+End of VERILOG-XL 3.30.p001   Aug 14, 2001  13:00:48

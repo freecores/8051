@@ -1,0 +1,84 @@
+#!/bin/csh -f
+
+set iter = 1;
+set failed = 0;
+set all_tests = 0;
+
+
+set tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u xram_m timer_test counter_test interrupt_test serial_test r_bank)
+
+
+# Prepare all .args files
+iteration:
+echo ""
+echo ""
+echo " preparing files"
+echo ""
+
+ncprep -f make > ../out/ncprep.out
+
+if (`tail -1 ../out/ncprep.out | grep Failed` != "") then
+  echo ""
+  cat ../out/ncprep.out
+  exit
+endif
+
+# Run NC-Verilog compiler
+echo ""
+echo "\t@@@"
+echo "\t@@@ Compiling sources"
+echo "\t@@@"
+
+ncvlog -NOCOPYRIGHT -f ncvlog.args > ../out/ncvlog.out
+if ($status != 0) then
+  echo "\t@@@ FAILED"
+  echo ""
+  cat ../out/ncvlog.out
+  exit
+else
+  echo "\t@@@ Passed"
+endif
+
+# Run the NC-Verilog elaborator (build the design hierarchy)
+echo ""
+echo "\t@@@"
+echo "\t@@@ Building design hierarchy (elaboration)"
+echo "\t@@@"
+ncelab -NOTIMINGCHECKS -NOCOPYRIGHT -f ncelab.args > ../out/ncelab.out
+if ($status != 0) then
+  echo "\t@@@ FAILED"
+  echo ""
+  cat ../out/ncelab.out
+  exit
+else
+  echo "\t@@@ Passed"
+endif
+
+# Run the NC-Verilog simulator (simulate the design)
+set i = 0;
+foreach test ($tests)
+	@ i += 1;
+	echo ""
+	echo "\t###"
+	echo "\t### Running test ${i}: ${test}"
+	echo "\t###"
+
+	cp ../src/${test}.in ../src/oc8051_rom.in
+	cp ../src/${test}.vec ../src/oc8051_test.vec
+	ncsim -NOCOPYRIGHT -f ncsim.args > ../out/ncsim.out
+	if ($status != 0) then
+	  cat ../out/ncsim.out
+	  exit
+	else if (`tail -4 ../out/ncsim.out | grep Done` == "") then
+          echo "\t### FAILED"
+        else
+          echo "\t### Passed"
+	endif
+        mv ../out/ncsim.out ../out/${test}.out
+        mv verilog.dump ../out/wave/${test}.dump
+end
+
+rm cds.lib hdl.var RUN_NC
+rm nc*
+rm -r INCA_libs
+

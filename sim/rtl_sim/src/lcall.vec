@@ -1,0 +1,9 @@
+////
+////
+//// test vectors for lcall
+////
+////
+ffffffff
+0axxxxxx
+04xxxxxx
+01xxxxxx
