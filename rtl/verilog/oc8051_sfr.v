@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2003/04/07 14:58:02  simont
+// change sfr's interface.
+//
 // Revision 1.6  2003/04/07 13:29:16  simont
 // change uart to meet timing.
 //
@@ -71,10 +74,15 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_sfr (rst, clk, adr0, adr1, dat0, dat1, dat2, we, bit_in, bit_out, wr_bit,
+module oc8051_sfr (rst, clk, 
+       adr0, adr1, dat0, 
+       dat1, dat2, 
+       we, bit_in, wr_bit,
+       bit_out,
        wr_sfr, acc, ram_wr_sel, ram_rd_sel, sp, sp_w, bank_sel, desAc, desOv, psw_set, srcAc, cy, rmw,
        p0_out, p1_out, p2_out, p3_out, p0_in, p1_in, p2_in, p3_in, rxd, txd, int_ack, intr, int0,
-       int1, reti, int_src, t0, t1, dptr_hi, dptr_lo, t2, t2ex);
+       int1, reti, int_src, t0, t1, dptr_hi, dptr_lo, t2, t2ex,
+       wait_data);
 //
 // rst           (in)  reset - pin
 // clk           (in)  clock - pin
@@ -151,13 +159,13 @@ input [1:0] psw_set;
 input [2:0] ram_rd_sel, ram_wr_sel, wr_sfr;
 input [7:0] adr0, adr1, dat1, dat2, p0_in, p1_in, p2_in, p3_in;
 
-output bit_out, txd, intr, srcAc, cy;
+output bit_out, txd, intr, srcAc, cy, wait_data;
 output [1:0] bank_sel;
 output [7:0] dat0, p0_out, p1_out, p2_out, p3_out, int_src, dptr_hi, dptr_lo, acc;
 output [7:0] sp, sp_w;
 
 
-reg bit_out;
+reg bit_out, wait_data;
 reg [7:0] dat0, adr0_r;
 
 reg wr_bit_r;
@@ -184,6 +192,7 @@ wire [7:0] b_reg, psw,
 	  sp_out;
 
 wire pres_ow;
+
 
 assign cy = psw[7];
 assign srcAc = psw [6];
@@ -282,12 +291,14 @@ always @(posedge clk or posedge rst)
     adr0_r <= #1 8'h00;
     ram_wr_sel_r <= #1 3'b000;
     wr_bit_r <= #1 1'b0;
+//    wait_data <= #1 1'b0;
   end else begin
     adr0_r <= #1 adr0;
     ram_wr_sel_r <= #1 ram_wr_sel;
     wr_bit_r <= #1 wr_bit;
   end
 
+/*
 //
 //set output in case of address (byte)
 always @(adr0_r or psw or acc or dptr_hi or dptr_lo or b_reg or
@@ -364,5 +375,111 @@ begin
       default:             bit_out = 1'b0;
     endcase
 end
+*/
+
+
+
+//
+//set output in case of address (byte)
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    dat0 <= #1 8'h00;
+    wait_data <= #1 1'b0;
+/*  end else if (((adr0==`OC8051_SFR_PSW) & (((adr1==`OC8051_SFR_ACC) & we & !wr_bit_r)) |
+                (({adr1[7:3], 3'b000}==adr0) & we & wr_bit_r)) & !wait_data) begin
+//    dat0 <= #1 {dat1[7:1], p};
+    wait_data <= #1 1'b1;
+  end else if ((adr0==`OC8051_SFR_PSW) & (adr1==adr0) & we & !wr_bit_r & !wait_data) begin
+//    dat0 <= #1 {dat1[7:1], p};
+    wait_data <= #1 1'b1;*/
+  end else if ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) begin				//write and read same address
+    dat0 <= #1 dat1;
+    wait_data <= #1 1'b0;
+  end else if (
+      (((wr_sfr==`OC8051_WRS_ACC1) & (adr0==`OC8051_SFR_ACC)) | 		//write to acc
+      ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) |	//write to dpl
+      ((wr_sfr==`OC8051_WRS_BA)   & (adr0==`OC8051_SFR_B)) |		//write to b
+      (adr1[7] & (adr1==adr0) & we & !wr_bit_r)) & !wait_data) begin				//write and read same address
+//    dat0 <= #1 dat1;
+    wait_data <= #1 1'b1;
+
+  end else if (
+      (((wr_sfr==`OC8051_WRS_ACC2) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
+      ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_HI)) |	//write to dph
+      ((wr_sfr==`OC8051_WRS_BA)   & (adr0==`OC8051_SFR_ACC))) & !wait_data) begin	//write to b
+//    dat0 <= #1 dat2;
+    wait_data <= #1 1'b1;
+
+//  else if (({adr1[7:3], 3'b000}==adr0_r) & we & wr_bit_r)
+//    dat0 <= #1 dat1;
+  end else begin
+    case (adr0)
+      `OC8051_SFR_ACC: 		dat0 <= #1 acc;
+      `OC8051_SFR_PSW: 		dat0 <= #1 psw;
+      `OC8051_SFR_P0: 		dat0 <= #1 p0_data;
+      `OC8051_SFR_P1: 		dat0 <= #1 p1_data;
+      `OC8051_SFR_P2: 		dat0 <= #1 p2_data;
+      `OC8051_SFR_P3: 		dat0 <= #1 p3_data;
+//      `OC8051_SFR_SP: 		dat0 <= #1 sp_out;
+      `OC8051_SFR_SP: 		dat0 <= #1 sp;
+      `OC8051_SFR_B: 		dat0 <= #1 b_reg;
+      `OC8051_SFR_DPTR_HI: 	dat0 <= #1 dptr_hi;
+      `OC8051_SFR_DPTR_LO: 	dat0 <= #1 dptr_lo;
+      `OC8051_SFR_SCON: 	dat0 <= #1 scon;
+      `OC8051_SFR_SBUF: 	dat0 <= #1 sbuf;
+      `OC8051_SFR_PCON: 	dat0 <= #1 pcon;
+      `OC8051_SFR_TH0: 		dat0 <= #1 th0;
+      `OC8051_SFR_TH1: 		dat0 <= #1 th1;
+      `OC8051_SFR_TL0: 		dat0 <= #1 tl0;
+      `OC8051_SFR_TL1: 		dat0 <= #1 tl1;
+      `OC8051_SFR_TMOD: 	dat0 <= #1 tmod;
+      `OC8051_SFR_IP: 		dat0 <= #1 ip;
+      `OC8051_SFR_IE: 		dat0 <= #1 ie;
+      `OC8051_SFR_TCON: 	dat0 <= #1 tcon;
+      `OC8051_SFR_RCAP2H: 	dat0 <= #1 rcap2h;
+      `OC8051_SFR_RCAP2L: 	dat0 <= #1 rcap2l;
+      `OC8051_SFR_TH2:    	dat0 <= #1 th2;
+      `OC8051_SFR_TL2:    	dat0 <= #1 tl2;
+      `OC8051_SFR_T2CON:  	dat0 <= #1 t2con;
+      default: 			dat0 <= #1 8'h00;
+    endcase
+    wait_data <= #1 1'b0;
+  end
+end
+
+
+//
+//set output in case of address (bit)
+always @(posedge clk or posedge rst)
+begin
+  if (rst)
+    bit_out <= #1 1'h0;
+  else if (
+          ((adr1[7:3]==adr0[7:3]) & (~&adr1[2:0]) &  we & !wr_bit_r) |
+          ((wr_sfr==`OC8051_WRS_ACC1) & (adr0[7:3]==`OC8051_SFR_B_ACC)) | 	//write to acc
+          ((wr_sfr==`OC8051_WRS_BA)   & (adr0[7:3]==`OC8051_SFR_B_B)))		//write to b
+
+    bit_out <= #1 dat1[adr0[2:0]];
+  else if ((adr1==adr0) & we & wr_bit_r)
+    bit_out <= #1 bit_in;
+  else
+    case (adr0[7:3])
+      `OC8051_SFR_B_ACC:   bit_out <= #1 acc[adr0[2:0]];
+      `OC8051_SFR_B_PSW:   bit_out <= #1 psw[adr0[2:0]];
+      `OC8051_SFR_B_P0:    bit_out <= #1 p0_data[adr0[2:0]];
+      `OC8051_SFR_B_P1:    bit_out <= #1 p1_data[adr0[2:0]];
+      `OC8051_SFR_B_P2:    bit_out <= #1 p2_data[adr0[2:0]];
+      `OC8051_SFR_B_P3:    bit_out <= #1 p3_data[adr0[2:0]];
+      `OC8051_SFR_B_B:     bit_out <= #1 b_reg[adr0[2:0]];
+      `OC8051_SFR_B_IP:    bit_out <= #1 ip[adr0[2:0]];
+      `OC8051_SFR_B_IE:    bit_out <= #1 ie[adr0[2:0]];
+      `OC8051_SFR_B_TCON:  bit_out <= #1 tcon[adr0[2:0]];
+      `OC8051_SFR_B_SCON:  bit_out <= #1 scon[adr0[2:0]];
+      `OC8051_SFR_B_T2CON: bit_out <= #1 t2con[adr0[2:0]];
+      default:             bit_out <= #1 1'b0;
+    endcase
+end
+
 
 endmodule

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.20  2003/04/03 19:13:28  simont
+// Include instruction cache.
+//
 // Revision 1.19  2003/04/02 15:08:30  simont
 // raname signals.
 //
@@ -233,19 +236,20 @@ wire        iack_i,
 	    icyc_o;
 wire [31:0] idat_i;
 wire [15:0] iadr_o;
-
+wire wait_data;
 
 
 //
 // decoder
 oc8051_decoder oc8051_decoder1(.clk(wb_clk_i), .rst(wb_rst_i), .op_in(op1_n), .op1_c(op1_cur),
-     .ram_rd_sel(ram_rd_sel), .ram_wr_sel(ram_wr_sel), .bit_addr(bit_addr),
+     .ram_rd_sel_o(ram_rd_sel), .ram_wr_sel_o(ram_wr_sel), .bit_addr(bit_addr),
      .src_sel1(src_sel1), .src_sel2(src_sel2),
-     .src_sel3(src_sel3), .alu_op(alu_op), .psw_set(psw_set),
-     .cy_sel(cy_sel), .wr(wr), .pc_wr(pc_wr),
+     .src_sel3(src_sel3), .alu_op_o(alu_op), .psw_set(psw_set),
+     .cy_sel(cy_sel), .wr_o(wr), .pc_wr(pc_wr),
      .pc_sel(pc_wr_sel), .comp_sel(comp_sel), .eq(eq),
-     .wr_sfr(wr_sfr), .rd(rd), .rmw(rmw),
-     .istb(istb), .mem_act(mem_act), .mem_wait(mem_wait));
+     .wr_sfr_o(wr_sfr), .rd(rd), .rmw(rmw),
+     .istb(istb), .mem_act(mem_act), .mem_wait(mem_wait),
+     .wait_data(wait_data));
 
 
 //
@@ -367,7 +371,8 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i), .clk(wb_clk_i), .adr0(rd_addr[7:0]), .adr
 // t/c
        .t0(t0_i), .t1(t1_i), .t2(t2_i), .t2ex(t2ex_i),
 // dptr
-       .dptr_hi(dptr_hi), .dptr_lo(dptr_lo));
+       .dptr_hi(dptr_hi), .dptr_lo(dptr_lo),
+       .wait_data(wait_data));
 
 
 

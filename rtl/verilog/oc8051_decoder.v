@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.14  2003/01/13 14:14:40  simont
+// replace some modules
+//
 // Revision 1.13  2002/10/23 16:53:39  simont
 // fix bugs in instruction interface
 //
@@ -64,10 +67,12 @@
 
 
 module oc8051_decoder (clk, rst, op_in, op1_c,
-  ram_rd_sel, ram_wr_sel, bit_addr, wr, wr_sfr,
+  ram_rd_sel_o, ram_wr_sel_o,
+  bit_addr, wr_o, wr_sfr_o,
   src_sel1, src_sel2, src_sel3,
-  alu_op, psw_set, eq, cy_sel, comp_sel,
-  pc_wr, pc_sel, rd, rmw, istb, mem_act, mem_wait);
+  alu_op_o, psw_set, eq, cy_sel, comp_sel,
+  pc_wr, pc_sel, rd, rmw, istb, mem_act, mem_wait,
+  wait_data);
 
 //
 // clk          (in)  clock
@@ -93,13 +98,13 @@ module oc8051_decoder (clk, rst, op_in, op1_c,
 // pc_wait      (out)
 //
 
-input clk, rst, eq, mem_wait;
+input clk, rst, eq, mem_wait, wait_data;
 input [7:0] op_in;
 
-output wr, bit_addr, pc_wr, rmw, istb, src_sel3;
+output wr_o, bit_addr, pc_wr, rmw, istb, src_sel3;
 output [1:0] psw_set, cy_sel, comp_sel;
-output [2:0] mem_act, src_sel1, src_sel2, ram_rd_sel, ram_wr_sel, pc_sel, wr_sfr, op1_c;
-output [3:0] alu_op;
+output [2:0] mem_act, src_sel1, src_sel2, ram_rd_sel_o, ram_wr_sel_o, pc_sel, wr_sfr_o, op1_c;
+output [3:0] alu_op_o;
 output rd;
 
 reg rmw;
@@ -111,21 +116,28 @@ reg [2:0] src_sel2, mem_act, src_sel1, ram_wr_sel, ram_rd_sel, pc_sel, wr_sfr;
 //
 // state        if 2'b00 then normal execution, sle instructin that need more than one clock
 // op           instruction buffer
-reg [1:0] state;
-reg [7:0] op;
+reg  [1:0] state;
+reg  [7:0] op;
 wire [7:0] op_cur;
+reg  [2:0] ram_rd_sel_r;
 
 reg stb_i;
 
-assign rd = !state[0] && !state[1];// && !stb_o;
+assign rd = !state[0] && !state[1] && !wait_data;// && !stb_o;
 
 assign istb = (!state[1]) && stb_i;
 
 
 
-assign op_cur = (state[0] || state[1] || mem_wait) ? op : op_in;
+assign op_cur = (state[0] || state[1] || mem_wait || wait_data) ? op : op_in;
+
 assign op1_c = op_cur[2:0];
 
+assign alu_op_o     = wait_data ? `OC8051_ALU_NOP : alu_op;
+assign wr_sfr_o     = wait_data ? `OC8051_WRS_N   : wr_sfr;
+assign ram_rd_sel_o = wait_data ? ram_rd_sel_r    : ram_rd_sel;
+assign ram_wr_sel_o = wait_data ? `OC8051_RWS_DC  : ram_wr_sel;
+assign wr_o         = wait_data ? 1'b0            : wr;
 
 //
 // main block
@@ -1531,7 +1543,7 @@ begin
     cy_sel <= #1 `OC8051_CY_0;
     src_sel3 <= #1 `OC8051_AS3_DC;
     wr_sfr <= #1 `OC8051_WRS_N;
-  end else  begin
+  end else if (!wait_data) begin
     case (state)
       2'b01: begin
     casex (op_cur)
@@ -3219,7 +3231,7 @@ always @(posedge clk or posedge rst)
 begin
   if (rst)
     state <= #1 2'b01;
-  else if  (!mem_wait) begin
+  else if  (!mem_wait & !wait_data) begin
     case (state)
       2'b10: state <= #1 2'b01;
       2'b11: state <= #1 2'b10;
@@ -3280,6 +3292,15 @@ begin
       `OC8051_MOVC_PC : mem_act <= #1 `OC8051_MAS_CODE;
       default : mem_act <= #1 `OC8051_MAS_NO;
     endcase
+end
+
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    ram_rd_sel_r <= #1 3'h0;
+  end else begin
+    ram_rd_sel_r <= #1 ram_rd_sel;
+  end
 end
 
 endmodule

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.10  2003/04/07 14:58:02  simont
+// change sfr's interface.
+//
 // Revision 1.9  2003/01/13 14:14:40  simont
 // replace some modules
 //
@@ -77,31 +80,45 @@ output p;
 output [7:0] data_out;
 
 reg [7:0] data_out;
+reg [7:0] acc;
 
+wire wr_acc, wr2_acc, wr_bit_acc;
 //
 //calculates parity
-assign p = ^data_out;
+assign p = ^acc;
 
+assign wr_acc     = (wr_sfr==`OC8051_WRS_ACC1) | (wr & !wr_bit & (wr_addr==`OC8051_SFR_ACC));
+assign wr2_acc    = (wr_sfr==`OC8051_WRS_ACC2) | (wr_sfr==`OC8051_WRS_BA);
+assign wr_bit_acc = (wr & wr_bit & (wr_addr[7:3]==`OC8051_SFR_B_ACC));
 //
 //writing to acc
-//must check if write high and correct address
+always @(wr_sfr or data2_in or wr2_acc or wr_acc or wr_bit_acc or wr_addr[2:0] or data_in or bit_in or data_out)
+begin
+  if (wr2_acc)
+    acc = data2_in;
+  else if (wr_acc)
+    acc = data_in;
+  else if (wr_bit_acc)
+    case (wr_addr[2:0])
+      3'b000: acc = {data_out[7:1], bit_in};
+      3'b001: acc = {data_out[7:2], bit_in, data_out[0]};
+      3'b010: acc = {data_out[7:3], bit_in, data_out[1:0]};
+      3'b011: acc = {data_out[7:4], bit_in, data_out[2:0]};
+      3'b100: acc = {data_out[7:5], bit_in, data_out[3:0]};
+      3'b101: acc = {data_out[7:6], bit_in, data_out[4:0]};
+      3'b110: acc = {data_out[7],   bit_in, data_out[5:0]};
+      default: acc = {bit_in, data_out[6:0]};
+    endcase
+  else
+    acc = data_out;
+end
+
 always @(posedge clk or posedge rst)
 begin
   if (rst)
     data_out <= #1 `OC8051_RST_ACC;
-  else if ((wr_sfr==`OC8051_WRS_ACC2) || (wr_sfr==`OC8051_WRS_BA))
-    data_out <= #1 data2_in;
-  else if ((wr_sfr==`OC8051_WRS_ACC1))
-    data_out <= #1 data_in;
-  else if (wr) begin
-    if (!wr_bit) begin
-      if (wr_addr==`OC8051_SFR_ACC)
-        data_out <= #1 data_in;
-    end else begin
-      if (wr_addr[7:3]==`OC8051_SFR_B_ACC)
-        data_out[wr_addr[2:0]] <= #1 bit_in;
-    end
-  end
+  else
+    data_out <= #1 acc;
 end
 
 endmodule

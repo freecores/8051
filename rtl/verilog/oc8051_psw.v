@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.10  2003/04/07 14:58:02  simont
+// change sfr's interface.
+//
 // Revision 1.9  2003/01/13 14:14:41  simont
 // replace some modules
 //
@@ -87,13 +90,13 @@ input [7:0] wr_addr, data_in;
 output [1:0] bank_sel;
 output [7:0] data_out;
 
-reg [7:0] data;
+reg [7:1] data;
 wire wr_psw;
 
 assign wr_psw = (wr & (wr_addr==`OC8051_SFR_PSW) && !wr_bit);
 
 assign bank_sel = wr_psw ? data_in[4:3]:data[4:3];
-assign data_out = data;
+assign data_out = {data[7:1], p};
 
 //
 //case writing to psw
@@ -134,7 +137,6 @@ begin
         end
       endcase
     end
-    data[0] <= #1 p;
   end
 end
 
