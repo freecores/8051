@@ -156,10 +156,10 @@ wire [1:0] pc_wr_sel;
 
 //
 // op1_n                from op_select to decoder
-// op2_n, op2_nr        output of op_select, to immediate_sel1, pc1, comp1
+// op2_n,         output of op_select, to immediate_sel1, pc1, comp1
 // op3_n,         output of op_select, to immediate_sel1, ram_wr_sel1
 // op2_dr,      output of op_select, to ram_rd_sel1, ram_wr_sel1
-wire [7:0] op1_n, op2_n, op2_dr, op3_n, op2_nr, pc_hi_r;
+wire [7:0] op1_n, op2_n, op2_dr, op3_n, pc_hi_r;
 wire [7:0] op2_dr_r, ri_r, op3_nr;
 wire [2:0] op1_r;
 
@@ -195,7 +195,6 @@ oc8051_reg1 oc8051_reg1_sre_sel3(.clk(clk), .rst(rst), .din(src_sel3), .dout(src
 oc8051_reg1 oc8051_reg1_wr (.clk(clk), .rst(rst), .din(wr), .dout(wr_r));
 //oc8051_reg8 oc8051_reg8_wr_addr (.clk(clk), .rst(rst), .din(wr_addr1), .dout(wr_addr_r));
 oc8051_reg3 oc8051_reg3_wr_sel(.clk(clk), .rst(rst), .din(ram_wr_sel), .dout(ram_wr_sel_r));
-oc8051_reg8 oc8051_reg8_ram_op(.clk(clk), .rst(rst), .din(op2_n), .dout(op2_nr));
 oc8051_reg3 oc8051_reg3_op1(.clk(clk), .rst(rst), .din(op1_n[2:0]), .dout(op1_r));
 oc8051_reg8 oc8051_reg8_op2(.clk(clk), .rst(rst), .din(op2_dr), .dout(op2_dr_r));
 oc8051_reg8 oc8051_reg8_ri(.clk(clk), .rst(rst), .din(ri), .dout(ri_r));

@@ -6,7 +6,7 @@
 //// http://www.opencores.org/cores/8051/ 			  ////
 //// 								  ////
 //// Description 						  ////
-//// Two cycle implementation of division used in alu.v	          ////
+//// Four cycle implementation of division used in alu.v	  ////
 //// 								  ////
 //// To Do: 							  ////
 ////  check if compiler does proper optimizations of the code     ////
@@ -70,11 +70,12 @@ output desOv;
 output [7:0] des1, des2;
 
 // wires
-reg desOv;
+wire desOv;
 wire div0, div1;
-wire [7:0] rem1, rem2;
+wire [7:0] rem0, rem1, rem2;
+wire [8:0] sub0, sub1;
 wire [15:0] cmp0, cmp1;
-reg [7:0] div_out, rem_out;
+wire [7:0] div_out, rem_out;
 wire [7:0] div;
 
 // real registers
@@ -82,31 +83,26 @@ reg [1:0] cycle;
 reg [5:0] tmp_div;
 reg [7:0] tmp_rem;
 
-/* This logic is very redundant, but it should be optimized by
-   synthesizer */
+// The main logic
 assign cmp1 = src2 << ({2'h3 - cycle, 1'b0} + 3'h1);
 assign cmp0 = src2 << ({2'h3 - cycle, 1'b0} + 3'h0);
 
 assign rem2 = cycle != 0 ? tmp_rem : src1;
-assign div1 = cmp1 <= rem2;
-assign rem1 = rem2 - (div1 ? cmp1[7:0] : 8'h0);
-assign div0 = cmp0 <= rem1;
+
+assign sub1 = {1'b0, rem2} - {1'b0, cmp1[7:0]};
+assign div1 = |cmp1[15:8] ? 1'b0 : !sub1[8];
+assign rem1 = div1 ? sub1[7:0] : cmp1[7:0];
+
+assign sub0 = {1'b0, rem1} - {1'b0, cmp0[7:0]};
+assign div0 = |cmp0[15:8] ? 1'b0 : !sub0[8];
+assign rem0 = div0 ? sub0[7:0] : cmp0[7:0];
 
 //
 // in clock cycle 0 we first calculate two MSB bits, ...
 // till finally in clock cycle 3 we calculate two LSB bits
-always @(rem1 or div0 or cmp0 or tmp_div or src2)
-begin
-  if (src2 == 8'h0) begin
-    desOv = 1'b1;
-    div_out = 8'hx;
-    rem_out = 8'hx;
-  end else begin
-    desOv = 1'b0;
-    rem_out = rem1 - (div0 ? cmp0[7:0] : 8'h0);
-    div_out = {tmp_div, div1, div0};
-  end
-end
+assign div_out = {tmp_div, div1, div0};
+assign rem_out = rem0;
+assign desOv = src2 == 8'h0;
 
 //
 // divider works in four clock cycles -- 0, 1, 2 and 3
