@@ -336,14 +336,11 @@
 //
 // compare source select
 //
-`define OC8051_CSS_AZ 3'b000 // eq = accumulator == zero
-`define OC8051_CSS_AR 3'b001 // eq = accumulator == ram
-`define OC8051_CSS_AC 3'b010 // eq = accumulator == constant
-`define OC8051_CSS_CR 3'b011 // eq = constant == ram
-`define OC8051_CSS_DES 3'b100 // eq = destination == zero
-`define OC8051_CSS_CY 3'b101 // eq = cy
-`define OC8051_CSS_BIT 3'b110 // eq = b_in
-`define OC8051_CSS_DC 3'b000 // don't care
+`define OC8051_CSS_AZ 2'b00 // eq = accumulator == zero
+`define OC8051_CSS_DES 2'b01 // eq = destination == zero
+`define OC8051_CSS_CY 2'b10 // eq = cy
+`define OC8051_CSS_BIT 2'b11 // eq = b_in
+`define OC8051_CSS_DC 2'b00 // don't care
 
 
 //

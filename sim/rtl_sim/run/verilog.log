@@ -40,8 +40,8 @@ Command arguments:
     ../../../rtl/verilog/oc8051_int.v
     ../../../rtl/verilog/oc8051_tc.v
 
-VERILOG-XL 3.30.p001 log file created Jul  6, 2001  20:26:55
-VERILOG-XL 3.30.p001   Jul  6, 2001  20:26:55
+VERILOG-XL 3.30.p001 log file created Aug  3, 2001  12:27:17
+VERILOG-XL 3.30.p001   Aug  3, 2001  12:27:17
 
 Copyright (c) 1995 Cadence Design Systems, Inc.  All Rights Reserved.
 Unpublished -- rights reserved under the copyright laws of the United States.
@@ -103,8 +103,14 @@ Continuing compilation of source file "../../../rtl/verilog/oc8051_alu.v"
 Compiling included source file "oc8051_defines.v"
 Continuing compilation of source file "../../../rtl/verilog/oc8051_alu.v"
 Compiling source file "../../../rtl/verilog/oc8051_decoder.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_decoder.v", 49: 
 Compiling included source file "oc8051_timescale.v"
 Continuing compilation of source file "../../../rtl/verilog/oc8051_decoder.v"
+
+Warning!  Code following `include command is ignored        [Verilog-CAICI]    
+          "../../../rtl/verilog/oc8051_decoder.v", 52: 
 Compiling included source file "oc8051_defines.v"
 Continuing compilation of source file "../../../rtl/verilog/oc8051_decoder.v"
 Compiling source file "../../../rtl/verilog/oc8051_divide.v"
@@ -113,12 +119,6 @@ Warning!  Code following `include command is ignored        [Verilog-CAICI]
           "../../../rtl/verilog/oc8051_divide.v", 51: 
 Compiling included source file "oc8051_timescale.v"
 Continuing compilation of source file "../../../rtl/verilog/oc8051_divide.v"
-
-Warning!  Redundant digits given in hexadecimal number      [Verilog-RDGHN]    
-          "../../../rtl/verilog/oc8051_divide.v", 94: 
-
-Warning!  Redundant digits given in hexadecimal number      [Verilog-RDGHN]    
-          "../../../rtl/verilog/oc8051_divide.v", 95: 
 Compiling source file "../../../rtl/verilog/oc8051_immediate_sel.v"
 
 Warning!  Code following `include command is ignored        [Verilog-CAICI]    
@@ -135,7 +135,7 @@ Continuing compilation of source file "../../../rtl/verilog/oc8051_immediate_sel
 Compiling source file "../../../rtl/verilog/oc8051_multiply.v"
 
 Warning!  Code following `include command is ignored        [Verilog-CAICI]    
-          "../../../rtl/verilog/oc8051_multiply.v", 52: 
+          "../../../rtl/verilog/oc8051_multiply.v", 56: 
 Compiling included source file "oc8051_timescale.v"
 Continuing compilation of source file "../../../rtl/verilog/oc8051_multiply.v"
 Compiling source file "../../../rtl/verilog/oc8051_op_select.v"
@@ -263,6 +263,10 @@ Continuing compilation of source file "../../../rtl/verilog/oc8051_b_register.v"
 Compiling included source file "oc8051_defines.v"
 Continuing compilation of source file "../../../rtl/verilog/oc8051_b_register.v"
 Compiling source file "../../../rtl/verilog/oc8051_uart.v"
+Compiling included source file "oc8051_timescale.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_uart.v"
+Compiling included source file "oc8051_defines.v"
+Continuing compilation of source file "../../../rtl/verilog/oc8051_uart.v"
 Compiling source file "../../../rtl/verilog/oc8051_int.v"
 Compiling included source file "oc8051_defines.v"
 Continuing compilation of source file "../../../rtl/verilog/oc8051_int.v"
@@ -277,12 +281,15 @@ Highest level modules:
 oc8051_tb
 
 time                    1 step           0: pass
-time                   36 faulire: mismatch on ports in step           1
- p0_out ff p1_out 00 p2_out ff
- testvecp 00xxxx
- p_out   ff00ff
-L142 "../../../bench/verilog/oc8051_tb.v": $finish at simulation time 5800
+time                  186 step           1: pass
+time                  306 step           2: pass
+time                  426 step           3: pass
+time                  546 step           4: pass
+time                  656 step           5: pass
+
+ Done!
+L155 "../../../bench/verilog/oc8051_tb.v": $finish at simulation time 65600
 14 warnings
 0 simulation events (use +profile or +listcounts option to count)
-CPU time: 0.2 secs to compile + 0.1 secs to link + 0.1 secs in simulation
-End of VERILOG-XL 3.30.p001   Jul  6, 2001  20:26:56
+CPU time: 0.3 secs to compile + 0.1 secs to link + 0.1 secs in simulation
+End of VERILOG-XL 3.30.p001   Aug  3, 2001  12:27:19

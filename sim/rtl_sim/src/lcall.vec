@@ -3,7 +3,6 @@
 //// test vectors for lcall
 ////
 ////
-ffffffff
-0axxxxxx
-04xxxxxx
-01xxxxxx
+ffffff
+0axxxx
+04xxxx

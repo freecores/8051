@@ -5,9 +5,76 @@
 	lcall DIV16U;
 	mov p0, r5;
 	mov p0, r4;
-	mov p0, r1;
-	mov p0, r0;
-	
+	mov p0, r7;
+	mov p0, r6;
+
+;
+;  testing div
+;
+
+  mov a, #0e5h;
+  mov b, #072h;
+  div ab;
+  mov p0, a;
+  mov p0, b;
+  jnc ok1;
+  mov p1, #00h;
+  
+ok1:
+  mov c, psw.2;
+  jnc ok2;
+  mov p1, #01h;
+
+ok2:
+  mov a, #0d3h;
+  mov b, #00h;
+  div ab;
+  jnc ok3;
+  mov p1, #02h;
+
+ok3:
+  mov c, psw.2;
+  jc ok4;
+  mov p1, #03h;
+
+
+;
+;testing mul
+;
+
+ok4:
+  mov a, #03h
+  mov b, #04h
+  mul ab;
+  mov p0, a;
+  mov p0, b;
+  jnc ok5;
+  mov p1, #04h;
+
+ok5:
+  mov c, psw.2;
+  jnc ok6;
+  mov p1, #05h;
+
+ok6:
+  mov a, #057h;
+  mov b, #0eeh;
+  mul ab;
+  mov p0, a;
+  mov p0, b;
+  jnc ok7;
+  mov p1, #06h;
+
+ok7:
+  mov c, psw.2;
+  jc ok8;
+  mov p1, #07h;
+
+ok8:
+  mov p0, #00h;
+  nop
+  sjmp ok8;
+  
 
 
 

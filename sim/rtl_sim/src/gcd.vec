@@ -3,12 +3,9 @@
 //// test vectors for gcd
 ////
 ////
-ffffffff
-24xxxxxx
-19xxxxxx
-0exxxxxx
-03xxxxxx
-0308xxxx
-0305xxxx
-0302xxxx
-0102xxxx
+ffffff
+24xxxx
+19xxxx
+0exxxx
+03xxxx
+01xxxx

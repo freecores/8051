@@ -83,7 +83,7 @@ assign bit_data_out = rd_data[bit_select];
 
 
 
-oc8051_ram oc8051_ram1(.clk(clk), .rd_addr(rd_addr_m), .rd_data(rd_data), .wr_addr(wr_addr_m),
+oc8051_ram oc8051_ram1(.clk(clk), .rst(rst), .rd_addr(rd_addr_m), .rd_data(rd_data), .wr_addr(wr_addr_m),
          .wr_data(wr_data_m), .wr(wr));
 
 

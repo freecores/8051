@@ -3,13 +3,13 @@
 //// test vectors for fib
 ////
 ////
-ffffffff
-01xxxxxx
-02xxxxxx
-03xxxxxx
-05xxxxxx
-08xxxxxx
-0dxxxxxx
-15xxxxxx
-22xxxxxx
-37xxxxxx
+ffffff
+01xxxx
+02xxxx
+03xxxx
+05xxxx
+08xxxx
+0dxxxx
+15xxxx
+22xxxx
+37xxxx

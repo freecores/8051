@@ -5,7 +5,7 @@ set failed = 0;
 set all_tests = 0;
 
 
-set tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u xram_m timer_test counter_test interrupt_test serial_test r_bank)
+set tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m timer_test counter_test interrupt_test serial_test r_bank)
 
 
 # Prepare all .args files

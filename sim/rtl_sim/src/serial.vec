@@ -3,11 +3,12 @@
 //// test vectors for serial
 ////
 ////
-ffffffff
-02xxxxxx
-82xxxxxx
-42xxxxxx
-4axxxxxx
-c2xxxxxx
-caxxxxxx
-00xxxxxx
+ffffff
+02xxxx
+82xxxx
+a2xxxx
+42xxxx
+4axxxx
+c2xxxx
+caxxxx
+02xxxx
