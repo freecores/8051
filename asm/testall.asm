@@ -35,26 +35,31 @@ done1:
 	mov  r5,#245
 	mov  r7,#250
 
+	mov  a,#10
 	add  a,r0
 	jc   fail2 
 	subb a,#127
 	jnz  fail2
 
+	mov  a,#10
 	add  a,r2
 	jc   fail2 
 	subb a,#137
 	jnz  fail2
 
+	mov  a,#10
 	add  a,r3
 	jc   fail2 
 	subb a,#138
 	jnz  fail2
 
+	mov  a,#10
 	add  a,r5
 	jc   fail2 
 	subb a,#255
 	jnz  fail2
 
+	mov  a,#10
 	add  a,r7
 	jnc  fail2 
 	clr  c
@@ -111,24 +116,28 @@ done2:
 	jnz  fail3
 
 	mov  100,#127
+	mov  a,#10
 	add  a,100
 	jc   fail3 
 	subb a,#137
 	jnz  fail3
 
 	mov  100,#128
+	mov  a,#10
 	add  a,100
 	jc   fail3 
 	subb a,#138
 	jnz  fail3
 
 	mov  100,#245
+	mov  a,#10
 	add  a,100
 	jc   fail3 
 	subb a,#255
 	jnz  fail3
 
 	mov  100,#250
+	mov  a,#10
 	add  a,100
 	jnc   fail3 
 	clr  c
@@ -190,17 +199,19 @@ done3:
 	subb a,#50
 	jnz  fail4
 
+	mov  a,#40
 	add  a,@r1
 	jc   fail4
 	subb a,#140
 	jnz  fail4
 
+	mov  a,#10
 	mov  r1,#102
-	mov  102,#200
+	mov  102,#250
 	add  a,@r1
-	jnc  fail4
+	jnc   fail4
 	clr  c
-	subb a,#240
+	subb a,#4
 	jnz  fail4
 	ljmp done4
 
@@ -219,21 +230,25 @@ done4:
 	subb a,#127
 	jnz  fail5
 
+	mov  a,#10
 	add  a,#127
 	jc   fail5 
 	subb a,#137
 	jnz  fail5
 
+	mov  a,#10
 	add  a,#128
 	jc   fail5 
 	subb a,#138
 	jnz  fail5
 
+	mov  a,#10
 	add  a,#245
 	jc   fail5 
 	subb a,#255
 	jnz  fail5
 
+	mov  a,#10
 	add  a,#250
 	jnc   fail5 
 	clr  c
@@ -293,6 +308,7 @@ done5:
 	subb a,#20
 	jnz  fail6
 
+	mov  a,#10
 	setb c
 	addc a,r0
 	jc   fail6
@@ -306,6 +322,7 @@ done5:
 	subb a,#110
 	jnz  fail6
 
+	mov  a,#100
 	setb c
 	addc a,r0
 	jc   fail6
@@ -320,6 +337,7 @@ done5:
 	subb a,#4
 	jnz  fail6
 
+	mov  a,#250
 	setb c
 	addc a,r0
 	jnc  fail6
@@ -345,6 +363,7 @@ done6:
 	subb a,#20
 	jnz  fail7
 
+	mov  a,#10
 	setb c
 	addc a,100
 	jc   fail7
@@ -358,6 +377,7 @@ done6:
 	subb a,#110
 	jnz  fail7
 
+	mov  a,#100
 	setb c
 	addc a,100
 	jc   fail7
@@ -372,6 +392,7 @@ done6:
 	subb a,#4
 	jnz  fail7
 
+	mov  a,#250
 	setb c
 	addc a,100
 	jnc  fail7
@@ -398,6 +419,7 @@ done7:
 	subb a,#21
 	jnz  fail8
 
+	mov  a,#10
 	setb c
 	addc a,@r0
 	jc   fail8
@@ -411,6 +433,7 @@ done7:
 	subb a,#111
 	jnz  fail8
 
+	mov  a,#100
 	setb c
 	addc a,@r0
 	jc   fail8
@@ -425,6 +448,7 @@ done7:
 	subb a,#5
 	jnz  fail8
 
+	mov  a,#250
 	setb c
 	addc a,@r0
 	jnc  fail8
@@ -450,6 +474,7 @@ done8:
 	subb a,#28
 	jnz  fail9
 
+	mov  a,#14
 	setb c
 	addc a,#15
 	jc   fail9
@@ -463,6 +488,7 @@ done8:
 	subb a,#130
 	jnz  fail9
 
+	mov  a,#110
 	setb c
 	addc a,#20
 	jc   fail9
@@ -477,6 +503,7 @@ done8:
 	subb a,#5
 	jnz  fail9
 
+	mov  a,#250
 	setb c
 	addc a,#11
 	jnc  fail9
@@ -510,8 +537,8 @@ done10:clr  c
 	mov  a,#171
 	anl  a,r0
 	jc   fail11
-	jnz  fail11
-	subb a,#166
+	jz   fail11
+	subb a,#170
 	jnz  fail11
 
 	mov  r0,#190
@@ -522,7 +549,7 @@ done10:clr  c
 	jz   fail11
 	jnc  fail11
 	clr  c
-	subb a,#0
+	subb a,#20
 	jnz  fail11
 	ljmp done11
 
@@ -540,8 +567,8 @@ done11:
 	mov  a,#171
 	anl  a,127
 	jc   fail12
-	jnz  fail12
-	subb a,#166
+	jz   fail12
+	subb a,#170
 	jnz  fail12
 
 	mov  127,#190
@@ -552,7 +579,7 @@ done11:
 	jz   fail12
 	jnc  fail12
 	clr  c
-	subb a,#0
+	subb a,#20
 	jnz  fail12
 	ljmp done12
 
@@ -571,8 +598,8 @@ done12:
 	mov  a,#250
 	anl  a,@r0
 	jc   fail13
-	jnz  fail13
-	subb a,#166
+	jz   fail13
+	subb a,#170
 	jnz  fail13
 
 	mov  127,#190
@@ -583,7 +610,7 @@ done12:
 	jz   fail13
 	jnc  fail13
 	clr  c
-	subb a,#0
+	subb a,#20
 	jnz  fail13
 	ljmp done13
 
@@ -602,8 +629,8 @@ done13:
 	mov  a,#250
 	anl  a,#171
 	jc   fail14
-	jnz  fail14
-	subb a,#166
+	jz   fail14
+	subb a,#170
 	jnz  fail14
 
 	mov  a,#190
@@ -614,7 +641,7 @@ done13:
 	jz   fail14
 	jnc  fail14
 	clr  c
-	subb a,#0
+	subb a,#20
 	jnz  fail14
 	ljmp done14
 
@@ -635,8 +662,8 @@ done14:
 	anl  127,a
 	jc   fail15
 	mov  a,127
-	jnz  fail15
-	subb a,#166
+	jz   fail15
+	subb a,#170
 	jnz  fail15
 
 	mov  127,#190
@@ -648,7 +675,7 @@ done14:
 	jz   fail15
 	jnc  fail15
 	clr  c
-	subb a,#0
+	subb a,#20
 	jnz  fail15
 	ljmp done15
 
@@ -666,20 +693,18 @@ done15:
 	anl  127,#171
 	jc   fail16
 	mov  a,127
-	jnz  fail16
-	subb a,#166
+	jz   fail16
+	subb a,#170
 	jnz  fail16
 
 	mov  127,#190
-	mov  a,#84
-	inc  a
 	setb c
 	anl  127,#85
 	mov  a,127
 	jz   fail16
 	jnc  fail16
 	clr  c
-	subb a,#0
+	subb a,#20
 	jnz  fail16
 	ljmp done16
 
@@ -712,15 +737,19 @@ done17:
 	mov  a,#128
 	clr  c
 	anl  c,/acc.7
-	jnc  fail18
+	jc   fail18
 	mov  a,#128
 	setb c
 	anl  c,/acc.7
 	jc   fail18
+	mov  a,#128
+	setb c
+	anl  c,/acc.5
+	jnc  fail18
 	ljmp done18
 
-fail18: 
-	mov  P1,#17
+fail18:
+	mov  P1,#18
 	ljmp failed
 done18:
 
@@ -810,14 +839,14 @@ done21:
 	mov  126,#100
 	mov  127,#101
 	mov  r1,#125
+	cjne @r1,#100, CHECK_EQ_22
+  ljmp fail22
+
+CHECK_EQ_22:
+	jnc  fail22
+	mov  r1,#126
 	cjne @r1,#100,fail22
 	jc   fail22
-
-	mov  r1,#126
-	cjne @r1,#100,CHECK_C_22
-	ljmp fail22
-CHECK_C_22:	;Checks that carry was set
-	jnc  fail22
  
 	mov  r1,#127
 	cjne @r1,#100,CHECK_NC_22
@@ -868,10 +897,21 @@ done24:
 ;;;;;;;;;;;;;;;;  INST 25 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; clr bit (25)
-	setb a.7
-	clr  a.7
+	mov  a, #02h
+	jz   fail25
+	clr  acc.1
+	jnz   fail25
+
+	setb 7
+        mov  c, 7
+        jc clr1;
+        ljmp fail25;
+clr1:
+	clr  7
+        mov  c, 7
 	jc   fail25
-	clr  a.7
+	clr  7
+        mov  c, 7
 	jc   fail25
 	ljmp done25
 
@@ -890,7 +930,7 @@ done25:
 	mov  a,#85
 	cpl  a
 	clr  c
-	subb a,#190
+	subb a,#170
 	jnz  fail26
 	ljmp done26
 
@@ -919,11 +959,11 @@ done27:
 
 ;; cpl bit (28)
 	clr  a
-	setb a.5
-	cpl  a.5
+	setb acc.5
+	cpl  acc.5
 	jnz  fail28
-	clr  a.5
-	cpl  a.5
+	clr  acc.5
+	cpl  acc.5
 	jz   fail28
 	ljmp done28
 
@@ -935,10 +975,10 @@ done28:
 ;;;;;;;;;;;;;;;;  INST 29 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; DA a (29)
-	mov  a,#0x80
-	add  a,#0x99
+	mov  a,#80h
+	add  a,#99h
 	da   a
-	subb a,#0x78	;Will clr acc if c set
+	subb a,#78h	;Will clr acc if c set
 	jz   done29
 	mov  P1,#29
 	ljmp failed	
@@ -1062,7 +1102,7 @@ done33:
 	jnz  fail34
 	mov  a,B
 	subb a,#17
-	ljmp fail34
+	jnz  fail34
 
 	mov  a,#180
 	mov  B,#15
@@ -1073,8 +1113,7 @@ done33:
 	subb a,#12
 	jnz  fail34
 	mov  a,B
-	subb a,#0
-	ljmp fail34
+	jnz  fail34
 
 	mov  a,#0
 	mov  B,#15
@@ -1082,10 +1121,9 @@ done33:
 	jc   fail34
 	mov  c,OV 
 	jc   fail34
-	subb a,#0
 	jnz  fail34
 	mov  a,B
-	subb a,#0
+	subb a,#15
 
 	mov  a,#0
 	mov  B,#0
@@ -1100,7 +1138,7 @@ done33:
 	jc   fail34
 	mov  c,OV 
 	jnc  fail34
-	ljmp fail34
+	ljmp done34
 fail34:
 	mov  P1,#34
 	ljmp failed
@@ -1147,6 +1185,18 @@ JUMP_36B:
 NOT_JUMP_36:
 	mov  P1,#36
 	ljmp failed
+
+done86:
+
+;;;;;;;;;;;;;;;;  INST 88 ;;;;;;;;;;;;;;;;;;;;;;;
+
+	ljmp done88
+	clr  a
+testret:	     ;; subroutine called from acall and lcall
+	inc  a
+	ret
+	clr  a
+
 done36:  
 
 ;;;;;;;;;;;;;;;;;  INST 37 ;;;;;;;;;;;;;;;;;;;;;;
@@ -1163,7 +1213,6 @@ done36:
 	setb c
 	inc  a
 	jnc  fail37
-	subb a,#0
 	jnz  fail37
 	ljmp done37
 
@@ -1188,7 +1237,6 @@ done37:
 	inc  r4
 	jnc  fail38
 	mov  a,r4
-	subb a,#0
 	jnz  fail38
 	ljmp done38
 
@@ -1213,7 +1261,6 @@ done38:
 	inc  127
 	jnc  fail39
 	mov  a,127
-	subb a,#0
 	jnz  fail39
 	ljmp done39
 
@@ -1239,7 +1286,6 @@ done39:
 	inc  @r1
 	jnc  fail40
 	mov  a,@r1
-	subb a,#0
 	jnz  fail40
 	ljmp done40
 
@@ -1252,10 +1298,11 @@ done40:
 ;;;;;;;;;;;;;;;;;  INST 41 ;;;;;;;;;;;;;;;;;;;;;;
 
 ;; inc dptr (41)
-	mov  dptr,#0x12ff
+  clr  c;
+	mov  dptr,#12ffh
 	inc  dptr
 	mov  a,DPH
-	subb a,#0x13
+	subb a,#13h
 	jz   DPH_OK_41
 	mov  P1,#41
 	ljmp failed
@@ -1328,7 +1375,7 @@ JUMP_4:
 ;; jnb bit,rel (46)
 	mov  a,#16
 	jnb  acc.4,fail42
-	jnb  acc.5,done42
+	jnb  acc.5,done46
 fail46:
 	mov  P1,#46
 	ljmp failed
@@ -1344,6 +1391,9 @@ done46:
 fail47:
 	mov  P1,#47
 	ljmp failed
+
+
+
 done47:
 
 ;;;;;;;;;;;;;;;;;  INST 48 ;;;;;;;;;;;;;;;;;;;;;;
@@ -1407,6 +1457,7 @@ done51:
 	setb c
 	mov  a,r0
 	jnc  fail52
+  clr  c
 	subb a,#10
 	jz   done52
 fail52:
@@ -1423,6 +1474,7 @@ done52:
 	setb c
 	mov  a,127
 	jnc  fail53
+  clr  c
 	subb a,#10
 	jz   done53
 fail53:
@@ -1439,6 +1491,7 @@ done53:
 	setb c
 	mov  a,@r0
 	jnc  fail54
+  clr  c
 	subb a,#10
 	jz   done54
 fail54:
@@ -1454,6 +1507,7 @@ done54:
 	setb c
 	mov  a,#10
 	jnc  fail55
+  clr  c
 	subb a,#10
 	jz   done55
 fail55:
@@ -1471,6 +1525,7 @@ done55:
 	jnc  fail56
 	clr  a
 	mov  a,r0
+  clr  c
 	subb a,#10
 	jz   done56
 fail56:
@@ -1487,6 +1542,7 @@ done56:
 	mov  r0,127
 	jnc  fail57
 	mov  a,r0
+  clr  c
 	subb a,#10
 	jz   done57
 fail57:
@@ -1503,6 +1559,7 @@ done57:
 	mov  r0,#10
 	jnc  fail58
 	mov  a,r0
+  clr  c
 	subb a,#10
 	jz   done58
 fail58:
@@ -1520,6 +1577,7 @@ done58:
 	jnc  fail59
 	clr  a
 	mov  a,127
+  clr  c
 	subb a,#10
 	jz   done59
 fail59:
@@ -1538,6 +1596,7 @@ done59:
 	jnz  fail60
 	jnc  fail60
 	mov  a,127
+  clr  c
 	subb a,#10
 	jz   done60
 fail60:
@@ -1556,6 +1615,7 @@ done60:
 	jnz  fail61
 	jnc  fail61
 	mov  a,126
+  clr  c
 	subb a,#10
 	jz   done61
 fail61:
@@ -1575,6 +1635,7 @@ done61:
 	jnz  fail62
 	jnc  fail62
 	mov  a,126
+  clr  c
 	subb a,#10
 	jz   done62
 fail62:
@@ -1592,6 +1653,7 @@ done62:
 	jnz  fail63
 	jnc  fail63
 	mov  a,127
+  clr  c
 	subb a,#10
 	jz   done63
 fail63:
@@ -1610,6 +1672,7 @@ done63:
 	jnc  fail64
 	clr  a
 	mov  a,127
+  clr  c
 	subb a,#10
 	jz   done64
 fail64:
@@ -1629,6 +1692,7 @@ done64:
 	jnc  fail65
 	jnz  fail65
 	mov  a,126
+  clr  c
 	subb a,#10
 	jz   done65
 fail65:
@@ -1647,6 +1711,7 @@ done65:
 	jnz  fail66
 	jnc  fail66
 	mov  a,127
+  clr  c
 	subb a,#10
 	jz   done66
 fail66:
@@ -1663,7 +1728,7 @@ done66:
 	jnc  fail67
 	setb c
 	mov  c,acc.1
-	jc   done67
+	jnc  done67
 fail67:
 	mov  P1,#67
 	ljmp failed
@@ -1745,29 +1810,36 @@ done71:
 	mov  a,#80
 	mov  B,#160
 	mul  AB	; = 0x3200
-	jnc  fail76
+	jc   fail76
 	jnz  fail76
+  mov  c, ov
+  jnc  fail76
 	mov  a,B
-	subb a,#0x32
+	clr  c
+	subb a,#32h
 	jnz  fail76
 
 	mov  a,#111
 	mov  B,#87
 	mul  AB	; = 0x25b9
-	jnc  fail76
+	jc   fail76
+  mov  c, ov
+  jnc  fail76
 	clr  c
-	subb a,#0xb9
+	subb a,#0b9h
 	jnz  fail76
 	mov  a,B
-	subb a,#0x25
+	subb a,#25h
 	jnz  fail76
 
 	mov  a,#11
 	mov  B,#17
-	mul  AB	; = 0x00B9
+	mul  AB	; = 0x00BB
 	jc   fail76
+  mov  c, ov 
+  jc   fail76
 	clr  c
-	subb a,#0xbb
+	subb a,#0bbh
 	jnz  fail76
 	mov  a,B
 	jnz  fail76
@@ -1974,12 +2046,14 @@ done84:
 
 ;;;;;;;;;;;;;;;;  INST 85 ;;;;;;;;;;;;;;;;;;;;;;;
 
-;; orl c,;bit (85)
+;; orl c,/bit (85)
 	mov  a,#1
+  clr  c
 	orl  c,/acc.0
 	jc   fail85
 	orl  c,/acc.1
 	jnc  fail85
+  setb c
 	orl  c,/acc.0
 	jc   done85
 fail85:
@@ -1990,13 +2064,14 @@ done85:
 ;;;;;;;;;;;;;;;;  INST 86,87 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; push direct (87)
-	mov  dptr,#0x0123
+  clr  c
+	mov  dptr,#0123h
 	mov  127,#8
 	push DPL
 	push DPH
 	push 127
 	mov  a,8
-	subb a,#0x23
+	subb a,#23h
 	jnz  fail87
 	mov  a,9
 	subb a,#1
@@ -2013,20 +2088,11 @@ done87:
 	pop  SP
 	pop  100
 	mov  a,100
-	subb a,#0x23
-	jz   done86
+	subb a,#23h
+	jz   done88
 	mov  P1,#86
 	ljmp failed
-done86:
 
-;;;;;;;;;;;;;;;;  INST 88 ;;;;;;;;;;;;;;;;;;;;;;;
-
-	ljmp done88
-	clr  a
-testret:	     ;; subroutine called from acall and lcall
-	inc  a
-	ret
-	clr  a
 done88:
 
 ;;;;;;;;;;;;;;;;  INST 90 ;;;;;;;;;;;;;;;;;;;;;;;
@@ -2127,14 +2193,14 @@ done96:
 	mov  r0,#10
 	subb a,r0     ; 100 - 10 - 1 = 89 
 	jc   fail97
-	add  a,167    ; 167 + 89 = 0
+	add  a,#167    ; 167 + 89 = 0
 	jnz  fail97
 	clr  c
 	mov  a,#10
 	mov  r0,#100
 	subb a,r0     ; 10 - 100 - 0 = 166
 	jnc  fail97
-	add  a,90     ; 166 + 90 = 0
+	add  a,#90     ; 166 + 90 = 0
 	jz   done97
 fail97:
 	mov  P1,#97
@@ -2149,14 +2215,14 @@ done97:
 	mov  127,#10
 	subb a,127    ; 100 - 10 - 1 = 89 
 	jc   fail98
-	add  a,167    ; 167 + 89 = 0
+	add  a,#167    ; 167 + 89 = 0
 	jnz  fail98
 	clr  c
 	mov  a,#10
 	mov  127,#100
 	subb a,127    ; 10 - 100 - 0 = 166
 	jnc  fail98
-	add  a,90     ; 166 + 90 = 0
+	add  a,#90     ; 166 + 90 = 0
 	jz   done98
 fail98:
 	mov  P1,#98
@@ -2172,14 +2238,14 @@ done98:
 	mov  @r0,#10
 	subb a,@r0    ; 100 - 10 - 1 = 89 
 	jc   fail99
-	add  a,167    ; 167 + 89 = 0
+	add  a,#167    ; 167 + 89 = 0
 	jnz  fail99
 	clr  c
 	mov  a,#10
 	mov  @r0,#100
 	subb a,@r0    ; 10 - 100 - 0 = 166
 	jnc  fail99
-	add  a,90     ; 166 + 90 = 0
+	add  a,#90     ; 166 + 90 = 0
 	jz   done99
 fail99:
 	mov  P1,#99
@@ -2194,13 +2260,13 @@ done99:
 	mov  a,#100
 	subb a,#10    ; 100 - 10 - 1 = 89 
 	jc   fail100
-	add  a,167    ; 167 + 89 = 0
+	add  a,#167    ; 167 + 89 = 0
 	jnz  fail100
 	clr  c
 	mov  a,#10
 	subb a,#100   ; 10 - 100 - 0 = 166
 	jnc  fail100
-	add  a,90     ; 166 + 90 = 0
+	add  a,#90     ; 166 + 90 = 0
 	jz   done100
 fail100:
 	mov  P1,#100
@@ -2211,16 +2277,17 @@ done100:
 
 ;; swap a (101)
 	clr  c
-	mov  a,#0x23
+	mov  a,#23h
 	swap a
 	jc   fail101
-	subb a,#0x32
+	subb a,#32h
 	jnz  fail101
-	mov  a,#0xC3
+	mov  a,#0C3h
 	setb c
 	swap a
 	jnc  fail101
-	subb a,#0x3C
+  clr  c
+	subb a,#3Ch
 	jz   done101
 fail101:
 	mov  P1,#101
@@ -2279,14 +2346,14 @@ done104:
 ;;;;;;;;;;;;;;;; INST 105 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; xchd a,@Ri (105)
-	mov  a,#0x44
+	mov  a,#44h
 	mov  r0,#127
-	mov  127,#0x55
+	mov  127,#55h
 	xchd a,@r0
-	subb a,#0x45
+	subb a,#45h
 	jnz  fail105
 	mov  a,127
-	subb a,#0x54
+	subb a,#54h
 	jz   done105
 fail105:
 	mov  P1,#105
@@ -2297,10 +2364,10 @@ done105:
 ;;;;;;;;;;;;;;;; INST 106 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; xrl a,Rn (106)
-	mov  a,#0x35
-	mov  r0,#0xC3
+	mov  a,#35h
+	mov  r0,#0C3h
 	xrl  a,r0
-	subb a,#0xF6
+	subb a,#0F6h
 	jz   done106
 	mov  P1,#106
 	ljmp failed
@@ -2309,10 +2376,10 @@ done106:
 ;;;;;;;;;;;;;;;; INST 107 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; xrl a,direct (107)
-	mov  a,#0xC3
-	mov  127,#0x35
+	mov  a,#0C3h
+	mov  127,#35h
 	xrl  a,127
-	subb a,#0xF6
+	subb a,#0F6h
 	jz   done107
 	mov  P1,#107
 	ljmp failed
@@ -2322,11 +2389,11 @@ done107:
 ;;;;;;;;;;;;;;;; INST 108 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; xrl a,@Ri (108)
-	mov  a,#0x35
+	mov  a,#35h
 	mov  r0,#127
-	mov  127,#0xC3
+	mov  127,#0C3h
 	xrl  a,@r0
-	subb a,#0xF6
+	subb a,#0F6h
 	jz   done108
 	mov  P1,#108
 	ljmp failed
@@ -2336,9 +2403,9 @@ done108:
 ;;;;;;;;;;;;;;;; INST 109 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; xrl a,#data (109)
-	mov  a,#0x35
-	xrl  a,#0xC3
-	subb a,#0xF6
+	mov  a,#35h
+	xrl  a,#0C3h
+	subb a,#0F6h
 	jz   done109
 	mov  P1,#109
 	ljmp failed
@@ -2348,12 +2415,12 @@ done109:
 ;;;;;;;;;;;;;;;; INST 110 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; xrl direct,a (110)
-	mov  a,#0x35
-	mov  127,#0xC3
+	mov  a,#35h
+	mov  127,#0C3h
 	xrl  127,a
 	clr  a
 	mov  a,127
-	subb a,#0xF6
+	subb a,#0F6h
 	jz   done110
 	mov  P1,#110
 	ljmp failed
@@ -2363,10 +2430,10 @@ done110:
 ;;;;;;;;;;;;;;;; INST 111 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; xrl direct,#data (111)
-	mov  127,#0x35
-	xrl  127,#0xC3
+	mov  127,#35h
+	xrl  127,#0C3h
 	mov  a,127
-	subb a,#0xF6
+	subb a,#0F6h
 	jz   done111
 	mov  P1,#111
 	ljmp failed
