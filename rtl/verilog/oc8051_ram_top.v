@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2003/01/13 14:14:41  simont
+// replace some modules
+//
 // Revision 1.4  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -57,6 +60,11 @@
 
 
 module oc8051_ram_top (clk, rst, rd_addr, rd_data, wr_addr, bit_addr, wr_data, wr, bit_data_in, bit_data_out);
+
+// on-chip ram-size (2**ram_aw bytes)
+parameter ram_aw = 8; // default 256 bytes
+
+
 //
 // clk          (in)  clock
 // rd_addr      (in)  read addres [oc8051_ram_rd_sel.out]
@@ -89,9 +97,26 @@ reg [2:0] bit_select;
 assign bit_data_out = rd_data[bit_select];
 
 
-
+/*
 oc8051_ram oc8051_ram1(.clk(clk), .rst(rst), .rd_addr(rd_addr_m), .rd_data(rd_data), .wr_addr(wr_addr_m),
          .wr_data(wr_data_m), .wr(wr));
+*/
+
+generic_dpram #(ram_aw, 8) oc8051_ram1(
+	.rclk  ( clk       ),
+	.rrst  ( rst       ),
+	.rce   ( 1'b1      ),
+	.oe    ( 1'b1      ),
+	.raddr ( rd_addr_m ),
+	.do    ( rd_data   ),
+
+	.wclk  ( clk       ),
+	.wrst  ( rst       ),
+	.wce   ( 1'b1      ),
+	.we    ( wr        ),
+	.waddr ( wr_addr_m ),
+	.di    ( wr_data_m )
+);
 
 
 always @(posedge clk or posedge rst)
@@ -103,41 +128,35 @@ always @(posedge clk or posedge rst)
     bit_select <= #1 rd_addr[2:0];
   end
 
+
 always @(rd_addr or bit_addr)
-begin
-  case ({bit_addr, rd_addr[7]})
-    2'b10: rd_addr_m = {4'b0010, rd_addr[6:3]};
-    2'b11: rd_addr_m = {1'b1, rd_addr[6:3], 3'b000};
-    default: rd_addr_m = rd_addr;
+  casex ( {bit_addr, rd_addr[7]} ) // synopsys full_case parallel_case
+      2'b0?: rd_addr_m = rd_addr;
+      2'b10: rd_addr_m = {4'b0010, rd_addr[6:3]};
+      2'b11: rd_addr_m = {1'b1, rd_addr[6:3], 3'b000};
   endcase
-end
+
 
 always @(wr_addr or bit_addr_r)
-begin
-  casex ({bit_addr_r, wr_addr[7]})
-    2'b10: wr_addr_m = {8'h00, 4'b0010, wr_addr[6:3]};
-    2'b11: wr_addr_m = {8'h00, 1'b1, wr_addr[6:3], 3'b000};
-    default: wr_addr_m = wr_addr;
+  casex ( {bit_addr_r, wr_addr[7]} ) // synopsys full_case parallel_case
+      2'b0?: wr_addr_m = wr_addr;
+      2'b10: wr_addr_m = {8'h00, 4'b0010, wr_addr[6:3]};
+      2'b11: wr_addr_m = {8'h00, 1'b1, wr_addr[6:3], 3'b000};
   endcase
-end
+
 
 always @(rd_data or bit_select or bit_data_in or wr_data or bit_addr_r)
-begin
-  if (bit_addr_r) begin
-    case (bit_select)
-      3'b000: wr_data_m = {rd_data[7:1], bit_data_in};
-      3'b001: wr_data_m = {rd_data[7:2], bit_data_in, rd_data[0]};
-      3'b010: wr_data_m = {rd_data[7:3], bit_data_in, rd_data[1:0]};
-      3'b011: wr_data_m = {rd_data[7:4], bit_data_in, rd_data[2:0]};
-      3'b100: wr_data_m = {rd_data[7:5], bit_data_in, rd_data[3:0]};
-      3'b101: wr_data_m = {rd_data[7:6], bit_data_in, rd_data[4:0]};
-      3'b110: wr_data_m = {rd_data[7], bit_data_in, rd_data[5:0]};
-      default: wr_data_m = {bit_data_in, rd_data[6:0]};
-    endcase
-  end else
-    wr_data_m = wr_data;
-end
-
+  casex ( {bit_addr_r, bit_select} ) // synopsys full_case parallel_case
+      4'b0_???: wr_data_m = wr_data;
+      4'b1_000: wr_data_m = {rd_data[7:1], bit_data_in};
+      4'b1_001: wr_data_m = {rd_data[7:2], bit_data_in, rd_data[0]};
+      4'b1_010: wr_data_m = {rd_data[7:3], bit_data_in, rd_data[1:0]};
+      4'b1_011: wr_data_m = {rd_data[7:4], bit_data_in, rd_data[2:0]};
+      4'b1_100: wr_data_m = {rd_data[7:5], bit_data_in, rd_data[3:0]};
+      4'b1_101: wr_data_m = {rd_data[7:6], bit_data_in, rd_data[4:0]};
+      4'b1_110: wr_data_m = {rd_data[7], bit_data_in, rd_data[5:0]};
+      4'b1_111: wr_data_m = {bit_data_in, rd_data[6:0]};
+  endcase
 
 
 endmodule
