@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2002/10/28 16:43:12  simont
+// add module oc8051_wb_iinterface
+//
 // Revision 1.6  2002/10/24 13:36:53  simont
 // add instruction cache and DELAY parameters for external ram, rom
 //
@@ -65,12 +68,14 @@
 module oc8051_tb;
 
 reg rst, clk;
-reg [15:0] pc_in;
 reg [7:0] p0_in, p1_in, p2_in;
 wire [31:0] idat_i;
 wire [15:0] ext_addr, iadr_o;
-wire  write, write_xram, write_uart, txd, rxd, int_uart, int0, int1, t0, t1, bit_out, stb_o, ack_i, ack_xram, ack_uart, cyc_o, iack_i, istb_o, icyc_o;
+wire write, write_xram, write_uart, txd, rxd, int_uart, int0, int1, t0, t1, bit_out, stb_o, ack_i;
+wire ack_xram, ack_uart, cyc_o, iack_i, istb_o, icyc_o, t2, t2ex;
 wire [7:0] data_in, data_out, p0_out, p1_out, p2_out, p3_out, data_out_uart, data_out_xram, p3_in;
+
+
 
 ///
 /// buffer for test vectors
@@ -86,14 +91,14 @@ integer num;
 //
 // oc8051 controller
 //
-oc8051_top oc8051_top_1(.rst(rst), .clk(clk), .int0(int0), .int1(int1),
-         .dat_i(data_in), .dat_o(data_out),
-         .adr_o(ext_addr), .iadr_o(iadr_o), .istb_o(istb_o), .iack_i(iack_i),
-         .icyc_o(icyc_o), .we_o(write), .p0_in(p0_in),
-         .ack_i(ack_i), .stb_o(stb_o), .cyc_o(cyc_o),
+oc8051_top oc8051_top_1(.rst_i(rst), .clk(clk), .int0(int0), .int1(int1),
+         .ddat_i(data_in), .ddat_o(data_out),
+         .dadr_o(ext_addr), .iadr_o(iadr_o), .istb_o(istb_o), .iack_i(iack_i),
+         .icyc_o(icyc_o), .dwe_o(write), .p0_in(p0_in),
+         .dack_i(ack_i), .dstb_o(stb_o), .dcyc_o(cyc_o),
 	 .p1_in(p1_in), .p2_in(p2_in), .p3_in(p3_in), .p0_out(p0_out), .p1_out(p1_out),
 	 .p2_out(p2_out), .p3_out(p3_out), .idat_i(idat_i), .ea(ea[0]),
-	 .rxd(rxd), .txd(txd), .t0(t0), .t1(t1));
+	 .rxd(rxd), .txd(txd), .t0(t0), .t1(t1), .t2(t2), .t2ex(t2ex));
 
 
 //
@@ -168,6 +173,7 @@ defparam oc8051_xrom1.DELAY = 5;
 //
 // test wb interface
 //
+
 reg [31:0] log_file;
 
 initial
@@ -176,49 +182,28 @@ begin
   $fdisplay(log_file, "file open");
 end
 
-// cache/cpu to instruction rom
-//
-
-WB_BUS_MON wb_bus_mon1(.CLK_I(clk), .RST_I(rst), .ACK_I(iack_o), .ADDR_O({16'h0000, iadr_i}), .CYC_O(icyc_i),
-     .DAT_I(idat_o), .DAT_O(32'd0), .ERR_I(1'b0), .RTY_I(1'b0), .SEL_O(4'b0000), .STB_O(istb_i),
-     .WE_O(1'b0), .TAG_I(4'h0), .TAG_O(4'h0), .CAB_O(1'b0), .log_file_desc(log_file));
-
-
-// cpu to data ram
-//
-
-WB_BUS_MON wb_bus_mon3(.CLK_I(clk), .RST_I(rst), .ACK_I(ack_i), .ADDR_O({16'h0000, ext_addr}), .CYC_O(cyc_o),
-     .DAT_I({24'h000000, data_in}), .DAT_O({24'h000000, data_out}), .ERR_I(1'b0), .RTY_I(1'b0), .SEL_O(4'b0000), .STB_O(stb_o),
-     .WE_O(write), .TAG_I(4'h0), .TAG_O(4'h0), .CAB_O(1'b0), .log_file_desc(log_file));
-//
-//
-//
-//
-
-
 
 assign write_xram = p3_out[7] & write;
 assign write_uart = !p3_out[7] & write;
 assign data_in = p3_out[7] ? data_out_xram : data_out_uart;
 assign ack_i = p3_out[7] ? ack_xram : ack_uart;
-assign p3_in = {7'b000000, bit_out, int_uart};
+assign p3_in = {6'h0, bit_out, int_uart};
 assign t0 = p3_out[5];
 assign t1 = p3_out[6];
 
 assign int0 = p3_out[3];
 assign int1 = p3_out[4];
-
+assign t2 = p3_out[5];
+assign t2ex = p3_out[2];
 
 initial begin
   clk= 1'b0;
   rst= 1'b1;
-  pc_in = 16'h0000;
   p0_in = 8'h00;
   p1_in = 8'h00;
   p2_in = 8'h00;
 #22
   rst = 1'b0;
-//#444000
 
 #7000000
   $fclose(log_file);
@@ -268,11 +253,5 @@ end
 
 initial $dumpvars;
 
-
-//initial $monitor("time ",$time," acc %h", data_out, " dptr %h", ext_addr, " write ", write, " p0_out %h", p0_out, " p1_out %h", p1_out);
-
-//initial $monitor("time ",$time, " p0_out ", p0_out);
-
-//initial $monitor("time ",$time," write ", write, " p0_out %h", p0_out, " p1_out %h", p1_out, " p2_out %h", p2_out, " p3_out %h", p3_out);
 
 endmodule
