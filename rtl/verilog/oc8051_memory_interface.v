@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.12  2003/07/01 20:47:39  simont
+// add /* synopsys xx_case */ to case statments.
+//
 // Revision 1.11  2003/06/20 13:35:10  simont
 // simualtion `ifdef added
 //
@@ -1159,5 +1162,23 @@ always @(posedge clk or posedge rst)
   end else if (istb) begin
     inc_pc_r  <= #1 inc_pc;
   end
+
+`ifdef OC8051_SIMULATION
+
+initial
+begin
+  wait (!rst)
+  if (ea_rom_sel) begin
+    $display(" ");
+    $display("\t Program running from internal rom !");
+    $display(" ");
+  end else begin
+    $display(" ");
+    $display("\t Program running from external rom !");
+    $display(" ");
+  end
+end
+`endif
+  
 
 endmodule

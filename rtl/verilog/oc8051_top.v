@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.32  2003/06/20 13:36:37  simont
+// ram modules added.
+//
 // Revision 1.31  2003/06/17 14:17:22  simont
 // BIST signals added.
 //
@@ -478,6 +481,18 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
 `else
   assign ea_int = 1'b0;
   assign idat_onchip = 32'h0;
+  
+  `ifdef OC8051_SIMULATION
+
+    initial
+    begin
+      $display("\t * ");
+      $display("\t * Internal rom disabled!!!");
+      $display("\t * ");
+    end
+
+  `endif
+
 `endif
 
 //
@@ -704,12 +719,18 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 
   
 
-	`ifdef OC8051_SIMULATION
-	  initial
-            $display("   Instruction cache enabled");
+  `ifdef OC8051_SIMULATION
 
+    initial
+    begin
+      #1
+      $display("\t * ");
+      $display("\t * External rom interface: cache");
+      $display("\t * ");
+    end
 
-	`endif
+  `endif
+
 
 
 //
@@ -737,12 +758,17 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 	.ack_i(wbi_ack_i),
         .cyc_o(wbi_cyc_o));
 
-	`ifdef OC8051_SIMULATION
-	  initial
-            $display("   Wishbone instruction interface enabled");
+  `ifdef OC8051_SIMULATION
 
+    initial
+    begin
+      #1
+      $display("\t * ");
+      $display("\t * External rom interface: WB interface");
+      $display("\t * ");
+    end
 
-	`endif
+  `endif
 
   `else
 
@@ -752,11 +778,17 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
     assign iack_i    = wbi_ack_i ;
     assign wbi_cyc_o = 1'b1      ;
 
-    `ifdef OC8051_SIMULATION
-      initial
-        $display("   Pipelined instruction interface enabled");
+  `ifdef OC8051_SIMULATION
 
-    `endif
+    initial
+    begin
+      #1
+      $display("\t * ");
+      $display("\t * External rom interface: Pipelined interface");
+      $display("\t * ");
+    end
+
+  `endif
 
 
   `endif
