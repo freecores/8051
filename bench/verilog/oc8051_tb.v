@@ -41,8 +41,11 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 //
-// ver: 1
+// CVS Revision History
 //
+// $Log: not supported by cvs2svn $
+//
+
 // synopsys translate_off
 `include "oc8051_timescale.v"
 // synopsys translate_on

@@ -1,32 +1,50 @@
+//////////////////////////////////////////////////////////////////////
+////                                                              ////
+////  8051 cores timer/counter control                            ////
+////                                                              ////
+////  This file is part of the 8051 cores project                 ////
+////  http://www.opencores.org/cores/8051/                        ////
+////                                                              ////
+////  Description                                                 ////
+////   timers and counters handling for 8051 core                 ////
+////                                                              ////
+////  To Do:                                                      ////
+////   Nothing                                                    ////
+////                                                              ////
+////  Author(s):                                                  ////
+////      - Simon Teran, simont@opencores.org                     ////
+////                                                              ////
+//////////////////////////////////////////////////////////////////////
+////                                                              ////
+//// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
+////                                                              ////
+//// This source file may be used and distributed without         ////
+//// restriction provided that this copyright statement is not    ////
+//// removed from the file and that any derivative work contains  ////
+//// the original copyright notice and the associated disclaimer. ////
+////                                                              ////
+//// This source file is free software; you can redistribute it   ////
+//// and/or modify it under the terms of the GNU Lesser General   ////
+//// Public License as published by the Free Software Foundation; ////
+//// either version 2.1 of the License, or (at your option) any   ////
+//// later version.                                               ////
+////                                                              ////
+//// This source is distributed in the hope that it will be       ////
+//// useful, but WITHOUT ANY WARRANTY; without even the implied   ////
+//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR      ////
+//// PURPOSE.  See the GNU Lesser General Public License for more ////
+//// details.                                                     ////
+////                                                              ////
+//// You should have received a copy of the GNU Lesser General    ////
+//// Public License along with this source; if not, download it   ////
+//// from http://www.opencores.org/lgpl.shtml                     ////
+////                                                              ////
+//////////////////////////////////////////////////////////////////////
 //
-// version 0.9
+// CVS Revision History
 //
-
-
-//clk  clock (pin)
-//rst  reset (pin)
-//sfr_sel   address for selecting different registers (TMOD, TL0, TH0, TL1, TH1) (input)
-//data_in   data input (input)
-//wr   read/write signal (input)
-//ie0  condition signal (one of), must be low for T/C 0 to start counting (input)
-//ie1  condition signal (one of), must be low for T/C 1 to start counting (input)
-//tr0  signal which activates Timer/Counter 0 (input)
-//tr1  signal which activates Timer/Counter 1 (input)
-//t0  external signal that increases Counter 0 (input)
-//t1  external signal that increases Counter 1 (input)
-//data_out  data output from the chosen register (TMOD, TL0, TH0, TL1, TH1) (output)
-//tf0  overflow flag for T/C 0 (output)
-//tf1  overflow flag for T/C 1 (output)
-//tmod  register that describes T/C modes (internal)
-//tl0   T/C 0 register, lower eight bits (internal)
-//th0   T/C 0 register, higher eight bits (internal)
-//tl1   T/C 1 register, lower eight bits (internal)
-//th1   T/C 1 register, higher eight bits (internal)
-
-
-
-
-
+// $Log: not supported by cvs2svn $
+//
 
 `include "oc8051_defines.v"
 

@@ -41,7 +41,9 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 //
-// ver: 1
+// CVS Revision History
+//
+// $Log: not supported by cvs2svn $
 //
 
 // synopsys translate_off
@@ -64,6 +66,11 @@ module oc8051_acc (clk, rst, bit_in, data_in, data2_in, wr, wr_bit, wad2, wr_add
 // wr_addr      (in)  write address (if is addres of acc and white high must be written to acc) [oc8051_ram_wr_sel.out]
 // data_out     (out) data output [oc8051_alu_src1_sel.acc oc8051_alu_src2_sel.acc oc8051_comp.acc oc8051_ram_sel.acc]
 // p            (out) parity [oc8051_psw.p]
+// stb_o	    (in)  strobe
+// we_o	    (in)  write to external ram
+// ack_i	    (in)  acknowlage from external ram
+// xdata        (in)  external data input
+//
 
 
 input clk, rst, wr, wr_bit, wad2, bit_in, stb_o, we_o, ack_i;

@@ -42,7 +42,9 @@
 //// 								  ////
 //////////////////////////////////////////////////////////////////////
 //
-// ver: 1
+// CVS Revision History
+//
+// $Log: not supported by cvs2svn $
 //
 // ver: 2 markom
 // changed to two cycle multiplication, to save resources and

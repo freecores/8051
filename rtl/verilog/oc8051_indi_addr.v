@@ -42,7 +42,9 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 //
-// ver: 1
+// CVS Revision History
+//
+// $Log: not supported by cvs2svn $
 //
 
 // synopsys translate_off
