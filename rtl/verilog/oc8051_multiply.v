@@ -87,7 +87,7 @@ assign mul_result1 = src1 * (cycle == 0 ? src2[7:6]
                            : cycle == 2 ? src2[3:2]
                            : src2[1:0]);
 
-assign mul_result = mul_result1 + {2'b0, tmp_mul};
+assign mul_result = mul_result1 + ({2'b0, tmp_mul} << {cycle, 1'b0});
 assign des1 = mul_result[7:0];
 assign des2 = mul_result[15:8];
 assign desOv = des2 != 8'h0;
@@ -99,7 +99,7 @@ begin
     tmp_mul <= #1 14'b0;
   end else begin
     if (enable || cycle != 0) cycle <= #1 cycle + 2'b1;
-    tmp_mul <= #1 mul_result1[13:0];
+    tmp_mul <= #1 mul_result[13:0];
   end
 end
 
