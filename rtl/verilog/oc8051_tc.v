@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2003/01/13 14:14:41  simont
+// replace some modules
+//
 // Revision 1.4  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -57,21 +60,45 @@
 
 
 
-module oc8051_tc (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, ie0, ie1, tr0, tr1, t0, t1, data_out,
-            tf0, tf1);
+module oc8051_tc (clk, rst, 
+            wr_addr, rd_addr, 
+	    data_in, data_out,
+	    wr, wr_bit,
+	    ie0, ie1, 
+	    tr0, tr1, 
+	    t0, t1,
+            tf0, tf1,
+	    pres_ow);
 
-input [7:0] wr_addr, data_in, rd_addr;
-input clk, rst, wr, wr_bit, ie0, ie1, tr0, tr1, t0, t1;
+input [7:0]  wr_addr,
+             data_in,
+             rd_addr;
+input        clk,
+             rst,
+	     wr,
+	     wr_bit,
+	     ie0,
+	     ie1,
+	     tr0,
+	     tr1,
+	     t0,
+	     t1;
 output [7:0] data_out;
-output tf0, tf1;
+output       tf0,
+             tf1,
+	     pres_ow;
+
 
 reg [7:0] tmod, tl0, th0, tl1, th1, data_out;
 reg tf0, tf1_0, tf1_1, t0_buff, t1_buff;
 
+reg pres_ow;
+reg [3:0] prescaler;
+
 wire tc0_add, tc1_add;
 
-assign tc0_add = (tr0 & (!tmod[3] | !ie0) & (!(tmod[2]) | (tmod[2] & !t0 & t0_buff)));
-assign tc1_add = (tr1 & (!tmod[7] | !ie1) & (!(tmod[6]) | (tmod[6] & !t1 & t1_buff)));
+assign tc0_add = (tr0 & (!tmod[3] | !ie0) & ((!tmod[2] & pres_ow) | (tmod[2] & !t0 & t0_buff)));
+assign tc1_add = (tr1 & (!tmod[7] | !ie1) & ((!tmod[6] & pres_ow) | (tmod[6] & !t1 & t1_buff)));
 assign tf1= tf1_0 | tf1_1;
 
 //
@@ -134,7 +161,7 @@ begin
 	 if (tc0_add)
 	   {tf0, tl0} <= #1 {1'b0, tl0} +1'b1;
 
-         if (tr1)
+         if (tr1 & pres_ow)
 	   {tf1_0, th0} <= #1 {1'b0, th0} +1'b1;
 
       end
@@ -209,6 +236,19 @@ begin
   end
 end
 
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    prescaler <= #1 4'h0;
+    pres_ow <= #1 1'b0;
+  end else if (prescaler==4'b1011) begin
+    prescaler <= #1 4'h0;
+    pres_ow <= #1 1'b1;
+  end else begin
+    prescaler <= #1 prescaler + 4'h1;
+    pres_ow <= #1 1'b0;
+  end
+end
 
 always @(posedge clk or posedge rst)
   if (rst) begin

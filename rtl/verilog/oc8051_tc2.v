@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2003/01/13 14:13:12  simont
+// initial import
+//
 //
 //
 
@@ -55,24 +58,41 @@
 
 
 
-module oc8051_tc2 (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, bit_in, t2, t2ex, data_out, bit_out,
-            rclk, tclk, brate2, tc2_int);
+module oc8051_tc2 (clk, rst, 
+            wr_addr, rd_addr,
+	    data_in, data_out, bit_out,
+	    wr, wr_bit, bit_in,
+	    t2, t2ex,
+            rclk, tclk, 
+	    brate2, tc2_int,
+	    pres_ow);
 
-input [7:0] wr_addr, data_in, rd_addr;
-input clk, rst, wr, wr_bit, t2, t2ex, bit_in;
+input [7:0]  wr_addr,
+             data_in,
+	     rd_addr;
+input        clk,
+             rst,
+	     wr,
+	     wr_bit,
+	     t2,
+	     t2ex,
+	     bit_in,
+	     pres_ow;	//prescalre owerflov
 output [7:0] data_out;
-output tc2_int, bit_out, rclk, tclk, brate2;
+output       tc2_int, 
+             bit_out, 
+	     rclk, 
+	     tclk, 
+	     brate2;
+
 reg [7:0] data_out;
 
 reg brate2;
-reg [7:0] t2con, t2mod, tl2, th2, rcap2l, rcap2h;
+reg [7:0] t2con, tl2, th2, rcap2l, rcap2h;
 
 reg neg_trans, t2ex_r, t2_r, tc2_event, tf2_set;
 
 wire run;
-
-wire dcen;
-assign dcen = t2mod[0];
 
 //
 // t2con
@@ -100,30 +120,15 @@ begin
     t2con[wr_addr[2:0]] <= #1 bit_in;
   end else if (tf2_set) begin
     t2con[7] <= #1 1'b1;
-//auto reload mode, dcen=1 : toggle exf2;
-    if (!(rclk | tclk) & !cprl2 & dcen)
-      t2con[6] <= #1 !t2con[6];
-  end else if (exen2 & (rclk | tclk | cprl2 | !dcen) & neg_trans) begin
-    t2con <= #1 {t2con[7], 1'b1, t2con[5:0]};
+  end else if (exen2 & neg_trans) begin
+    t2con[6] <= #1 1'b1;
   end
 end
 
-
-//
-// t2mod
-
-always @(posedge clk or posedge rst)
-begin
-  if (rst) begin
-    t2mod <= #1 `OC8051_RST_T2MOD;
-  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_T2MOD)) begin
-    t2mod <= #1 data_in;
-  end
-end
 
 //
 //th2, tl2
-assign run = tr2 & (!ct2 | (ct2 & tc2_event));
+assign run = tr2 & ((!ct2 & pres_ow) | (ct2 & tc2_event));
 
 always @(posedge clk or posedge rst)
 begin
@@ -145,7 +150,7 @@ begin
 // write to timer 2 low
 //
     tl2 <= #1 data_in;
-  end else if (!(rclk | tclk) & !cprl2 & exen2 & !dcen) begin
+  end else if (!(rclk | tclk) & !cprl2 & exen2 & neg_trans) begin
 //
 // avto reload mode, exen2=1, 0-1 transition on t2ex pin
 //
@@ -170,9 +175,9 @@ begin
 // capture mode
 //
       {tf2_set, th2, tl2}  <= #1 {1'b0, th2, tl2} + 17'h1;
-    end else if (!dcen | t2ex) begin
+    end else begin
 //
-// auto reload mode, up counter
+// auto reload mode
 //
       if (&{th2, tl2}) begin
         th2 <= #1 rcap2h;
@@ -180,17 +185,6 @@ begin
         tf2_set <= #1 1'b1;
       end else begin
         {tf2_set, th2, tl2} <= #1 {1'b0, th2, tl2} + 17'h1;
-      end
-    end else begin
-//
-// auto reload mode, down counter
-//
-      if ({th2, tl2}=={rcap2h, rcap2l}) begin
-        th2 <= #1 8'hff;
-        tl2 <= #1 8'hff;
-        tf2_set <= #1 1'b1;
-      end else begin
-        {tf2_set, th2, tl2} <= #1 {1'b0, th2, tl2} - 17'h1;
       end
     end
   end else tf2_set <= #1 1'b0;
@@ -253,14 +247,13 @@ begin
   end
 end
 
-always @(rd_addr or t2con or t2mod or tl2 or th2 or rcap2l or rcap2h)
+always @(rd_addr or t2con or tl2 or th2 or rcap2l or rcap2h)
 begin
   case (rd_addr)
     `OC8051_SFR_RCAP2H: data_out = rcap2h;
     `OC8051_SFR_RCAP2L: data_out = rcap2l;
     `OC8051_SFR_TH2:    data_out = th2;
     `OC8051_SFR_TL2:    data_out = tl2;
-    `OC8051_SFR_T2MOD:  data_out = t2mod;
     default: 		data_out = t2con;
   endcase
 
