@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2003/01/21 13:51:30  simont
+// add include oc8051_defines.v
+//
 // Revision 1.2  2003/01/13 14:14:41  simont
 // replace some modules
 //
@@ -218,7 +221,7 @@ oc8051_uart oc8051_uatr1 (.clk(clk), .rst(rst), .bit_in(bit_in), .rd_addr(adr0),
 //
 // interrupt control
 // IP, IE, TCON
-oc0851_int oc8051_int1 (.clk(clk), .rst(rst), .wr_addr(adr1), .rd_addr(adr0), .bit_in(bit_in),
+oc8051_int oc8051_int1 (.clk(clk), .rst(rst), .wr_addr(adr1), .rd_addr(adr0), .bit_in(bit_in),
                 .ack(int_ack), .data_in(dat1), .data_out(int_out), .bit_out(int_bit),
 		.wr(we), .wr_bit(wr_bit_r),
 		.tf0(tf0), .tf1(tf1), .t2_int(tc2_int), .tr0(tr0), .tr1(tr1),

@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2003/01/13 14:14:41  simont
+// replace some modules
+//
 // Revision 1.5  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -60,7 +63,7 @@
 
 
 
-module oc0851_int (clk, rst, wr_addr, rd_addr, data_in, bit_in, data_out, bit_out, wr, wr_bit,
+module oc8051_int (clk, rst, wr_addr, rd_addr, data_in, bit_in, data_out, bit_out, wr, wr_bit,
 //timer interrupts
         tf0, tf1, t2_int,
 	tr0, tr1,
