@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.9  2003/06/03 17:09:57  simont
+// pipelined acces to axternal instruction interface added.
+//
 // Revision 1.8  2003/05/12 16:27:40  simont
 // fix bug in movc intruction.
 //
@@ -1128,7 +1131,7 @@ always @(posedge clk or posedge rst)
     op1_r     <= #1 op1_out;
     dack_ir   <= #1 dack_i;
     sp_r      <= #1 sp;
-    pc_wr_r   <= #1 pc_wr && (pc_wr_sel !== `OC8051_PIS_AH);
+    pc_wr_r   <= #1 pc_wr && (pc_wr_sel != `OC8051_PIS_AH);
     pc_wr_r2  <= #1 pc_wr_r;
   end
 
