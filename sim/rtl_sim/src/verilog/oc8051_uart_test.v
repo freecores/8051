@@ -50,7 +50,7 @@
 // synopsys translate_on
 
 
-module oc8051_uart_test (clk, rst, addr, wr, wr_bit, data_in, data_out, bit_out, rxd, txd, ow, int);
+module oc8051_uart_test (clk, rst, addr, wr, wr_bit, data_in, data_out, bit_out, rxd, txd, ow, intr);
 //
 // serial interface simulation. part of oc8051_tb
 //
@@ -64,13 +64,13 @@ module oc8051_uart_test (clk, rst, addr, wr, wr_bit, data_in, data_out, bit_out,
 // rxd		(in)  receive data [oc8051.txd]
 // txd		(out) transmit data [oc8051.rxd]
 // ow		(in)  owerflov (used in mode 1 and 3) [oc8051.p3_out.1]
-// int		(out) interrupt request [oc8051.p3_in.0]
+// intr		(out) interrupt request [oc8051.p3_in.0]
 //
 
 input clk, rst, wr, wr_bit, rxd, ow;
 input [7:0] addr, data_in;
 
-output txd, int, bit_out;
+output txd, intr, bit_out;
 output [7:0] data_out;
 
 reg wr_r;
@@ -79,7 +79,7 @@ reg [7:0] addr_r, data_in_r;
 
 oc8051_uart oc8051_uart_test(.rst(rst), .clk(clk), .bit_in(data_in[0]), .rd_addr(addr), .data_in(data_in_r),
                     .wr(wr_r), .wr_bit(wr_bit), .wr_addr(addr_r), .data_out(data_out), .bit_out(bit_out),
-                    .rxd(rxd), .txd(txd), .int(int), .t1_ow(ow));
+                    .rxd(rxd), .txd(txd), .intr(intr), .t1_ow(ow));
 
 
 always @(posedge clk)

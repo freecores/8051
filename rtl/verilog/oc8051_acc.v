@@ -102,12 +102,11 @@ begin
     endcase
 end
 
-always  @(posedge clk)
+always @(posedge clk or posedge rst)
 begin
-  bit_out <= #1 data_out[rd_addr];
+  if (rst) bit_out <= #1 1'b0;
+  else bit_out <= #1 data_out[rd_addr];
 end
-
-
 
 endmodule
 

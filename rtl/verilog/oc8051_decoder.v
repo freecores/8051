@@ -116,27 +116,6 @@ assign rd = !state[0] & !state[1];
 // case of instruction set control signals
 always @(rst or op_in or eq or state or op)
 begin
-  if (rst) begin
-    ram_rd_sel = `OC8051_RRS_DC;
-    ram_wr_sel = `OC8051_RWS_DC;
-    src_sel1 = `OC8051_ASS_DC;
-    src_sel2 = `OC8051_ASS_DC;
-    alu_op = `OC8051_ALU_NOP;
-    imm_sel = `OC8051_IDS_DC;
-    wr = 1'b0;
-    psw_set = `OC8051_PS_NOT;
-    cy_sel = `OC8051_CY_0;
-    pc_wr = `OC8051_PCW_N;
-    pc_sel = `OC8051_PIS_DC;
-    comp_sel = `OC8051_CSS_DC;
-    rmw = `OC8051_RMW_N;
-    bit_addr = 1'b0;
-    src_sel3 = `OC8051_AS3_DC;
-    rom_addr_sel = `OC8051_RAS_PC;
-    ext_addr_sel = `OC8051_EAS_DC;
-    wad2 = `OC8051_WAD_N;
-    
-  end else begin
     case (state)
       2'b01: begin
     casex (op)
@@ -2925,14 +2904,13 @@ begin
     endcase
     end
     endcase
-  end
 end
 
 //
 // remember current instruction
-always @(posedge clk)
-  if (state==2'b00)
-    op <= #1 op_in;
+always @(posedge clk or posedge rst)
+  if (rst) op <= #1 2'b00;
+  else if (state==2'b00) op <= #1 op_in;
 
 //
 // in case of instructions that needs more than one clock set state

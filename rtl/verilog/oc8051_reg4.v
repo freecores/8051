@@ -48,15 +48,14 @@
 `include "oc8051_timescale.v"
 // synopsys translate_on
 
-module oc8051_reg4 (clk, rst, in, out);
-input [3:0] in; input clk, rst;
-output [3:0] out;
-reg [3:0] out;
+module oc8051_reg4 (clk, rst, din, dout);
+input [3:0] din; input clk, rst;
+output [3:0] dout;
+reg [3:0] dout;
 
 always @(posedge clk or posedge rst)
-  if (rst) out <= 4'b0000;
-  else
-    out <= #1 in;
+  if (rst) dout <= 4'b0000;
+  else dout <= #1 din;
 
 endmodule
 

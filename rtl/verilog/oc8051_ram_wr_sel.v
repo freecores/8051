@@ -51,7 +51,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_ram_wr_sel (sel, sp, rn, imm, ri, imm2, out);
+module oc8051_ram_wr_sel (sel, sp, rn, imm, ri, imm2, addr_out);
 //
 // sel          (in)  select (look defines) [oc8051_decoder.ram_wr_sel -r]
 // sp           (in)  stack ponter [oc8051_sp.data_out]
@@ -59,32 +59,31 @@ module oc8051_ram_wr_sel (sel, sp, rn, imm, ri, imm2, out);
 // rn           (in)  registers [{oc8051_psw.data_out[4:3], oc8051_op_select.op1_out[2:0]} -r]
 // imm          (in)  immediate, byte 2 (direct addresing) [oc8051_op_select.op2_direct -r]
 // imm2         (in)  immediate, byte 3 (direct addresing) [oc8051_op_select.op3_out]
-// out          (out) output [oc8051_ram_top.wr_addr, oc8051_acc.wr_addr, oc8051_b_register.wr_addr, oc8051_sp.wr_addr, oc8051_dptr.addr, oc8051_psw.addr, oc8051_indi_addr.addr, oc8051_ports.wr_addr]
+// addr_out     (out) output [oc8051_ram_top.wr_addr, oc8051_acc.wr_addr, oc8051_b_register.wr_addr, oc8051_sp.wr_addr, oc8051_dptr.addr, oc8051_psw.addr, oc8051_indi_addr.addr, oc8051_ports.wr_addr]
 //
 
 input [2:0] sel;
 input [4:0] rn;
 input [7:0] sp, imm, ri, imm2;
 
-output [7:0] out;
-reg [7:0] out;
+output [7:0] addr_out;
+reg [7:0] addr_out;
 
 //
 //
 always @(sel or sp or rn or imm or ri or imm2)
 begin
   case (sel)
-    `OC8051_RWS_RN : out = {3'b000, rn};
-    `OC8051_RWS_I : out = ri;
-    `OC8051_RWS_D : out = imm;
-    `OC8051_RWS_SP : out = sp;
-    `OC8051_RWS_ACC : out = `OC8051_SFR_ACC;
-    `OC8051_RWS_D3 : out = imm2;
-    `OC8051_RWS_DPTR : out = `OC8051_SFR_DPTR_LO;
-    `OC8051_RWS_B : out = `OC8051_SFR_B;
-    default : out = 2'bxx;
+    `OC8051_RWS_RN : addr_out <= {3'b000, rn};
+    `OC8051_RWS_I : addr_out <= ri;
+    `OC8051_RWS_D : addr_out <= imm;
+    `OC8051_RWS_SP : addr_out <= sp;
+    `OC8051_RWS_ACC : addr_out <= `OC8051_SFR_ACC;
+    `OC8051_RWS_D3 : addr_out <= imm2;
+    `OC8051_RWS_DPTR : addr_out <= `OC8051_SFR_DPTR_LO;
+    `OC8051_RWS_B : addr_out <= `OC8051_SFR_B;
+    default : addr_out <= 2'bxx;
   endcase
-
 end
 
 endmodule

@@ -52,10 +52,10 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_ext_addr_sel (clk, select, write, dptr_hi, dptr_lo, ri, addr_out);
+module oc8051_ext_addr_sel (clk, rst, sel, write, dptr_hi, dptr_lo, ri, addr_out);
 //
 // clk  clock
-// select       (in)  select sourses [oc8051_decoder.ext_addr_sel -r]
+// sel          (in)  select sourses [oc8051_decoder.ext_addr_sel -r]
 // write        (in)  write to external ram [oc8051_decoder.write_x]
 // dptr_hi      (in)  data pointer high bits [oc8051_dptr.data_hi]
 // dptr_lo      (in)  data pointer low bits [oc8051_dptr.data_lo]
@@ -64,7 +64,7 @@ module oc8051_ext_addr_sel (clk, select, write, dptr_hi, dptr_lo, ri, addr_out);
 //
 
 
-input select, write, clk;
+input sel, write, clk, rst;
 input [7:0] dptr_hi, dptr_lo, ri;
 
 output [15:0] addr_out;
@@ -73,18 +73,18 @@ reg state;
 reg [15:0] buff;
 wire [15:0] tmp;
 
-assign tmp = select ? {8'h00, ri} : {dptr_hi, dptr_lo};
+assign tmp = sel ? {8'h00, ri} : {dptr_hi, dptr_lo};
 assign addr_out = state ? buff : tmp;
 
-always @(posedge clk)
-  if (select)
+always @(posedge clk or posedge rst)
+  if (rst) buff <= #1 16'h0;
+  else if (sel)
     buff <= #1 {8'h00, ri};
   else buff <= #1 {dptr_hi, dptr_lo};
 
-always @(posedge clk)
-  if (write)
-    state <= #1 1'b1;
-  else state <= #1 1'b0;
+always @(posedge clk or posedge rst)
+  if (rst) state <= #1 1'b0;
+  else state <= #1 write;
 
 
 endmodule

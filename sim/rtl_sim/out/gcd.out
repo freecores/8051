@@ -4,7 +4,7 @@ ncsim> run
 $readmem error: number too long in file "../src/oc8051_test.vec" at line 1
 
 Warning!  some objects excluded from $dumpvars due to -access -R
-            File: /home/simont/oc8051/bench/verilog/oc8051_tb.v, line = 157, pos = 16
+            File: /projects/oc8051/markom/oc8051/bench/verilog/oc8051_tb.v, line = 157, pos = 16
            Scope: oc8051_tb
             Time: 0 FS + 0
 
@@ -12,5 +12,5 @@ time                    1 step           0: pass
 
  Done!
 Simulation complete via $finish(1) at time 1 NS + 2
-/home/simont/oc8051/bench/verilog/oc8051_tb.v:151       $finish;
+/projects/oc8051/markom/oc8051/bench/verilog/oc8051_tb.v:151       $finish;
 ncsim> exit

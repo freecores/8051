@@ -69,11 +69,11 @@ reg [7:0] des;
 always @(sel or immediate or acc or ram or ext)
 begin
   case (sel)
-    `OC8051_ASS_RAM: des= ram;
-    `OC8051_ASS_ACC: des= acc;
-    `OC8051_ASS_XRAM: des= ext;
-    `OC8051_ASS_IMM: des= immediate;
-    default: des= 2'bxx;
+    `OC8051_ASS_RAM: des <= ram;
+    `OC8051_ASS_ACC: des <= acc;
+    `OC8051_ASS_XRAM: des <= ext;
+    `OC8051_ASS_IMM: des <= immediate;
+    default: des <= 2'bxx;
   endcase
 end
 

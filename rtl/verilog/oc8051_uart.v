@@ -1,10 +1,10 @@
 module oc8051_uart (rst, clk, bit_in, rd_addr, data_in, bit_out, wr, wr_bit, wr_addr, data_out,
-                   rxd, txd, int, t1_ow);
+                   rxd, txd, intr, t1_ow);
 
 input rst, clk, bit_in, wr, rxd, wr_bit, t1_ow;
 input [7:0] rd_addr, data_in, wr_addr;
 
-output txd, int, bit_out;
+output txd, intr, bit_out;
 output [7:0] data_out;
 
 reg txd, bit_out;
@@ -26,7 +26,7 @@ reg [3:0] tr_count, re_count;
 // sam_cnt	sample counter
 reg [2:0] sam_cnt, sample;
 
-assign int = scon[1] | scon [0];
+assign intr = scon[1] | scon [0];
 
 //
 //serial port control register
@@ -54,24 +54,13 @@ begin
 end
 
 //
-//serial port buffer (receive)
-//
-always @(posedge clk or posedge rst)
-begin
-  if (rst)
-  begin
-    sbuf_rxd <= #1 `OC8051_RST_SBUF;
-  end
-end
-
-//
 //serial port buffer (transmit)
 //
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
     sbuf_txd <= #1 `OC8051_RST_SBUF;
-    tr_start <= 1'b0;
+    tr_start <= #1 1'b0;
   end else if ((wr_addr==`OC8051_SFR_SBUF) & (wr) & !(wr_bit)) begin
     sbuf_txd <= #1 data_in;
     tr_start <= #1 1'b1;
@@ -116,13 +105,13 @@ begin
   begin
     case (scon[7:6])
       2'b00: begin //mode 0
-        if (tr_count==9'd8)
+        if (tr_count==4'd8)
 	begin
 	  trans <= #1 1'b0;
 	  txd <= #1 1'b1;
 	end else begin
 	  txd <= #1 sbuf_txd[tr_count];
-	  tr_count <= #1 tr_count +1'b1;
+	  tr_count <= #1 tr_count + 4'b1;
 	end
       end
       2'b01: begin // mode 1
@@ -136,7 +125,7 @@ begin
 	      4'b1111: txd <= #1 1'b0; //start bit
 	      default: txd <= #1 sbuf_txd[tr_count];
 	    endcase
-            tr_count <= #1 tr_count +1'b1;
+            tr_count <= #1 tr_count + 4'b1;
 	    smod_cnt_t <= #1 1'b0;
 	  end else smod_cnt_t <= #1 1'b1;
 	end
@@ -159,9 +148,9 @@ begin
 	    end
 	  endcase
           tr_count <= #1 tr_count+1'b1;
-	  mode2_count <= #1 4'd0;
+	  mode2_count <= #1 3'd0;
 	end else begin
-          mode2_count <= #1 mode2_count + 1'b1;
+          mode2_count <= #1 mode2_count + 3'b1;
 	end
       end
       default: begin // mode 3
@@ -207,7 +196,7 @@ begin
 end
 
 //
-// receive
+//serial port buffer (receive)
 //
 always @(posedge clk or posedge rst)
 begin
@@ -232,7 +221,7 @@ begin
           sbuf_rxd_tmp[re_count+1] <= #1 rxd;
 	  r_int <= #1 1'b0;
 	end
-        re_count <= #1 re_count + 1'b1;
+        re_count <= #1 re_count + 4'b1;
       end
       2'b01: begin // mode 1
         if ((t1_ow) & !(t1_ow_buf))
@@ -242,7 +231,7 @@ begin
             sam_cnt <= #1 3'b000;
             r_int <= #1 1'b0;
 
-	    re_count <= #1 re_count +1'b1;
+	    re_count <= #1 re_count + 4'b1;
 	    smod_cnt_r <= #1 1'b0;
 	  end else smod_cnt_r <= #1 1'b1;
 	end else begin
@@ -275,7 +264,7 @@ begin
 	    sample[0] <= #1 rxd;
 	    r_int <= #1 1'b0;
 	  end
-    re_count <= #1 re_count + 1'b1;
+    re_count <= #1 re_count + 4'b1;
 	end else begin
 	  r_int <= #1 1'b0;
 
@@ -306,7 +295,7 @@ begin
 	      r_int <= #1 1'b0;
 	    end
 
-	    re_count <= #1 re_count +1'b1;
+	    re_count <= #1 re_count + 4'b1;
 	    smod_cnt_r <= #1 1'b0;
 	  end else smod_cnt_r <= #1 1'b1;
 	end else begin
@@ -356,9 +345,10 @@ end
 //
 //
 //
-always @(posedge clk)
+always @(posedge clk or posedge rst)
 begin
-  if (wr & !wr_bit & (wr_addr==rd_addr) & ((wr_addr==`OC8051_SFR_PCON) |
+  if (rst) data_out <= #1 8'h0;
+  else if (wr & !wr_bit & (wr_addr==rd_addr) & ((wr_addr==`OC8051_SFR_PCON) |
      (wr_addr==`OC8051_SFR_SCON))) begin
     data_out <= #1 data_in;
   end else begin
@@ -371,34 +361,28 @@ begin
 end
 
 
-always @(posedge clk)
+always @(posedge clk or posedge rst)
 begin
-  trans_buf <= #1 trans;
+  if (rst) begin
+    trans_buf <= #1 1'b0;
+    receive_buf <= #1 1'b0;
+    t1_ow_buf <= #1 1'b0;
+    rxd_buf <= #1 1'b0;
+  end else begin
+    trans_buf <= #1 trans;
+    receive_buf <= #1 receive;
+    t1_ow_buf <= #1 t1_ow;
+    rxd_buf <= #1 rxd;
+  end
 end
 
-always @(posedge clk)
+always  @(posedge clk or posedge rst)
 begin
-  receive_buf <= #1 receive;
-end
-
-always @(posedge clk)
-begin
-  t1_ow_buf <= #1 t1_ow;
-end
-
-always @(posedge clk)
-begin
-  rxd_buf <= #1 rxd;
-end
-
-
-always  @(posedge clk)
-begin
-  if (wr & wr_bit & (rd_addr==wr_addr) & (wr_addr[7:3]==`OC8051_SFR_B_SCON)) begin
+  if (rst) bit_out <= #1 1'b0;
+  else if (wr & wr_bit & (rd_addr==wr_addr) & (wr_addr[7:3]==`OC8051_SFR_B_SCON)) begin
     bit_out <= #1 bit_in;
   end else 
     bit_out <= #1 scon[rd_addr[2:0]];
-
 end
 
 endmodule

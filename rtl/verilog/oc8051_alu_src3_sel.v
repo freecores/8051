@@ -48,7 +48,7 @@
 `include "oc8051_timescale.v"
 // synopsys translate_on
 
-module oc8051_alu_src3_sel (sel, pc, dptr, out);
+module oc8051_alu_src3_sel (sel, pc, dptr, des);
 //
 // sel          (in)  select signals (from decoder, delayd one clock) [oc8051_decoder.src_sel3 -r]
 // pc           (in)  program counter input [oc8051_pc.pc[15:8] -r]
@@ -58,8 +58,8 @@ module oc8051_alu_src3_sel (sel, pc, dptr, out);
 
 input sel;
 input [7:0] pc, dptr;
-output [7:0] out;
+output [7:0] des;
 
-assign out = sel ? pc : dptr;
+assign des = sel ? pc : dptr;
 
 endmodule

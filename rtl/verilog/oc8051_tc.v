@@ -102,7 +102,7 @@ begin
             tl0 <=#1 th0;
            end
           else begin
-            tl0 <=#1 tl0 + 1;
+            tl0 <=#1 tl0 + 8'h1;
             tf0 <= #1 1'b0;
           end
 	end
@@ -157,7 +157,7 @@ begin
             tl1 <=#1 th1;
            end
           else begin
-            tl1 <=#1 tl1 + 1;
+            tl1 <=#1 tl1 + 8'h1;
             tf1_1 <= #1 1'b0;
           end
 	end
@@ -169,9 +169,10 @@ begin
  end
 end
 
-always @(posedge clk)
+always @(posedge clk or posedge rst)
 begin
-  if (wr & !wr_bit & (wr_addr==rd_addr) & ((wr_addr==`OC8051_SFR_TH0) |
+  if (rst) data_out <= #1 8'h0;
+  else if (wr & !wr_bit & (wr_addr==rd_addr) & ((wr_addr==`OC8051_SFR_TH0) |
      (wr_addr==`OC8051_SFR_TH1)|(wr_addr==`OC8051_SFR_TL0)|(wr_addr==`OC8051_SFR_TL1)|
      (wr_addr==`OC8051_SFR_TMOD))) begin
     data_out <= #1 data_in;
@@ -187,10 +188,12 @@ begin
 end
 
 
-always @(posedge clk)
-  t0_buff <= #1 t0;
-
-always @(posedge clk)
-  t1_buff <= #1 t1;
-
+always @(posedge clk or posedge rst)
+  if (rst) begin
+    t0_buff <= #1 1'b0;
+    t1_buff <= #1 1'b0;
+  end else begin
+    t0_buff <= #1 t0;
+    t1_buff <= #1 t1;
+  end
 endmodule

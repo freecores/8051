@@ -6,13 +6,14 @@
 //// http://www.opencores.org/cores/8051/ 			  ////
 //// 								  ////
 //// Description 						  ////
-//// Implementation of division used in alu.v	 		  ////
+//// Two cycle implementation of division used in alu.v	          ////
 //// 								  ////
 //// To Do: 							  ////
-////  Nothing							  ////
+////  check if compiler does proper optimizations of the code     ////
 //// 								  ////
 //// Author(s): 						  ////
 //// - Simon Teran, simont@opencores.org 			  ////
+//// - Marko Mlinar, markom@opencores.org 			  ////
 //// 								  ////
 //////////////////////////////////////////////////////////////////////
 //// 								  ////
@@ -43,14 +44,19 @@
 //
 // ver: 1
 //
+// ver: 2 markom
+// changed nonsynthesizable version to two cycle divison
 
 // synopsys translate_off
 `include "oc8051_timescale.v"
 // synopsys translate_on
 
-module oc8051_divide (src1, src2, des1, des2, desOv);
+module oc8051_divide (clk, rst, enable, src1, src2, des1, des2, desOv);
 //
 // this module is part of alu
+// clk          (in)
+// rst          (in)
+// enable       (in)  starts divison
 // src1         (in)  first operand
 // src2         (in)  second operand
 // des1         (out) first result
@@ -58,122 +64,76 @@ module oc8051_divide (src1, src2, des1, des2, desOv);
 // desOv        (out) Overflow output
 //
 
+input clk, rst, enable;
 input [7:0] src1, src2;
 output desOv;
 output [7:0] des1, des2;
-reg desOv; reg [7:0] des1, des2;
-reg [8:0] div1,div2;
 
-always @(src1 or src2)
+// wires
+reg desOv;
+reg div0, div1, div2, div3;
+reg [7:0] rem1, rem2, rem3;
+reg [15:0] cmp0, cmp1, cmp2, cmp3;
+reg [7:0] div_out, rem_out;
+wire [7:0] div, rem;
+
+// real registers
+reg cycle;
+reg [3:0] tmp_div;
+reg [7:0] tmp_rem;
+
+assign rem = cycle ? tmp_rem : src1;
+
+//
+// in clock cycle 0 we first calculate four MSB bits,
+// and four LSB in cycle 1
+always @(src2 or tmp_div or rem or cycle)
 begin
-      if (src2==8'b0000_0000) begin
-        des1=8'bxxxx_xxxx;
-        des2=8'bxxxx_xxxx;
-        desOv=1'b1;
-      end
-      else if (src1==src2) begin
-        des1=8'b0000_0001;
-        des2=8'b0000_0000;
-        desOv=1'b0;
-      end
-      else if (src1<src2) begin
-        des1=8'b0000_0000;
-        des2=src1;
-        desOv=1'b0;
-      end
-      else begin
-        des1=src1;
-        des2=8'b0000_0000;
+  if (src2 == 8'b0000_0000) begin
+    desOv <= 1'b1;
+    div_out <= 8'hxxxx_xxxx;
+    rem_out <= 8'hxxxx_xxxx;
+  end else begin
+    desOv <= 1'b0;
 
-        div2={1'b0,src2};
-
-// begin loop
-//loop 0
-        des2={des2[6:0],des1[7]};
-        des1={des1[6:0], 1'b0};
-        div1={1'b1, des2};
-        div1= div1 - div2;
-
-        if (div1[8]==1'b1) begin
-          des1[0]= 1'b1;
-          des2=div1[7:0];
-        end
-
-//loop 1
-        des2={des2[6:0],des1[7]};
-        des1={des1[6:0], 1'b0};
-        div1={1'b1, des2};
-        div1= div1 - div2;
-
-        if (div1[8]==1'b1) begin
-          des1[0]= 1'b1;
-          des2=div1[7:0];
-        end
-//loop 2
-        des2={des2[6:0],des1[7]};
-        des1={des1[6:0], 1'b0};
-        div1={1'b1, des2};
-        div1= div1 - div2;
-
-        if (div1[8]==1'b1) begin
-          des1[0]= 1'b1;
-          des2=div1[7:0];
-        end
-//loop 3
-        des2={des2[6:0],des1[7]};
-        des1={des1[6:0], 1'b0};
-        div1={1'b1, des2};
-        div1= div1 - div2;
-
-        if (div1[8]==1'b1) begin
-          des1[0]= 1'b1;
-          des2=div1[7:0];
-        end
-//loop 4
-        des2={des2[6:0],des1[7]};
-        des1={des1[6:0], 1'b0};
-        div1={1'b1, des2};
-        div1= div1 - div2;
-
-        if (div1[8]==1'b1) begin
-          des1[0]= 1'b1;
-          des2=div1[7:0];
-        end
-//loop 5
-        des2={des2[6:0],des1[7]};
-        des1={des1[6:0], 1'b0};
-        div1={1'b1, des2};
-        div1= div1 - div2;
-
-        if (div1[8]==1'b1) begin
-          des1[0]= 1'b1;
-          des2=div1[7:0];
-        end
-//loop 6
-        des2={des2[6:0],des1[7]};
-        des1={des1[6:0], 1'b0};
-        div1={1'b1, des2};
-        div1= div1 - div2;
-
-        if (div1[8]==1'b1) begin
-          des1[0]= 1'b1;
-          des2=div1[7:0];
-        end
-//loop 7
-        des2={des2[6:0],des1[7]};
-        des1={des1[6:0], 1'b0};
-        div1={1'b1, des2};
-        div1= div1 - div2;
-
-        if (div1[8]==1'b1) begin
-          des1[0]= 1'b1;
-          des2=div1[7:0];
-        end
-
-
-// end loop
-          desOv=1'b0;
-      end
+    /* This logic is very much redundant, but it should be optimized by
+       synthesizer */
+    cmp3 <= src2 << (cycle ? 3'h7 : 3'h3);
+    cmp2 <= src2 << (cycle ? 3'h6 : 3'h2);
+    cmp1 <= src2 << (cycle ? 3'h5 : 3'h1);
+    cmp0 <= src2 << (cycle ? 3'h4 : 3'h0);
+    div3 <= cmp3 <= rem;
+    div2 <= cmp2 <= rem3;
+    div1 <= cmp1 <= rem2;
+    div0 <= cmp0 <= rem1;
+    rem3 <= rem - (div3 ? cmp3 : 8'h0);
+    rem2 <= rem3 - (div2 ? cmp2 : 8'h0);
+    rem1 <= rem2 - (div1 ? cmp1 : 8'h0);
+    rem_out <= rem1 - (div0 ? cmp0 : 8'h0);
+    div_out <= {tmp_div, div3, div2, div1, div0};
+  end
 end
 
+//
+// divider works in two clock cycles -- 0 and 1
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    cycle <= #1 1'b0;
+    tmp_div <= #1 4'h0;
+    tmp_rem <= #1 8'h0;
+  end else begin
+    if (enable && !cycle) cycle <= #1 1'b1;
+    else cycle <= #1 1'b0;
+    tmp_div <= #1 div_out[3:0];
+    tmp_rem <= #1 rem_out;
+  end
+end
+
+//
+// assign outputs
+assign des1 = rem_out;
+assign des2 = div_out;
+
 endmodule
+

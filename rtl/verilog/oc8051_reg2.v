@@ -49,14 +49,13 @@
 // synopsys translate_on
 
 
-module oc8051_reg2 (clk, rst, in, out);
-input [1:0] in; input clk, rst;
-output [1:0] out;
-reg [1:0] out;
+module oc8051_reg2 (clk, rst, din, dout);
+input [1:0] din; input clk, rst;
+output [1:0] dout;
+reg [1:0] dout;
 
 always @(posedge clk or posedge rst)
-  if (rst) out <= 2'b00;
-  else
-    out <= #1 in;
+  if (rst) dout <= 2'b00;
+  else dout <= #1 din;
 
 endmodule

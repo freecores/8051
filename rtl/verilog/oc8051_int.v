@@ -31,11 +31,11 @@
 
 
 
-module oc0851_int (clk, wr_addr, rd_addr, data_in, bit_in, data_out, bit_out, wr, wr_bit, tf0, tf1, int, ie0, ie1, rst, reti, int_vec, tr0, tr1, uart, ack);
+module oc0851_int (clk, wr_addr, rd_addr, data_in, bit_in, data_out, bit_out, wr, wr_bit, tf0, tf1, intr, ie0, ie1, rst, reti, int_vec, tr0, tr1, uart, ack);
 input [7:0] wr_addr, data_in, rd_addr;
 input wr, tf0, tf1, ie0, ie1, clk, rst, reti, wr_bit, bit_in, uart, ack;
 
-output tr0, tr1, int, bit_out;
+output tr0, tr1, intr, bit_out;
 output [7:0] int_vec, data_out;
 
 reg [7:0] ip, ie, int_vec, id, data_out;
@@ -59,9 +59,6 @@ reg [1:0] int_levl, int_levl_w;
 wire [4:0] int_l0, int_l1;
 wire il0, il1;
 
-integer n;
-
-
 //reg set_tf0, set_tf1, set_ie0, set_ie1;
 reg tf0_buff, tf1_buff, ie0_buff, ie1_buff;
 //reg tf0_ack, tf1_ack, ie0_ack, ie1_ack;
@@ -69,7 +66,7 @@ reg tf0_buff, tf1_buff, ie0_buff, ie1_buff;
 assign tcon = {tcon_tf1, tcon_s[3], tcon_tf0, tcon_s[2], tcon_ie1, tcon_s[1], tcon_ie0, tcon_s[0]};
 assign tr0 = tcon_s[2];
 assign tr1 = tcon_s[3];
-assign int = |int_vec;
+assign intr = |int_vec;
 
 assign int_l0 = ~ip[4:0] & ie[4:0] & {uart, tcon_tf1, tcon_ie1, tcon_tf0, tcon_ie0};
 assign int_l1 = ip[4:0] & ie[4:0] & {uart, tcon_tf1, tcon_ie1, tcon_tf0, tcon_ie0};
@@ -254,9 +251,10 @@ begin
 end
 
 
-always @(posedge clk)
+always @(posedge clk or posedge rst)
 begin
-  if (wr & !wr_bit & (wr_addr==rd_addr) & (
+  if (rst) data_out <= #1 8'h0;
+  else if (wr & !wr_bit & (wr_addr==rd_addr) & (
      (wr_addr==`OC8051_SFR_IP) | (wr_addr==`OC8051_SFR_IE) | (wr_addr==`OC8051_SFR_TCON))) begin
     data_out <= #1 data_in;
   end else begin
@@ -268,21 +266,23 @@ begin
   end
 end
 
-always @(posedge clk)
-  tf0_buff <= #1 tf0;
+always @(posedge clk or posedge rst)
+  if (rst) begin
+    tf0_buff <= #1 1'b0;
+    tf1_buff <= #1 1'b0;
+    ie0_buff <= #1 1'b0;
+    ie1_buff <= #1 1'b0;
+  end else begin
+    tf0_buff <= #1 tf0;
+    tf1_buff <= #1 tf1;
+    ie0_buff <= #1 ie0;
+    ie1_buff <= #1 ie1;
+  end
 
-always @(posedge clk)
-  tf1_buff <= #1 tf1;
-
-always @(posedge clk)
-  ie0_buff <= #1 ie0;
-
-always @(posedge clk)
-  ie1_buff <= #1 ie1;
-
-always  @(posedge clk)
+always @(posedge clk or posedge rst)
 begin
-  if (wr & wr_bit & (wr_addr==rd_addr) & ((wr_addr[7:3]==`OC8051_SFR_B_IP) | 
+  if (rst) bit_out <= #1 1'b0;
+  else if (wr & wr_bit & (wr_addr==rd_addr) & ((wr_addr[7:3]==`OC8051_SFR_B_IP) | 
      (wr_addr[7:3]==`OC8051_SFR_B_IE) | (wr_addr[7:3]==`OC8051_SFR_B_TCON))) begin
     bit_out <= #1 bit_in;
   end else begin

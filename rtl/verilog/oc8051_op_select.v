@@ -53,10 +53,10 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_op_select (clk, rst, int, rd, ea, ea_int, int_v, op1_i, op2_i, op3_i, op1_x, op2_x, op3_x, op1_out, op2_out, op2_direct, op3_out, ack);
+module oc8051_op_select (clk, rst, intr, rd, ea, ea_int, int_v, op1_i, op2_i, op3_i, op1_x, op2_x, op3_x, op1_out, op2_out, op2_direct, op3_out, ack);
 //
 // clk          (in)  clock
-// int          (in)  interrupt [pin]
+// intr          (in)  interrupt [pin]
 // int_v        (in)  interrupt vector (low byte) [pin]
 // op1_i, op2_i, op3_i (in)  input from interanal rom (instruction bytes) [pin]
 // op1_x, op2_x, op3_x (in)  input from exteranl rom (instruction bytes) [pin]
@@ -68,30 +68,29 @@ module oc8051_op_select (clk, rst, int, rd, ea, ea_int, int_v, op1_i, op2_i, op3
 //
 
 
-input clk, int, rd, ea, ea_int, rst;
+input clk, intr, rd, ea, ea_int, rst;
 input [7:0] op1_i, op2_i, op3_i, op1_x, op2_x, op3_x, int_v;
 output ack;
 output [7:0] op1_out, op3_out, op2_out, op2_direct;
 
 reg int_ack, ack, int_ack_buff;
 reg [7:0] op2_direct, int_vec_buff;
-reg [7:0] op1_buff, op2_buff, op3_buff;
+reg [7:0] op2_buff, op3_buff;
 reg [7:0] op1_o, op2_o, op3_o;
 
 wire [7:0] op1, op2, op3;
-wire select, int;
+wire sel;
 
-assign select = ea & ea_int;
+assign sel = ea & ea_int;
 
-assign op1 = select ? op1_i: op1_x;
-assign op2 = select ? op2_i: op2_x;
-assign op3 = select ? op3_i: op3_x;
+assign op1 = sel ? op1_i: op1_x;
+assign op2 = sel ? op2_i: op2_x;
+assign op3 = sel ? op3_i: op3_x;
 
 //
 // assigning outputs
 // case rd = 1'b0 don't change output
 
-//assign op1_out = rd ? op1_o : op1_buff;
 assign op1_out = op1_o;
 
 assign op3_out = rd ? op3_o : op3_buff;
@@ -114,33 +113,40 @@ end
 
 //
 // remember inputs
-always @(posedge clk)
+always @(posedge clk or posedge rst)
 begin
-  op1_buff <= #1 op1_o;
-  op2_buff <= #1 op2_o;
-  op3_buff <= #1 op3_o;
+  if (rst) begin
+    op2_buff <= #1 8'h0;
+    op3_buff <= #1 8'h0;
+  end else begin
+    op2_buff <= #1 op2_o;
+    op3_buff <= #1 op3_o;
+  end
 end
 
 //
 // remember interrupt
 // we don't want to interrupt instruction in the middle of execution
-always @(posedge clk)
+always @(posedge clk or posedge rst)
  if (rst) begin
    int_ack <= #1 1'b0;
    int_vec_buff <= #1 8'h00;
- end else if (int) begin
+ end else if (intr) begin
    int_ack <= #1 1'b1;
    int_vec_buff <= #1 int_v;
  end else if (rd) int_ack <= #1 1'b0;
 
-always @(posedge clk)
-  int_ack_buff <= #1 int_ack;
+always @(posedge clk or posedge rst)
+  if (rst) int_ack_buff <= #1 1'b0;
+  else int_ack_buff <= #1 int_ack;
 
-always @(posedge clk)
-  if ((int_ack_buff) & !(int_ack))
-    ack <= #1 1'b1;
-  else ack <= #1 1'b0;
-
+always @(posedge clk or posedge rst)
+  if (rst) ack <= #1 1'b0;
+  else begin
+    if ((int_ack_buff) & !(int_ack))
+      ack <= #1 1'b1;
+    else ack <= #1 1'b0;
+  end
 
 //
 // some instructions write to known addresses

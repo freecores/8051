@@ -13,6 +13,7 @@
 //// 								  ////
 //// Author(s): 						  ////
 //// - Simon Teran, simont@opencores.org 			  ////
+//// - Marko Mlinar, markom@opencores.org 			  ////
 //// 								  ////
 //////////////////////////////////////////////////////////////////////
 //// 								  ////
@@ -43,16 +44,21 @@
 //
 // ver: 1
 //
-
+// ver: 2 markom
+// changed to two cycle multiplication, to save resources and
+// increase speed
 
 // synopsys translate_off
 `include "oc8051_timescale.v"
 // synopsys translate_on
 
 
-module oc8051_multiply (src1, src2, des1, des2, desOv);
+module oc8051_multiply (clk, rst, enable, src1, src2, des1, des2, desOv);
 //
 // this module is part of alu
+// clk          (in)
+// rst          (in)
+// enable       (in)
 // src1         (in)  first operand
 // src2         (in)  second operand
 // des1         (out) first result
@@ -60,18 +66,32 @@ module oc8051_multiply (src1, src2, des1, des2, desOv);
 // desOv        (out) Overflow output
 //
 
+input clk, rst, enable;
 input [7:0] src1, src2;
 output desOv;
 output [7:0] des1, des2;
-reg desOv; reg [7:0] des1, des2;
 
-always @(src1 or src2)
+// wires
+wire [15:0] mul_result1, mul_result;
+
+// real registers
+reg cycle;
+reg [11:0] tmp_mul;
+
+assign mul_result1 = src1 * (cycle ? src2[7:4] : src2[3:0]);
+assign mul_result = mul_result1 + tmp_mul;
+assign des1 = mul_result[7:0];
+assign des2 = mul_result[15:8];
+assign desOv = des2 != 8'h0;
+
+always @(posedge clk or posedge rst)
 begin
-  {des2, des1} = src1* src2;
-  if (des2!=8'b00000000)
-    desOv = 1'b1;
-  else
-    desOv = 1'b0;
+  if (rst) cycle <= #1 1'b0;
+  else begin
+    if (enable && !cycle) cycle <= #1 1'b1;
+    else cycle <= #1 1'b0;
+    tmp_mul <= #1 mul_result1[11:0];
+  end
 end
 
 endmodule

@@ -3,63 +3,63 @@
 	Building instance overlay tables: 
   $readmemh("../src/oc8051_test.vec", buff);
                                          |
-ncelab: *W,MEMODR (/home/simont/oc8051/bench/verilog/oc8051_tb.v,129|41): $readmem default memory order incompatible with IEEE1364.
+ncelab: *W,MEMODR (/projects/oc8051/markom/oc8051/bench/verilog/oc8051_tb.v,129|41): $readmem default memory order incompatible with IEEE1364.
 ..............
   $readmemh("../src/oc8051_rom.in", buff);
                                        |
 ncelab: *W,MEMODR (../src/verilog/oc8051_rom.v,32|39): $readmem default memory order incompatible with IEEE1364.
 ...... Done
 	Generating native compiled code:
-		worklib.oc0851_int:v <0x1dc4ded5>
-			streams:  98, words: 71674
-		worklib.oc8051_acc:v <0x25e57ada>
-			streams:   8, words:  5655
-		worklib.oc8051_alu:v <0x73da7e8d>
-			streams:   1, words: 22345
-		worklib.oc8051_alu_src1_sel:v <0x49045171>
-			streams:   1, words:  1182
+		worklib.oc0851_int:v <0x2069a25f>
+			streams: 101, words: 75786
+		worklib.oc8051_acc:v <0x240c0191>
+			streams:   9, words:  6414
+		worklib.oc8051_alu:v <0x4586e362>
+			streams:  92, words: 45959
+		worklib.oc8051_alu_src1_sel:v <0x071dcf10>
+			streams:   6, words:  2430
 		worklib.oc8051_alu_src2_sel:v <0x7e59f8f4>
 			streams:   1, words:   962
 		worklib.oc8051_alu_src3_sel:v <0x4a887dff>
 			streams:   1, words:   396
-		worklib.oc8051_b_register:v <0x1826d31c>
-			streams:   6, words:  4434
+		worklib.oc8051_b_register:v <0x526e6bcf>
+			streams:   7, words:  5193
 		worklib.oc8051_comp:v <0x54d7bbcb>
 			streams:   1, words:  2094
 		worklib.oc8051_cy_select:v <0x3920b7c3>
 			streams:   1, words:   924
-		worklib.oc8051_decoder:v <0x28121cb7>
-			streams:  22, words: 363478
-		worklib.oc8051_divide:v <0x227eb874>
-			streams:   1, words: 13024
+		worklib.oc8051_decoder:v <0x695dccd4>
+			streams:  23, words: 361768
+		worklib.oc8051_divide:v <0x250ecdc2>
+			streams:  15, words: 10792
 		worklib.oc8051_dptr:v <0x3105e8b6>
 			streams:   7, words:  5614
-		worklib.oc8051_ext_addr_sel:v <0x5a639f02>
-			streams:   8, words:  4284
+		worklib.oc8051_ext_addr_sel:v <0x1be6f37d>
+			streams:   9, words:  5013
 		worklib.oc8051_immediate_sel:v <0x78ec069f>
 			streams:   1, words:  3917
 		worklib.oc8051_indi_addr:v <0x09ec559f>
 			streams:  18, words: 12435
-		worklib.oc8051_multiply:v <0x59665d80>
-			streams:   1, words:   971
-		worklib.oc8051_op_select:v <0x35e86697>
-			streams:  21, words: 12414
-		worklib.oc8051_pc:v <0x74b16e99>
-			streams:  16, words: 25067
+		worklib.oc8051_multiply:v <0x17144c17>
+			streams:   9, words:  4402
+		worklib.oc8051_op_select:v <0x1be5f475>
+			streams:  24, words: 14525
+		worklib.oc8051_pc:v <0x62984f0d>
+			streams:  14, words: 22729
 		worklib.oc8051_ports:v <0x63f7eed0>
 			streams:  15, words: 19767
-		worklib.oc8051_psw:v <0x17597376>
-			streams:  14, words: 10251
+		worklib.oc8051_psw:v <0x730b1898>
+			streams:  19, words: 13629
 		worklib.oc8051_ram:v <0x289d3b49>
 			streams:   7, words:  4207
-		worklib.oc8051_ram_rd_sel:v <0x2da76cf3>
-			streams:   1, words:  1899
+		worklib.oc8051_ram_rd_sel:v <0x0d1acd78>
+			streams:   6, words:  2846
 		worklib.oc8051_ram_sel:v <0x49fa9b53>
 			streams:   4, words:  5092
-		worklib.oc8051_ram_top:v <0x47b0dfaf>
-			streams:  11, words:  8258
-		worklib.oc8051_ram_wr_sel:v <0x19fba29a>
-			streams:   1, words:  1978
+		worklib.oc8051_ram_top:v <0x4b18fe14>
+			streams:  10, words:  8226
+		worklib.oc8051_ram_wr_sel:v <0x61b65dfb>
+			streams:  10, words:  4203
 		worklib.oc8051_reg1:v <0x5eeb0e90>
 			streams:   3, words:  1141
 		worklib.oc8051_reg2:v <0x33db6894>
@@ -78,16 +78,16 @@ ncelab: *W,MEMODR (../src/verilog/oc8051_rom.v,32|39): $readmem default memory o
 			streams:   5, words:  2494
 		worklib.oc8051_rom_addr_sel:v <0x65c78f22>
 			streams:   1, words:   608
-		worklib.oc8051_sp:v <0x5f55b13b>
-			streams:  10, words:  5769
+		worklib.oc8051_sp:v <0x7c2e5f6c>
+			streams:  13, words:  7484
 		worklib.oc8051_tb:v <0x094c79ba>
 			streams:  22, words: 11198
-		worklib.oc8051_tc:v <0x50bc5e38>
-			streams:  44, words: 31486
-		worklib.oc8051_top:v <0x097fc8f4>
+		worklib.oc8051_tc:v <0x1ccebae9>
+			streams:  44, words: 32060
+		worklib.oc8051_top:v <0x4c8c97c1>
 			streams:   4, words:  1620
-		worklib.oc8051_uart:v <0x1bb6bc73>
-			streams: 142, words: 105835
+		worklib.oc8051_uart:v <0x2daeb2d5>
+			streams: 143, words: 109522
 		worklib.oc8051_uart_test:v <0x61278237>
 			streams:   5, words:  1757
 		worklib.oc8051_xram:v <0x5f743365>
@@ -96,14 +96,14 @@ ncelab: *W,MEMODR (../src/verilog/oc8051_rom.v,32|39): $readmem default memory o
 	Building instance specific data structures.
 	Design hierarchy summary:
 		                  Instances  Unique
-		Modules:                 57      39
-		Registers:              242     201
-		Scalar wires:            64       -
-		Expanded wires:          72       7
-		Vectored wires:          88       -
-		Always blocks:          124      95
+		Modules:                 56      39
+		Registers:              254     214
+		Scalar wires:            66       -
+		Expanded wires:          80       8
+		Vectored wires:          91       -
+		Always blocks:          112      88
 		Initial blocks:           6       6
-		Cont. assignments:       37      40
-		Pseudo assignments:      18      18
+		Cont. assignments:       43      49
+		Pseudo assignments:      20      20
 		Simulation timescale:  10ps
 	Writing initial simulation snapshot: worklib.oc8051_tb:v

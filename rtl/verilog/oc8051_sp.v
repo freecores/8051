@@ -52,7 +52,7 @@
 
 
 
-module oc8051_sp (clk, rst, ram_rd_sel, ram_wr_sel, wr_addr, wr, wr_bit, data_in, data_out);
+module oc8051_sp (clk, rst, ram_rd_sel, ram_wr_sel, wr_addr, wr, wr_bit, data_in, data_out, data_out_r);
 //
 // clk          (in)  clock
 // rst          (in)  reset
@@ -62,7 +62,8 @@ module oc8051_sp (clk, rst, ram_rd_sel, ram_wr_sel, wr_addr, wr, wr_bit, data_in
 // wr_bit       (in)  write bit addresable [oc8051_decoder.bit_addr -r]
 // data_in      (in)  data input [oc8051_alu.des1]
 // wr_addr      (in)  write address (if is addres of sp and white high must be written to sp)  [oc8051_ram_wr_sel.out]
-// data_out     (out) data output [oc8051_ram_rd_sel.sp, oc8051_ram_rd_sel oc8051_ram_wr_sel1.sp, oc8051_ram_sel.sp]
+// data_out     (out) data output
+// data_out_r   (out) data output
 //
 
 
@@ -71,8 +72,10 @@ input [1:0] ram_rd_sel;
 input [2:0] ram_wr_sel;
 input [7:0] data_in, wr_addr;
 output [7:0] data_out;
+output [7:0] data_out_r;
 
 reg [7:0] data_out;
+reg [7:0] data_out_r;
 reg [7:0] temp;
 reg pop, write;
 wire [7:0] temp1;
@@ -100,11 +103,14 @@ begin
 //
 // push
   if (ram_wr_sel==`OC8051_RWS_SP) data_out = temp1+8'h01;
-  else if (write)
-    data_out = temp1;
-  else data_out = temp1 - pop;
+  else if (write) data_out = temp1;
+  else data_out = temp1 - {7'b0, pop};
 
 end
+
+always @(posedge clk or posedge rst)
+  if (rst) data_out_r <= #1 8'h0;
+  else data_out_r <= #1 data_out;
 
 always @(posedge clk or posedge rst)
 begin
@@ -113,6 +119,5 @@ begin
   else if (ram_rd_sel==`OC8051_RRS_SP) pop <= #1 1'b1;
   else pop <= #1 1'b0;
 end
-
 
 endmodule

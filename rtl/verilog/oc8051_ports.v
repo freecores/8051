@@ -113,7 +113,7 @@ begin
     endcase
 end
 
-always @(p0_out or p0_in or p1_out or p1_in or p2_out or p2_in or p3_out or p3_in)
+always @(p0_out or p0_in or p1_out or p1_in or p2_out or p2_in or p3_out or p3_in or rmw or rd_addr)
 begin
   if (rmw) begin
     case (rd_addr[5:4])

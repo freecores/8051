@@ -87,8 +87,14 @@ oc8051_ram oc8051_ram1(.clk(clk), .rd_addr(rd_addr_m), .rd_data(rd_data), .wr_ad
          .wr_data(wr_data_m), .wr(wr));
 
 
-always @(posedge clk)
-  bit_addr_r <= #1 bit_addr;
+always @(posedge clk or posedge rst)
+  if (rst) begin
+    bit_addr_r <= #1 1'b0;
+    bit_select <= #1 3'b0;
+  end else begin
+    bit_addr_r <= #1 bit_addr;
+    bit_select <= #1 rd_addr[2:0];
+  end
 
 always @(rd_addr or bit_addr)
 begin
@@ -98,9 +104,6 @@ begin
     default: rd_addr_m = rd_addr;
   endcase
 end
-
-always @(posedge clk)
-  bit_select <= #1 rd_addr[2:0];
 
 always @(wr_addr or bit_addr_r)
 begin
@@ -127,8 +130,6 @@ begin
   end else
     wr_data_m = wr_data;
 end
-
-
 
 
 

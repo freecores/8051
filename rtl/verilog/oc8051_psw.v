@@ -52,7 +52,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_psw (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, data_out, bit_out, p, cy_in, ac_in, ov_in, set);
+module oc8051_psw (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, data_out, data_out_r, bit_out, p, cy_in, ac_in, ov_in, set);
 //
 // clk          (in)  clock
 // rst          (in)  reset
@@ -61,6 +61,7 @@ module oc8051_psw (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, data_out, bi
 // wr           (in)  write [oc8051_decoder.wr -r]
 // wr_bit       (in)  write bit addresable [oc8051_decoder.bit_addr -r]
 // data_out     (out) data output [oc8051_ram_sel.psw]
+// data_out_r   (out) data output [oc8051_ram_sel.psw]
 // p            (in)  parity [oc8051_acc.p]
 // cy_in        (in)  input bit data [oc8051_alu.desCy]
 // ac_in        (in)  auxiliary carry input [oc8051_alu.desAc]
@@ -76,13 +77,21 @@ input [7:0] wr_addr, data_in;
 
 output bit_out;
 output [7:0] data_out;
+output [7:0] data_out_r;
 
 reg bit_out;
 reg [7:0] data;
+reg wr_psw_r;
 wire wr_psw;
 
+assign wr_psw = (wr & (wr_addr==`OC8051_SFR_PSW) && !wr_bit);
+
+always @(posedge clk or posedge rst)
+  if (rst) wr_psw_r <= #1 1'b0;
+  else wr_psw_r <= #1 wr_psw;
+
 assign data_out = wr_psw ? {data_in[7:1],p}:{data[7:1], p};
-assign wr_psw = (wr & (wr_addr==`OC8051_SFR_PSW));
+assign data_out_r = wr_psw_r ? {data_in[7:1],p}:{data[7:1], p};
 
 
 //
@@ -124,9 +133,10 @@ begin
   end
 end
 
-always  @(posedge clk)
+always @(posedge clk or posedge rst)
 begin
-  bit_out <= #1 data_out[rd_addr];
+  if (rst) bit_out <= #1 8'h0;
+  else bit_out <= #1 data_out[rd_addr];
 end
 
 endmodule

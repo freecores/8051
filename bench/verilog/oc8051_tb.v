@@ -78,7 +78,7 @@ oc8051_xram oc8051_xram1 (.clk(clk), .wr(write_xram), .addr(ext_addr), .data_in(
 
 oc8051_uart_test oc8051_uart_test1(.clk(clk), .rst(rst), .addr(ext_addr[7:0]), .wr(write_uart),
                   .wr_bit(p3_out[0]), .data_in(data_out), .data_out(data_out_uart), .bit_out(bit_out), .rxd(txd),
-		  .txd(rxd), .ow(p3_out[1]), .int(int_uart));
+		  .txd(rxd), .ow(p3_out[1]), .intr(int_uart));
 
 
 assign write_xram = p3_out[7] & write;

@@ -84,7 +84,7 @@ reg [7:0] out_data;
 
 //
 //set output in case of address (byte)
-always @(addr or in_ram or psw or acc or dptr_hi or ports_in or sp or b_reg)
+always @(addr or in_ram or psw or acc or dptr_hi or ports_in or sp or b_reg or uart or tc or int or addr)
 begin
   case (addr)
     `OC8051_SFR_ACC: out_data = acc;

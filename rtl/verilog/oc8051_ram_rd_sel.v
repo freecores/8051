@@ -51,33 +51,33 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_ram_rd_sel (sel, sp, ri, rn, imm, out);
+module oc8051_ram_rd_sel (sel, sp, ri, rn, imm, addr_out);
 //
 // sel          (in)  select (look defines) [oc8051_decoder.ram_rd_sel]
 // sp           (in)  stack ponter [oc8051_sp.data_out]
 // ri           (in)  indirect addresing [oc8051_indi_addr.data_out]
 // rn           (in)  registers [{oc8051_psw.data_out[4:3], oc8051_op_select.op1_out[2:0]}]
 // imm          (in)  immediate (direct addresing) [oc8051_op_select.op2_direct]
-// out          (out) output [oc8051_ram_top.rd_addr, oc8051_ram_sel.addr -r, oc8051_ports.rd_addr]
+// addr_out     (out) output [oc8051_ram_top.rd_addr, oc8051_ram_sel.addr -r, oc8051_ports.rd_addr]
 //
 
 input [1:0] sel;
 input [4:0] rn;
 input [7:0] sp, ri, imm;
 
-output [7:0] out;
-reg [7:0] out;
+output [7:0] addr_out;
+reg [7:0] addr_out;
 
 //
 //
 always @(sel or sp or ri or rn or imm)
 begin
   case (sel)
-    `OC8051_RRS_RN : out = {3'b000, rn};
-    `OC8051_RRS_I : out = ri;
-    `OC8051_RRS_D : out = imm;
-    `OC8051_RRS_SP : out = sp;
-    default : out = 2'bxx;
+    `OC8051_RRS_RN : addr_out <= {3'b000, rn};
+    `OC8051_RRS_I : addr_out <= ri;
+    `OC8051_RRS_D : addr_out <= imm;
+    `OC8051_RRS_SP : addr_out <= sp;
+    default : addr_out <= 2'bxx;
   endcase
 
 end
