@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2003/04/04 10:34:13  simont
+// change timers to meet timing specifications (add divider with 12)
+//
 // Revision 1.5  2003/01/13 14:14:41  simont
 // replace some modules
 //
@@ -61,18 +64,19 @@
 
 
 module oc8051_tc (clk, rst, 
-            wr_addr, rd_addr, 
-	    data_in, data_out,
+            data_in,
+            wr_addr,
 	    wr, wr_bit,
-	    ie0, ie1, 
-	    tr0, tr1, 
+	    ie0, ie1,
+	    tr0, tr1,
 	    t0, t1,
             tf0, tf1,
-	    pres_ow);
+	    pres_ow,
+//registers
+	    tmod, tl0, th0, tl1, th1);
 
 input [7:0]  wr_addr,
-             data_in,
-             rd_addr;
+             data_in;
 input        clk,
              rst,
 	     wr,
@@ -83,13 +87,17 @@ input        clk,
 	     tr1,
 	     t0,
 	     t1;
-output [7:0] data_out;
+output [7:0] tmod, 
+             tl0, 
+	     th0, 
+	     tl1, 
+	     th1;
 output       tf0,
              tf1,
 	     pres_ow;
 
 
-reg [7:0] tmod, tl0, th0, tl1, th1, data_out;
+reg [7:0] tmod, tl0, th0, tl1, th1;
 reg tf0, tf1_0, tf1_1, t0_buff, t1_buff;
 
 reg pres_ow;
@@ -218,23 +226,6 @@ begin
  end
 end
 
-always @(posedge clk or posedge rst)
-begin
-  if (rst) data_out <= #1 8'h0;
-  else if (wr & !wr_bit & (wr_addr==rd_addr) & ((wr_addr==`OC8051_SFR_TH0) |
-     (wr_addr==`OC8051_SFR_TH1)|(wr_addr==`OC8051_SFR_TL0)|(wr_addr==`OC8051_SFR_TL1)|
-     (wr_addr==`OC8051_SFR_TMOD))) begin
-    data_out <= #1 data_in;
-  end else begin
-    case (rd_addr)
-      `OC8051_SFR_TH0: data_out <= #1 th0;
-      `OC8051_SFR_TH1: data_out <= #1 th1;
-      `OC8051_SFR_TL0: data_out <= #1 tl0;
-      `OC8051_SFR_TL1: data_out <= #1 tl1;
-      default: data_out <= #1 tmod;
-    endcase
-  end
-end
 
 always @(posedge clk or posedge rst)
 begin

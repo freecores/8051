@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2003/01/13 14:14:41  simont
+// replace some modules
+//
 // Revision 1.6  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -57,8 +60,13 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_ports (clk, rst, bit_in, data_in, wr, wr_bit, wr_addr, rd_addr, rmw, data_out, bit_out, p0_out, p1_out, p2_out, p3_out,
-                     p0_in, p1_in, p2_in, p3_in);
+module oc8051_ports (clk, rst, 
+                    bit_in, data_in, 
+		    wr, wr_bit, 
+		    wr_addr, rmw, 
+		    p0_out, p1_out, p2_out, p3_out,
+                    p0_in, p1_in, p2_in, p3_in,
+		    p0_data, p1_data, p2_data, p3_data);
 //
 // clk          (in)  clock
 // rst          (in)  reset
@@ -76,13 +84,17 @@ module oc8051_ports (clk, rst, bit_in, data_in, wr, wr_bit, wr_addr, rd_addr, rm
 
 
 input clk, rst, wr, wr_bit, bit_in, rmw;
-input [7:0] wr_addr, rd_addr, data_in, p0_in, p1_in, p2_in, p3_in;
+input [7:0] wr_addr, data_in, p0_in, p1_in, p2_in, p3_in;
 
-output bit_out;
-output [7:0] data_out, p0_out, p1_out, p2_out, p3_out;
+output [7:0] p0_out, p1_out, p2_out, p3_out;
+output [7:0] p0_data, p1_data, p2_data, p3_data;
 
-reg bit_out;
-reg [7:0] data_out, p0_out, p1_out, p2_out, p3_out;
+reg [7:0] p0_out, p1_out, p2_out, p3_out;
+
+assign p0_data = rmw ? p0_out : p0_in;
+assign p1_data = rmw ? p1_out : p1_in;
+assign p2_data = rmw ? p2_out : p2_in;
+assign p3_data = rmw ? p3_out : p3_in;
 
 //
 // case of writing to port
@@ -117,58 +129,6 @@ begin
   end
 end
 
-//always @(p0_out or p0_in or p1_out or p1_in or p2_out or p2_in or p3_out or p3_in or rmw)
-always @(posedge clk or posedge rst)
-begin
-  if (rst)
-    data_out <= #1 8'h0;
-  else if (rmw) begin
-    if ((rd_addr==wr_addr) & wr & !wr_bit)
-      data_out <= #1 data_in;
-    else begin
-      case (rd_addr[5:4])
-        2'b00: data_out <= #1 p0_out;
-        2'b01: data_out <= #1 p1_out;
-        2'b10: data_out <= #1 p2_out;
-        2'b11: data_out <= #1 p3_out;
-      endcase
-     end
-  end else
-    case (rd_addr[5:4])
-      2'b00: data_out <= #1 p0_in;
-      2'b01: data_out <= #1 p1_in;
-      2'b10: data_out <= #1 p2_in;
-      2'b11: data_out <= #1 p3_in;
-    endcase
-end
-
-//always  @(rmw or rd_addr or p0_out or p1_out or p2_out or p3_out or p0_in or p1_in or p2_in or p3_in)
-always @(posedge clk or posedge rst)
-begin
-  if (rst)
-    bit_out <= #1 1'b0;
-  else if (rmw) begin
-    if ((wr_addr==rd_addr) & wr & wr_bit)
-      bit_out <= #1 bit_in;
-    else if ((wr_addr[7:3]==rd_addr[7:3]) & wr)
-      bit_out <= #1 data_in[rd_addr[2:0]];
-    else begin
-      case (rd_addr[7:3])
-        `OC8051_SFR_B_P0: bit_out <= #1 p0_out[rd_addr[2:0]];
-        `OC8051_SFR_B_P1: bit_out <= #1 p1_out[rd_addr[2:0]];
-        `OC8051_SFR_B_P2: bit_out <= #1 p2_out[rd_addr[2:0]];
-        default: bit_out <= #1 p3_out[rd_addr[2:0]];
-      endcase
-    end
-  end else begin
-    case (rd_addr[7:3])
-      `OC8051_SFR_B_P0: bit_out <= #1 p0_in[rd_addr[2:0]];
-      `OC8051_SFR_B_P1: bit_out <= #1 p1_in[rd_addr[2:0]];
-      `OC8051_SFR_B_P2: bit_out <= #1 p2_in[rd_addr[2:0]];
-      default: bit_out <= #1 p3_in[rd_addr[2:0]];
-    endcase
-  end
-end
 
 endmodule
 

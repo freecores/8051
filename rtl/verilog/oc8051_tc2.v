@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2003/04/04 10:34:13  simont
+// change timers to meet timing specifications (add divider with 12)
+//
 // Revision 1.1  2003/01/13 14:13:12  simont
 // initial import
 //
@@ -58,18 +61,19 @@
 
 
 
-module oc8051_tc2 (clk, rst, 
-            wr_addr, rd_addr,
-	    data_in, data_out, bit_out,
-	    wr, wr_bit, bit_in,
+module oc8051_tc2 (clk, rst,
+            wr_addr,
+	    data_in, bit_in,
+	    wr, wr_bit,
 	    t2, t2ex,
-            rclk, tclk, 
+            rclk, tclk,
 	    brate2, tc2_int,
-	    pres_ow);
+	    pres_ow,
+//registers
+	    t2con, tl2, th2, rcap2l, rcap2h);
 
 input [7:0]  wr_addr,
-             data_in,
-	     rd_addr;
+             data_in;
 input        clk,
              rst,
 	     wr,
@@ -78,14 +82,16 @@ input        clk,
 	     t2ex,
 	     bit_in,
 	     pres_ow;	//prescalre owerflov
-output [7:0] data_out;
-output       tc2_int, 
-             bit_out, 
-	     rclk, 
-	     tclk, 
+output [7:0] t2con,
+             tl2,
+	     th2,
+	     rcap2l,
+	     rcap2h;
+output       tc2_int,
+	     rclk,
+	     tclk,
 	     brate2;
 
-reg [7:0] data_out;
 
 reg brate2;
 reg [7:0] t2con, tl2, th2, rcap2l, rcap2h;
@@ -107,8 +113,6 @@ assign exen2 = t2con[3];
 assign tr2   = t2con[2];
 assign ct2   = t2con[1];
 assign cprl2 = t2con[0];
-
-assign bit_out = t2con[rd_addr[2:0]];
 
 always @(posedge clk or posedge rst)
 begin
@@ -239,24 +243,11 @@ begin
     tc2_event <= #1 1'b0;
     t2_r <= #1 1'b1;
   end else if (!t2 & t2_r) begin
-//  end if (t2_r) begin
     tc2_event <= #1 1'b1;
     t2_r <= #1 1'b0;
   end else begin
     tc2_event <= #1 1'b0;
   end
-end
-
-always @(rd_addr or t2con or tl2 or th2 or rcap2l or rcap2h)
-begin
-  case (rd_addr)
-    `OC8051_SFR_RCAP2H: data_out = rcap2h;
-    `OC8051_SFR_RCAP2L: data_out = rcap2l;
-    `OC8051_SFR_TH2:    data_out = th2;
-    `OC8051_SFR_TL2:    data_out = tl2;
-    default: 		data_out = t2con;
-  endcase
-
 end
 
 endmodule

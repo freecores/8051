@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.9  2003/01/13 14:14:40  simont
+// replace some modules
+//
 // Revision 1.8  2002/11/05 17:23:54  simont
 // add module oc8051_sfr, 256 bytes internal ram
 //
@@ -59,32 +62,21 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_acc (clk, rst, bit_in, data_in, data2_in, wr, wr_bit, wr_addr, rd_addr,
-		data_out, bit_out, p, wr_sfr);
-// clk          (in)  clock
-// rst          (in)  reset
-// bit_in       (in)  bit input - used in case of writing bits to acc (bit adddressable memory space - alu carry) [oc8051_alu.desCy]
-// data_in      (in)  data input - used to write to acc (from alu destiantion 1) [oc8051_alu.des1]
-// data2_in     (in)  data 2 input - write to acc, from alu detination 2 - instuctions mul and div [oc8051_alu.des2]
-// wr           (in)  write - actine high [oc8051_decoder.wr -r]
-// wr_bit       (in)  write bit addresable - actine high [oc8051_decoder.bit_addr -r]
-// wr_addr      (in)  write address (if is addres of acc and white high must be written to acc) [oc8051_ram_wr_sel.out]
-// data_out     (out) data output [oc8051_alu_src1_sel.acc oc8051_alu_src2_sel.acc oc8051_comp.acc oc8051_ram_sel.acc]
-// p            (out) parity [oc8051_psw.p]
-// mx_ext       (in)  mx extension
-// wr_sfr
-//
+module oc8051_acc (clk, rst, 
+                 bit_in, data_in, data2_in, 
+		 data_out,
+		 wr, wr_bit, wr_addr,
+		 p, wr_sfr);
 
 
 input clk, rst, wr, wr_bit, bit_in;
-input [2:0] rd_addr, wr_sfr;
+input [2:0] wr_sfr;
 input [7:0] wr_addr, data_in, data2_in;
 
-output p, bit_out;
+output p;
 output [7:0] data_out;
 
 reg [7:0] data_out;
-reg bit_out;
 
 //
 //calculates parity
@@ -110,18 +102,6 @@ begin
         data_out[wr_addr[2:0]] <= #1 bit_in;
     end
   end
-end
-
-always @(posedge clk or posedge rst)
-begin
-  if (rst) bit_out <= #1 1'b0;
-  else if ((rd_addr==wr_addr[2:0]) & wr & wr_bit) begin
-      bit_out <= #1 bit_in;
-  end else if (((wr_addr==`OC8051_SFR_ACC) & wr & !wr_bit) || (wr_sfr==`OC8051_WRS_ACC1)) begin
-      bit_out <= #1 data_in[rd_addr];
-  end else if ((wr_sfr==`OC8051_WRS_ACC2) || (wr_sfr==`OC8051_WRS_BA)) begin
-      bit_out <= #1 data2_in[rd_addr];
-  end else bit_out <= #1 data_out[rd_addr];
 end
 
 endmodule

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2003/01/13 14:14:40  simont
+// replace some modules
+//
 // Revision 1.6  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -56,29 +59,16 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_b_register (clk, rst, bit_in, bit_out, data_in, wr, wr_bit,
-              wr_addr, rd_addr, data_out, wr_sfr);
-//
-// clk          (in)  clock
-// rst          (in)  reset
-// bit_in       (in)  bit input - used in case of writing bits to b register (bit adddressable memory space - alu carry) [oc8051_alu.desCy]
-// data_in      (in)  data input - used to write to b register [oc8051_alu.des1]
-// wr           (in)  write - actine high [oc8051_decoder.wr -r]
-// wr_bit       (in)  write bit addresable - actine high [oc8051_decoder.bit_addr -r]
-// wr_addr      (in)  write address [oc8051_ram_wr_sel.out]
-// data_out     (out) data output [oc8051_ram_sel.b_reg]
-// wr_sfr
-//
+module oc8051_b_register (clk, rst, bit_in, data_in, wr, wr_bit,
+              wr_addr, data_out, wr_sfr);
 
 
 input clk, rst, wr, wr_bit, bit_in;
-input [2:0] rd_addr, wr_sfr;
+input [2:0] wr_sfr;
 input [7:0] wr_addr, data_in;
 
-output bit_out;
 output [7:0] data_out;
 
-reg bit_out;
 reg [7:0] data_out;
 
 //
@@ -99,16 +89,6 @@ begin
         data_out[wr_addr[2:0]] <= #1 bit_in;
     end
   end
-end
-
-always @(posedge clk or posedge rst)
-begin
-  if (rst) bit_out <= #1 1'b0;
-  else if ((rd_addr==wr_addr[2:0]) & wr & wr_bit) begin
-    bit_out <= #1 bit_in;
-  end else if ((wr_addr==`OC8051_SFR_B) & wr & !wr_bit) begin
-    bit_out <= #1 data_in[rd_addr];
-  end else bit_out <= #1 data_out[rd_addr];
 end
 
 endmodule

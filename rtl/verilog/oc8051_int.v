@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2003/03/28 17:45:57  simont
+// change module name.
+//
 // Revision 1.6  2003/01/13 14:14:41  simont
 // replace some modules
 //
@@ -63,7 +66,10 @@
 
 
 
-module oc8051_int (clk, rst, wr_addr, rd_addr, data_in, bit_in, data_out, bit_out, wr, wr_bit,
+module oc8051_int (clk, rst, 
+        wr_addr,  
+	data_in, bit_in, 
+	wr, wr_bit,
 //timer interrupts
         tf0, tf1, t2_int,
 	tr0, tr1,
@@ -72,19 +78,23 @@ module oc8051_int (clk, rst, wr_addr, rd_addr, data_in, bit_in, data_out, bit_ou
 //uart interrupts
         uart_int,
 //to cpu
-        intr, reti, int_vec, ack);
+        intr, reti, int_vec, ack,
+//registers
+	ie, tcon, ip);
 
-input [7:0] wr_addr, data_in, rd_addr;
+input [7:0] wr_addr, data_in;
 input wr, tf0, tf1, t2_int, ie0, ie1, clk, rst, reti, wr_bit, bit_in, ack, uart_int;
 
-output tr0, tr1, intr, bit_out;
-output [7:0] int_vec, data_out;
+output tr0, tr1, intr;
+output [7:0] int_vec,
+             ie,
+	     tcon,
+	     ip;
 
-reg [7:0] ip, ie, int_vec, data_out;
+reg [7:0] ip, ie, int_vec;
 
 reg [3:0] tcon_s;
-reg tcon_tf1, tcon_tf0, tcon_ie1, tcon_ie0, bit_out;
-wire [7:0] tcon;
+reg tcon_tf1, tcon_tf0, tcon_ie1, tcon_ie0;
 
 //
 // isrc		processing interrupt sources
@@ -246,7 +256,6 @@ end
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
-//   tcon_ie1 <=#1 `OC8051_RST_TCON[3];
    tcon_ie1 <=#1 1'b0;
  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
    tcon_ie1 <= #1 data_in[3];
@@ -331,21 +340,6 @@ end
 
 
 always @(posedge clk or posedge rst)
-begin
-  if (rst) data_out <= #1 8'h0;
-  else if (wr & !wr_bit & (wr_addr==rd_addr) & (
-     (wr_addr==`OC8051_SFR_IP) | (wr_addr==`OC8051_SFR_IE) | (wr_addr==`OC8051_SFR_TCON))) begin
-    data_out <= #1 data_in;
-  end else begin
-    case (rd_addr)
-      `OC8051_SFR_IP: data_out <= #1 ip;
-      `OC8051_SFR_IE: data_out <= #1 ie0;
-      default: data_out <= #1 tcon;
-    endcase
-  end
-end
-
-always @(posedge clk or posedge rst)
   if (rst) begin
     tf0_buff <= #1 1'b0;
     tf1_buff <= #1 1'b0;
@@ -357,22 +351,5 @@ always @(posedge clk or posedge rst)
     ie0_buff <= #1 ie0;
     ie1_buff <= #1 ie1;
   end
-
-always @(posedge clk or posedge rst)
-begin
-  if (rst) bit_out <= #1 1'b0;
-  else if (wr & wr_bit & (wr_addr==rd_addr)) begin
-    bit_out <= #1 bit_in;
-  end else if ((rd_addr[7:3]==wr_addr[7:3]) & wr & !wr_bit) begin
-    bit_out <= #1 data_in[rd_addr[2:0]];
-  end else begin
-    case (rd_addr[7:3])
-      `OC8051_SFR_B_IP: bit_out <= #1 ip[rd_addr[2:0]];
-      `OC8051_SFR_B_IE: bit_out <= #1 ie[rd_addr[2:0]];
-      default: bit_out <= #1 tcon[rd_addr[2:0]];
-    endcase
-  end
-end
-
 
 endmodule
