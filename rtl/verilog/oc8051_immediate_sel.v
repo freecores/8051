@@ -83,12 +83,12 @@ begin
         out2 <= #1 op3;
       end
       `OC8051_IDS_PCH: begin
-        out1 <= #1 8'hx;
-        out2 <= #1 pch;
+        out1 <= #1 pch;
+        out2 <= #1 8'hx;
       end
       `OC8051_IDS_PCL: begin
-        out1 <= #1 8'hx;
-        out2 <= #1 pcl;
+        out1 <= #1 pcl;
+        out2 <= #1 8'hx;
       end
       `OC8051_IDS_OP3_PCL: begin
         out1 <= #1 op3;
