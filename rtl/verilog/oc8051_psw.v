@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 
@@ -54,7 +57,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_psw (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, data_out, data_out_r, bit_out, p, cy_in, ac_in, ov_in, set);
+module oc8051_psw (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, data_out, bit_out, p, cy_in, ac_in, ov_in, set, bank_sel);
 //
 // clk          (in)  clock
 // rst          (in)  reset
@@ -63,7 +66,6 @@ module oc8051_psw (clk, rst, wr_addr, rd_addr, data_in, wr, wr_bit, data_out, da
 // wr           (in)  write [oc8051_decoder.wr -r]
 // wr_bit       (in)  write bit addresable [oc8051_decoder.bit_addr -r]
 // data_out     (out) data output [oc8051_ram_sel.psw]
-// data_out_r   (out) data output [oc8051_ram_sel.psw]
 // p            (in)  parity [oc8051_acc.p]
 // cy_in        (in)  input bit data [oc8051_alu.desCy]
 // ac_in        (in)  auxiliary carry input [oc8051_alu.desAc]
@@ -78,8 +80,8 @@ input [2:0] rd_addr;
 input [7:0] wr_addr, data_in;
 
 output bit_out;
+output [1:0] bank_sel;
 output [7:0] data_out;
-output [7:0] data_out_r;
 
 reg bit_out;
 reg [7:0] data;
@@ -87,8 +89,8 @@ wire wr_psw;
 
 assign wr_psw = (wr & (wr_addr==`OC8051_SFR_PSW) && !wr_bit);
 
-assign data_out = wr_psw ? {data_in[7:1],p}:{data[7:1], p};
-assign data_out_r = data;
+assign bank_sel = wr_psw ? data_in[4:3]:data[4:3];
+assign data_out = data;
 
 //
 //case writing to psw

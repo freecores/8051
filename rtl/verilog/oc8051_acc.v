@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -54,7 +57,7 @@
 
 
 module oc8051_acc (clk, rst, bit_in, data_in, data2_in, wr, wr_bit, wad2, wr_addr, rd_addr,
-		data_out, bit_out, p, stb_o, we_o, ack_i, xdata);
+		data_out, bit_out, p, rd_x, xdata);
 // clk          (in)  clock
 // rst          (in)  reset
 // bit_in       (in)  bit input - used in case of writing bits to acc (bit adddressable memory space - alu carry) [oc8051_alu.desCy]
@@ -66,14 +69,12 @@ module oc8051_acc (clk, rst, bit_in, data_in, data2_in, wr, wr_bit, wad2, wr_add
 // wr_addr      (in)  write address (if is addres of acc and white high must be written to acc) [oc8051_ram_wr_sel.out]
 // data_out     (out) data output [oc8051_alu_src1_sel.acc oc8051_alu_src2_sel.acc oc8051_comp.acc oc8051_ram_sel.acc]
 // p            (out) parity [oc8051_psw.p]
-// stb_o	    (in)  strobe
-// we_o	    (in)  write to external ram
-// ack_i	    (in)  acknowlage from external ram
+// rd_x	        (in)  read external
 // xdata        (in)  external data input
 //
 
 
-input clk, rst, wr, wr_bit, wad2, bit_in, stb_o, we_o, ack_i;
+input clk, rst, wr, wr_bit, wad2, bit_in, rd_x;
 input [2:0] rd_addr;
 input [7:0] wr_addr, data_in, data2_in, xdata;
 
@@ -94,7 +95,7 @@ always @(posedge clk or posedge rst)
 begin
   if (rst)
     data_out <= #1 `OC8051_RST_ACC;
-  else if (stb_o && !we_o && ack_i)
+  else if (rd_x)
     data_out <= #1 xdata;
   else if (wad2)
     data_out <= #1 data2_in;
@@ -115,7 +116,7 @@ begin
   else if ((rd_addr==wr_addr[2:0]) & wr & wr_bit) begin
       bit_out <= #1 bit_in;
   end else if ((wr_addr==`OC8051_SFR_ACC) & wr & !wr_bit) begin
-      bit_out <= #1 data_in[rd_addr];  
+      bit_out <= #1 data_in[rd_addr];
   end else bit_out <= #1 data_out[rd_addr];
 end
 

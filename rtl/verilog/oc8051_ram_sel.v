@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2002/09/30 17:33:59  simont
+// prepared header
+//
 //
 
 // synopsys translate_off
@@ -53,9 +56,7 @@
 
 `include "oc8051_defines.v"
 
-
-module oc8051_ram_sel (addr, bit_in, in_ram, psw, acc, dptr_hi, ports_in, sp, b_reg, uart,
-		int, tc, b_bit, acc_bit, psw_bit, int_bit, port_bit, uart_bit, bit_out, out_data);
+module oc8051_ram_sel (addr, bit_in, in_ram, sfr, sfr_bit, rd_ind, bit_out, out_data);
 //
 // addr         (in)  address [oc8051_ram_rd_sel.out -r]
 // bit_in       (in)  bit input (from ram) [oc8051_ram_top.bit_data_out]
@@ -74,8 +75,8 @@ module oc8051_ram_sel (addr, bit_in, in_ram, psw, acc, dptr_hi, ports_in, sp, b_
 //
 
 
-input bit_in, b_bit, acc_bit, psw_bit, int_bit, port_bit, uart_bit;
-input [7:0] addr, in_ram, psw, acc, dptr_hi, ports_in, sp, b_reg, uart, int, tc;
+input bit_in, sfr_bit, rd_ind;
+input [7:0] addr, in_ram, sfr;
 
 output bit_out;
 output [7:0] out_data;
@@ -83,7 +84,7 @@ output [7:0] out_data;
 reg bit_out;
 reg [7:0] out_data;
 
-
+/*
 //
 //set output in case of address (byte)
 always @(addr or in_ram or psw or acc or dptr_hi or ports_in or sp or b_reg or uart or tc or int)
@@ -132,6 +133,19 @@ begin
     `OC8051_SFR_B_SCON: bit_out = uart_bit;
     default: bit_out = bit_in;
   endcase
+end
+*/
+
+//
+always @(addr or in_ram or sfr or bit_in or sfr_bit)
+begin
+  if (addr[7] && !rd_ind) begin
+    out_data = sfr;
+    bit_out = sfr_bit;
+  end else begin
+    out_data = in_ram;
+    bit_out = bit_in;
+  end
 end
 
 endmodule
