@@ -78,18 +78,18 @@ reg [7:0] div_out, rem_out;
 wire [7:0] div;
 
 // real registers
-reg cycle;
+reg [1:0] cycle;
 reg [5:0] tmp_div;
 reg [7:0] tmp_rem;
 
 /* This logic is very redundant, but it should be optimized by
    synthesizer */
-assign cmp1 = src2 << ({1'b0, cycle} * 3'h2 + 3'h1);
-assign cmp0 = src2 << ({1'b0, cycle} * 3'h2 + 3'h0);
+assign cmp1 = src2 << ({2'h3 - cycle, 1'b0} + 3'h1);
+assign cmp0 = src2 << ({2'h3 - cycle, 1'b0} + 3'h0);
 
 assign rem2 = cycle != 0 ? tmp_rem : src1;
 assign div1 = cmp1 <= rem2;
-assign rem1 = rem1 - (div1 ? cmp1[7:0] : 8'h0);
+assign rem1 = rem2 - (div1 ? cmp1[7:0] : 8'h0);
 assign div0 = cmp0 <= rem1;
 
 //
@@ -104,7 +104,7 @@ begin
   end else begin
     desOv = 1'b0;
     rem_out = rem1 - (div0 ? cmp0[7:0] : 8'h0);
-    div_out = {div1, div0, tmp_div};
+    div_out = {tmp_div, div1, div0};
   end
 end
 
@@ -113,13 +113,12 @@ end
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    cycle <= #1 1'b0;
+    cycle <= #1 2'b0;
     tmp_div <= #1 6'h0;
     tmp_rem <= #1 8'h0;
   end else begin
-    if (enable && !cycle) cycle <= #1 1'b1;
-    else cycle <= #1 1'b0;
-    tmp_div <= #1 div_out[7:2];
+    if (enable) cycle <= #1 cycle + 2'b1;
+    tmp_div <= #1 div_out[5:0];
     tmp_rem <= #1 rem_out;
   end
 end
