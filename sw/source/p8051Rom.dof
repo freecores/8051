@@ -28,7 +28,6 @@ Z=1
 ShowHints=1
 ShowWarnings=1
 UnitAliases=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
-
 [Linker]
 MapFile=0
 OutputObjs=0
@@ -38,7 +37,6 @@ MinStackSize=16384
 MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
-
 [Directories]
 OutputDir=
 UnitOutputDir=
@@ -47,11 +45,9 @@ Packages=IBEVNT30;VCLDB30;VCL30;VCLX30;VCLDBX30;VCLSMP30;QRPT30;TEEUI30;TEEDB30;
 Conditionals=
 DebugSourceDirs=
 UsePackages=0
-
 [Parameters]
 RunParams=
 HostApplication=
-
 [Version Info]
 IncludeVerInfo=0
 AutoIncBuild=0
@@ -66,7 +62,6 @@ Private=0
 DLL=0
 Locale=1060
 CodePage=1250
-
 [Version Info Keys]
 CompanyName=
 FileDescription=

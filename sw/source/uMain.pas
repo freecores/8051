@@ -84,14 +84,14 @@ begin
       if ((naddr+byts)>0) then
         str[i]:=copy(str[i], 4, 4)+copy(str[i], 2, 2)+copy(str[i], 10,byts*2)
       else begin
-        str[i]:='exit';
+        str[i]:='x';
         break;
       end;
     end;
     str.sort;
 
     for i:=0 to str.Count-1 do begin
-      if str[i][1]='e' then break;
+      if str[i][1]='x' then break;
       byts:=(hexToInt(str[i][5])*16)+hexToInt(str[i][6]);
       naddr:=(hexToInt(str[i][1])*4096)+(hexToInt(str[i][2])*256)+(hexToInt(str[i][3])*16)+hexToInt(str[i][4]);
       s:='';
