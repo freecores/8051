@@ -65,7 +65,7 @@ module oc8051_comp (sel, b_in, cy, acc, ram, op2, des, eq);
 //
 
 
-input [2:0] sel;
+input [1:0] sel;
 input b_in, cy;
 input [7:0] acc, ram, op2, des;
 
@@ -76,9 +76,6 @@ always @(sel or b_in or cy or acc or ram or op2 or des)
 begin
   case (sel)
     `OC8051_CSS_AZ : eq = (acc == 8'h00);
-    `OC8051_CSS_AR : eq = (acc == ram);
-    `OC8051_CSS_AC : eq = (acc == op2);
-    `OC8051_CSS_CR : eq = (op2 == ram);
     `OC8051_CSS_DES : eq = (des == 8'h00);
     `OC8051_CSS_CY : eq = cy;
     `OC8051_CSS_BIT : eq = b_in;

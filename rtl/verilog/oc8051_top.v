@@ -167,7 +167,7 @@ wire [2:0] op1_r;
 // comp_sel     select source1 and source2 to compare
 // eq           result (from comp1 to decoder)
 // wad2, wad2_r write to accumulator from destination 2
-wire [2:0] comp_sel;
+wire [1:0] comp_sel;
 wire eq, wad2, wad2_r;
 
 

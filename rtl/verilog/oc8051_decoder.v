@@ -97,9 +97,9 @@ output rd;
 
 reg reti, write_x, rmw;
 reg wr,  bit_addr, src_sel3, rom_addr_sel, ext_addr_sel, pc_wr, wad2;
-reg [1:0] psw_set, ram_rd_sel, src_sel1, src_sel2, pc_sel, cy_sel;
+reg [1:0] comp_sel, psw_set, ram_rd_sel, src_sel1, src_sel2, pc_sel, cy_sel;
 reg [3:0] alu_op;
-reg [2:0] comp_sel, ram_wr_sel, imm_sel;
+reg [2:0] ram_wr_sel, imm_sel;
 
 //
 // state        if 2'b00 then normal execution, sle instructin that need more than one clock
