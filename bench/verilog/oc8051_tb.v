@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.9  2003/04/02 15:08:59  simont
+// rename signals
+//
 // Revision 1.8  2003/01/13 14:35:25  simont
 // remove wb_bus_mon
 //
@@ -132,51 +135,11 @@ oc8051_uart_test oc8051_uart_test1(.clk(clk), .rst(rst), .addr(ext_addr[7:0]), .
 //
 // exteranl program rom
 //
-//    cache
-//
-//
-wire istb_i, icyc_i, iack_o;
-wire [15:0] iadr_i;
-wire [31:0] idat_o;
 
-`ifdef OC8051_CACHE
+oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_o), .data(idat_i),
+             .stb_i(istb_o), .cyc_i(icyc_o), .ack_o(iack_i));
 
 
-oc8051_icache oc8051_icache1(.rst(rst), .clk(clk),
-// oc8051
-        .adr_i(iadr_o), .dat_o(idat_i), .stb_i(istb_o), .ack_o(iack_i),
-        .cyc_i(icyc_o),
-// external rom
-        .dat_i(idat_o), .stb_o(istb_i), .adr_o(iadr_i), .ack_i(iack_o),
-        .cyc_o(icyc_i));
-
-oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_i), .data(idat_o),
-             .stb_i(istb_i), .cyc_i(icyc_i), .ack_o(iack_o));
-
-defparam oc8051_icache1.ADR_WIDTH = 7;  // cache address wihth
-defparam oc8051_icache1.LINE_WIDTH = 2; // line address width (2 => 4x32)
-defparam oc8051_icache1.BL_NUM = 15; // number of blocks (2^BL_WIDTH-1); BL_WIDTH = ADR_WIDTH - LINE_WIDTH
-defparam oc8051_icache1.CACHE_RAM = 128; // cache ram x 32 (2^ADR_WIDTH)
-
-
-//
-//    no cache
-//
-`else
-
-oc8051_wb_iinterface oc8051_wb_iinterface(.rst(rst), .clk(clk),
-// oc8051
-        .adr_i(iadr_o), .dat_o(idat_i), .stb_i(istb_o), .ack_o(iack_i),
-        .cyc_i(icyc_o),
-// external rom
-        .dat_i(idat_o), .stb_o(istb_i), .adr_o(iadr_i), .ack_i(iack_o),
-        .cyc_o(icyc_i));
-
-oc8051_xrom oc8051_xrom1(.rst(rst), .clk(clk), .addr(iadr_i), .data(idat_o),
-             .stb_i(istb_i), .cyc_i(icyc_i), .ack_o(iack_o));
-
-
-`endif
 //
 //
 //
@@ -217,7 +180,7 @@ initial begin
 #220
   rst = 1'b0;
 
-#7000000
+#40000000
   $fclose(log_file);
   $display("time ",$time, "\n faulire: end of time\n \n");
   $finish;
@@ -227,7 +190,7 @@ end
 initial
 begin
   clk = 0;
-  forever #70 clk <= ~clk;
+  forever #30 clk <= ~clk;
 end
 
 
