@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.7  2003/05/05 10:35:35  simont
+// change to fit xrom.
+//
 // Revision 1.6  2003/04/03 19:15:37  simont
 // fix some bugs, use oc8051_cache_ram.
 //
@@ -68,10 +71,19 @@
 `include "oc8051_timescale.v"
 // synopsys translate_on
 
+`include "oc8051_defines.v"
 
 module oc8051_icache (rst, clk, 
              adr_i, dat_o, stb_i, ack_o, cyc_i,
              adr_o, dat_i, stb_o, ack_i, cyc_o
+`ifdef OC8051_BIST
+         ,
+         scanb_rst,
+         scanb_clk,
+         scanb_si,
+         scanb_so,
+         scanb_en
+`endif
 	     );
 //
 // rst           (in)  reset - pin
@@ -108,6 +120,14 @@ output        stb_o,
 output [15:0] adr_o;
 reg           stb_o,
               cyc_o;
+
+`ifdef OC8051_BIST
+input   scanb_rst;
+input   scanb_clk;
+input   scanb_si;
+output  scanb_so;
+input   scanb_en;
+`endif
 
 parameter ADR_WIDTH = 6; // cache address wihth
 parameter LINE_WIDTH = 2; // line address width (2 => 4x32)
@@ -170,42 +190,28 @@ assign data1 = wr1_t ? tmp_data1 : data1_o[15:0];
 assign adr_o = {mis_adr[15:LINE_WIDTH+2], cyc, 2'b00};
 
 
+oc8051_ram_64x32_dual_bist oc8051_cache_ram(
+                           .clk     ( clk        ),
+                           .rst     ( rst        ),
+			   .adr0    ( adr_i[ADR_WIDTH+1:2] ),
+			   .dat0_o  ( data0      ),
+			   .en0     ( 1'b1       ),
+			   .adr1    ( addr1      ),
+			   .dat1_o  ( data1_o    ),
+			   .dat1_i  ( data1_i    ),
+			   .en1     ( 1'b1       ),
+			   .wr1     ( wr1        )
+`ifdef OC8051_BIST
+         ,
+         .scanb_rst(scanb_rst),
+         .scanb_clk(scanb_clk),
+         .scanb_si(scanb_soi),
+         .scanb_so(scanb_so),
+         .scanb_en(scanb_en)
+`endif
+			   );
 
-oc8051_cache_ram oc8051_cache_ram1(
-                          .clk(clk), 
-			  .rst(rst), 
-			  .addr0(adr_i[ADR_WIDTH+1:2]),
-			  .addr1(addr1), 
-			  .data0(data0), 
-			  .data1_o(data1_o), 
-			  .data1_i(data1_i),
-			  .wr1(wr1)
-			  );
-
-defparam oc8051_cache_ram1.ADR_WIDTH = ADR_WIDTH;
-defparam oc8051_cache_ram1.CACHE_RAM = CACHE_RAM;
-
-
-
-/*
-generic_dpram #(ADR_WIDTH, 32) oc8051_cache_ram1(
-	.rclk  ( clk                  ),
-	.rrst  ( rst                  ),
-	.rce   ( 1'b1                 ),
-	.oe    ( 1'b1                 ),
-	.raddr ( adr_i[ADR_WIDTH+1:2] ),
-	.do    ( data0                ),
-
-	.wclk  ( clk                  ),
-	.wrst  ( rst                  ),
-	.wce   ( 1'b1                 ),
-	.we    ( wr1                  ),
-	.waddr ( addr1                ),
-	.di    ( data1_i              )
-);
-*/
-
-
+defparam oc8051_cache_ram.ADR_WIDTH = ADR_WIDTH;
 
 
 always @(stb_b or data0 or data1 or byte_sel)

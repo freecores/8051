@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.31  2003/06/17 14:17:22  simont
+// BIST signals added.
+//
 // Revision 1.30  2003/06/03 16:51:24  simont
 // include "8051_defines" added.
 //
@@ -255,6 +258,7 @@ input   scanb_clk;
 input   scanb_si;
 output  scanb_so;
 input   scanb_en;
+wire    scanb_soi;
 `endif
 
 wire [7:0]  dptr_hi,
@@ -422,7 +426,7 @@ oc8051_ram_top oc8051_ram_top1(.clk(wb_clk_i),
          ,
          .scanb_rst(scanb_rst),
          .scanb_clk(scanb_clk),
-         .scanb_si(scanb_si),
+         .scanb_si(scanb_soi),
          .scanb_so(scanb_so),
          .scanb_en(scanb_en)
 `endif
@@ -682,17 +686,40 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 	.stb_o(wbi_stb_o),
 	.adr_o(wbi_adr_o),
 	.ack_i(wbi_ack_i),
-        .cyc_o(wbi_cyc_o));
+        .cyc_o(wbi_cyc_o)
+`ifdef OC8051_BIST
+         ,
+         .scanb_rst(scanb_rst),
+         .scanb_clk(scanb_clk),
+         .scanb_si(scanb_si),
+         .scanb_so(scanb_soi),
+         .scanb_en(scanb_en)
+`endif
+	);
 
   defparam oc8051_icache1.ADR_WIDTH = 6;  // cache address wihth
   defparam oc8051_icache1.LINE_WIDTH = 2; // line address width (2 => 4x32)
   defparam oc8051_icache1.BL_NUM = 15; // number of blocks (2^BL_WIDTH-1); BL_WIDTH = ADR_WIDTH - LINE_WIDTH
   defparam oc8051_icache1.CACHE_RAM = 64; // cache ram x 32 (2^ADR_WIDTH)
 
+  
+
+	`ifdef OC8051_SIMULATION
+	  initial
+            $display("   Instruction cache enabled");
+
+
+	`endif
+
+
 //
 //    no cache
 //
 `else
+
+  `ifdef OC8051_BIST
+       assign scanb_soi=scanb_si;
+  `endif
 
   `ifdef OC8051_WB
 
@@ -710,6 +737,13 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 	.ack_i(wbi_ack_i),
         .cyc_o(wbi_cyc_o));
 
+	`ifdef OC8051_SIMULATION
+	  initial
+            $display("   Wishbone instruction interface enabled");
+
+
+	`endif
+
   `else
 
     assign wbi_adr_o = iadr_o    ;
@@ -717,6 +751,13 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
     assign wbi_stb_o = 1'b1      ;
     assign iack_i    = wbi_ack_i ;
     assign wbi_cyc_o = 1'b1      ;
+
+    `ifdef OC8051_SIMULATION
+      initial
+        $display("   Pipelined instruction interface enabled");
+
+    `endif
+
 
   `endif
 

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.9  2003/06/17 14:17:22  simont
+// BIST signals added.
+//
 // Revision 1.8  2003/04/02 16:12:04  simont
 // generic_dpram used
 //
@@ -131,22 +134,26 @@ reg [2:0] bit_select;
 assign bit_data_out = rd_data[bit_select];
 
 
-generic_dpram #(ram_aw, 8) oc8051_ram1(
-	.rclk  ( clk       ),
-	.rrst  ( rst       ),
-	.rce   ( 1'b1      ),
-	.oe    ( 1'b1      ),
-	.raddr ( rd_addr_m ),
-	.do    ( rd_data   ),
 
-	.wclk  ( clk       ),
-	.wrst  ( rst       ),
-	.wce   ( 1'b1      ),
-	.we    ( wr        ),
-	.waddr ( wr_addr_m ),
-	.di    ( wr_data_m )
-);
-
+oc8051_ram_256x8_two_bist oc8051_idata(
+                           .clk     ( clk        ),
+                           .rst     ( rst        ),
+			   .rd_addr ( rd_addr_m  ),
+			   .rd_data ( rd_data    ),
+			   .rd_en   ( 1'b1       ),
+			   .wr_addr ( wr_addr_m  ),
+			   .wr_data ( wr_data_m  ),
+			   .wr_en   ( 1'b1       ),
+			   .wr      ( wr         )
+`ifdef OC8051_BIST
+         ,
+         .scanb_rst(scanb_rst),
+         .scanb_clk(scanb_clk),
+         .scanb_si(scanb_si),
+         .scanb_so(scanb_so),
+         .scanb_en(scanb_en)
+`endif
+			   );
 
 always @(posedge clk or posedge rst)
   if (rst) begin

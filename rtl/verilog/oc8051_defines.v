@@ -69,8 +69,13 @@
 //
 //`define OC8051_CACHE
 //`define OC8051_WB
+
+//`define OC8051_RAM_XILINX
+//`define OC8051_RAM_VIRTUALSILICON
+//`define OC8051_RAM_GENERIC
+
+
 `define OC8051_XILINX_ROM
-//`define OC8051_XILINX_RAMB
 
 //
 // oc8051 simulation defines
