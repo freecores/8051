@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.13  2003/04/10 08:57:16  simont
+// remove signal sbuf_txd [12:11]
+//
 // Revision 1.12  2003/04/07 14:58:02  simont
 // change sfr's interface.
 //
@@ -302,6 +305,8 @@ begin
     re_count <= #1 4'h0;
     receive <= #1 (rxd_r & !rxd);
     sbuf_rxd_tmp <= #1 10'h1ff;
+  end else if (!ren) begin
+    rxd_r <= #1 rxd;
   end else
     rx_done <= #1 1'b1;
 end
