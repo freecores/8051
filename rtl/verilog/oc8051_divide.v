@@ -42,10 +42,10 @@
 //// 								  ////
 //////////////////////////////////////////////////////////////////////
 //
-// ver: 1
+// CVS Revision History
 //
-// ver: 2 markom
-// changed nonsynthesizable version to two cycle divison
+// $Log: not supported by cvs2svn $
+//
 
 // synopsys translate_off
 `include "oc8051_timescale.v"
