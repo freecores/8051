@@ -2,12 +2,12 @@
 /// created by oc8051 rom maker
 /// author: Simon Teran (simont@opencores.org)
 ///
-/// source file: C:\simont\counter_test.hex
-/// date: 10/15/2002
-/// time: 11:45:55 AM
+/// source file: V:\projects\oc8051\simont\oc8051\asm\counter_test.hex
+/// date: 4/25/2003
+/// time: 4:53:02 PM
 ///
 01
-4B
+58
 00
 32
 00
@@ -46,41 +46,54 @@ E5
 8C
 9B
 70
-1D
+2A
 0A
 E5
 8A
 9C
 70
-17
+24
 0A
 E8
 9D
 70
-12
+1F
 22
 E5
 8D
 9B
 70
-0C
+19
 0A
 E5
 8B
 9C
 70
-06
+13
 0A
 E9
 9D
 70
-01
+0E
 22
+14
+00
+00
+00
+00
+00
+00
+00
+00
+00
+70
+F4
+32
 8A
 80
 00
 01
-46
+53
 E4
 F8
 F9
@@ -487,6 +500,11 @@ A0
 00
 D2
 8E
+74
+03
+11
+46
+00
 00
 00
 00
@@ -510,7 +528,10 @@ B0
 FC
 D2
 8E
-00
+74
+05
+11
+46
 00
 00
 00
@@ -520,7 +541,7 @@ C2
 7A
 C0
 7B
-02
+03
 7C
 00
 7D
