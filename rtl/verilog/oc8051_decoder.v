@@ -1,4 +1,5 @@
-////////////////////////////////////////////////////////////////////// ////                                                              ////
+////////////////////////////////////////////////////////////////////// 
+////                                                              ////
 ////  8051 core decoder                                           ////
 ////                                                              ////
 ////  This file is part of the 8051 cores project                 ////
@@ -54,8 +55,8 @@
 
 module oc8051_decoder (clk, rst, op_in, eq, ram_rd_sel, ram_wr_sel, bit_addr,
 wr, src_sel1, src_sel2, src_sel3, alu_op, psw_set, cy_sel, imm_sel, pc_wr,
-pc_sel, comp_sel, rom_addr_sel, ext_addr_sel, wad2, rd, write_x, reti,
-rmw);
+pc_sel, comp_sel, rom_addr_sel, ext_addr_sel, wad2, rd, we_o, reti,
+rmw, stb_o, ack_i, wr_xaddr);
 //
 // clk          (in)  clock
 // rst          (in)  reset
@@ -79,23 +80,23 @@ rmw);
 // rom_addr_sel (out) rom address select (alu destination or pc) [oc8051_rom_addr_sel.select]
 // ext_addr_sel (out) external address select (dptr or Ri) [oc8051_ext_addr_sel.select]
 // rd           (out) read from rom [oc8051_pc.rd, oc8051_op_select.rd]
-// write_x      (out) write to external rom [pin]
+// we_o         (out) write to external rom [pin]
 // reti         (out) return from interrupt [pin]
 // rmw          (out) read modify write feature [oc8051_ports.rmw]
 //
 
-input clk, rst, eq;
+input clk, rst, eq, ack_i;
 input [7:0] op_in;
 
-output wr, reti, write_x, bit_addr, src_sel3, rom_addr_sel, ext_addr_sel,
-pc_wr, wad2, rmw;
+output wr, reti, we_o, bit_addr, src_sel3, rom_addr_sel, ext_addr_sel,
+pc_wr, wad2, rmw, stb_o, wr_xaddr;
 output [1:0] ram_rd_sel, src_sel1, src_sel2, psw_set, cy_sel, pc_sel, comp_sel;
 output [2:0] ram_wr_sel, imm_sel;
 output [3:0] alu_op;
 output rd;
 
-reg reti, write_x, rmw;
-reg wr,  bit_addr, src_sel3, rom_addr_sel, ext_addr_sel, pc_wr, wad2;
+reg reti, write_x, rmw, stb_buff, we_buff;
+reg wr,  bit_addr, src_sel3, rom_addr_sel, ext_addr_sel, pc_wr, wad2, stb, stbw, wr_xaddr;
 reg [1:0] comp_sel, psw_set, ram_rd_sel, src_sel1, src_sel2, pc_sel, cy_sel;
 reg [3:0] alu_op;
 reg [2:0] ram_wr_sel, imm_sel;
@@ -108,13 +109,35 @@ reg [7:0] op;
 
 //
 // if state = 2'b00 then read nex instruction
-assign rd = !state[0] & !state[1];
+assign rd = !state[0] && !state[1] && !stb_o;
+
+assign stb_o = stb_buff || stbw;
+assign we_o = we_buff;
+//assign we_o = write_x || we_buff;
 
 //
 // main block
 // case of instruction set control signals
-always @(op_in or eq or state or op)
+always @(op_in or eq or state or op or stb_o)
 begin
+  if (stb_o) begin
+          ram_rd_sel = `OC8051_RRS_DC;
+          ram_wr_sel = `OC8051_RWS_DC;
+          src_sel1 = `OC8051_ASS_DC;
+          src_sel2 = `OC8051_ASS_DC;
+          alu_op = `OC8051_ALU_NOP;
+          imm_sel = `OC8051_IDS_DC;
+          wr = 1'b0;
+          psw_set = `OC8051_PS_NOT;
+          cy_sel = `OC8051_CY_0;
+          pc_wr = `OC8051_PCW_N;
+          pc_sel = `OC8051_PIS_DC;
+          src_sel3 = `OC8051_AS3_DC;
+          comp_sel = `OC8051_CSS_DC;
+          rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
+          wad2 = `OC8051_WAD_N;
+          rom_addr_sel = `OC8051_RAS_PC;
+  end else begin
     case (state)
       2'b01: begin
     casex (op)
@@ -137,7 +160,7 @@ begin
           bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
 
         end
       `OC8051_AJMP : begin
@@ -159,7 +182,7 @@ begin
           bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
 
         end
       `OC8051_LCALL :begin
@@ -181,7 +204,7 @@ begin
           bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
 
         end
       `OC8051_MOVC_DP :begin
@@ -201,7 +224,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
 
         end
       `OC8051_MOVC_PC :begin
@@ -221,7 +244,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DIV : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -240,7 +263,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_Y;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MUL : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -259,7 +282,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_Y;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       default begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -278,7 +301,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
       end
     endcase
@@ -302,7 +325,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
         end
       `OC8051_CJNE_I : begin
@@ -322,7 +345,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
         end
       `OC8051_CJNE_D : begin
@@ -342,7 +365,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
         end
       `OC8051_CJNE_C : begin
@@ -362,7 +385,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
         end
       `OC8051_DJNZ_R : begin
@@ -382,7 +405,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
 
         end
       `OC8051_DJNZ_D : begin
@@ -402,7 +425,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
 
         end
       `OC8051_JB : begin
@@ -422,7 +445,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
 
         end
       `OC8051_JBC : begin
@@ -442,7 +465,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
         end
       `OC8051_JC : begin
@@ -462,7 +485,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
         end
       `OC8051_JMP : begin
@@ -482,7 +505,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
         end
       `OC8051_JNB : begin
@@ -502,7 +525,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
         end
       `OC8051_JNC : begin
@@ -522,7 +545,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
         end
       `OC8051_JNZ : begin
@@ -542,7 +565,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
           
         end
       `OC8051_JZ : begin
@@ -562,7 +585,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
 
         end
       `OC8051_MOVC_DP :begin
@@ -582,7 +605,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_DES;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
 
         end
       `OC8051_MOVC_PC :begin
@@ -602,7 +625,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_DES;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_SJMP : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -621,7 +644,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DIV : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -640,7 +663,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MUL : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -659,7 +682,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       default begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -678,7 +701,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
       end
     endcase
 
@@ -701,7 +724,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CJNE_I : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -720,7 +743,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CJNE_D : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -739,7 +762,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CJNE_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -758,7 +781,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DJNZ_R : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -777,7 +800,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DJNZ_D : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -796,7 +819,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_RET : begin
           ram_rd_sel = `OC8051_RRS_SP;
@@ -815,7 +838,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_RETI : begin
           ram_rd_sel = `OC8051_RRS_SP;
@@ -834,7 +857,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DIV : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -853,7 +876,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MUL : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -872,7 +895,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
      default begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -891,7 +914,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
       end
     endcase
     default: begin
@@ -913,7 +936,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_AJMP : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -932,7 +955,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ADD_R : begin
 	  ram_rd_sel = `OC8051_RRS_RN;
@@ -951,7 +974,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ADDC_R : begin
 	  ram_rd_sel = `OC8051_RRS_RN;
@@ -970,7 +993,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ANL_R : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -989,7 +1012,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CJNE_R : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -1008,7 +1031,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DEC_R : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -1027,7 +1050,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DJNZ_R : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -1046,7 +1069,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_INC_R : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -1065,7 +1088,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_R : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -1084,7 +1107,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
 
       `OC8051_MOV_AR : begin
@@ -1104,7 +1127,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_DR : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1123,7 +1146,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_CR : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1142,7 +1165,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_RD : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -1161,7 +1184,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ORL_R : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -1180,7 +1203,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_SUBB_R : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -1199,7 +1222,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_XCH_R : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -1218,7 +1241,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_Y;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_XRL_R : begin
           ram_rd_sel = `OC8051_RRS_RN;
@@ -1237,7 +1260,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
 
 //op_code [7:1]
@@ -1258,7 +1281,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ADDC_I : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1277,7 +1300,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ANL_I : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1296,7 +1319,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CJNE_I : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1315,7 +1338,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DEC_I : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1334,7 +1357,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_INC_I : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1353,7 +1376,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_I : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1372,7 +1395,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_ID : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1391,7 +1414,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_AI : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1410,7 +1433,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_DI : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1429,7 +1452,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_CI : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1448,7 +1471,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOVX_IA : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1456,7 +1479,7 @@ begin
           src_sel1 = `OC8051_ASS_XRAM;
           src_sel2 = `OC8051_ASS_DC;
           alu_op = `OC8051_ALU_NOP;
-          wr = 1'b1;
+          wr = 1'b0;
           psw_set = `OC8051_PS_NOT;
           cy_sel = `OC8051_CY_0;
           pc_wr = `OC8051_PCW_N;
@@ -1467,7 +1490,6 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_RI;
         end
       `OC8051_MOVX_AI :begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1486,7 +1508,6 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_RI;
         end
       `OC8051_ORL_I : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1505,7 +1526,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_SUBB_I : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1524,7 +1545,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_XCH_I : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1543,7 +1564,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_Y;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_XCHD :begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1562,7 +1583,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_Y;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_XRL_I : begin
           ram_rd_sel = `OC8051_RRS_I;
@@ -1581,7 +1602,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
 
 //op_code [7:0]
@@ -1602,7 +1623,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ADD_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1621,7 +1642,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ADDC_D : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1640,7 +1661,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ADDC_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1659,7 +1680,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ANL_D : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1678,7 +1699,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ANL_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1697,7 +1718,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ANL_DD : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1716,7 +1737,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ANL_DC : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1735,7 +1756,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ANL_B : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1754,7 +1775,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ANL_NB : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1773,7 +1794,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CJNE_D : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1792,7 +1813,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CJNE_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1811,7 +1832,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CLR_A : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1830,7 +1851,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CLR_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1849,7 +1870,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CLR_B : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1868,7 +1889,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CPL_A : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1887,7 +1908,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CPL_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1906,7 +1927,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_CPL_B : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1925,7 +1946,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DA : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1944,7 +1965,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DEC_A : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -1963,7 +1984,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DEC_D : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -1982,7 +2003,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DIV : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2001,7 +2022,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_DJNZ_D : begin
 	  ram_rd_sel = `OC8051_RRS_D;
@@ -2020,7 +2041,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_INC_A : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2039,7 +2060,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_INC_D : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2058,7 +2079,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_INC_DP : begin
 	  ram_rd_sel = `OC8051_RRS_D;
@@ -2077,7 +2098,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_JB : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2096,7 +2117,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_JBC :begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2115,7 +2136,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_JC : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2134,7 +2155,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_JMP : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2153,7 +2174,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_JNB : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2172,7 +2193,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_JNC : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2191,7 +2212,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_JNZ :begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2210,7 +2231,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_JZ : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2229,7 +2250,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_LCALL :begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2248,7 +2269,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_LJMP : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2267,7 +2288,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_D : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2286,7 +2307,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2305,7 +2326,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
 
       `OC8051_MOV_DA : begin
@@ -2325,7 +2346,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_DD : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2344,7 +2365,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_CD : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2363,7 +2384,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_BC : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2382,7 +2403,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_CB : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2401,7 +2422,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOV_DP : begin  ///***
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2420,7 +2441,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOVC_DP :begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2439,7 +2460,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOVC_PC : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2458,7 +2479,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_MOVX_PA : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2466,7 +2487,7 @@ begin
           src_sel1 = `OC8051_ASS_XRAM;
           src_sel2 = `OC8051_ASS_DC;
           alu_op = `OC8051_ALU_NOP;
-          wr = 1'b1;
+          wr = 1'b0;
           psw_set = `OC8051_PS_NOT;
           cy_sel = `OC8051_CY_0;
           pc_wr = `OC8051_PCW_N;
@@ -2477,7 +2498,6 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DPTR;
         end
       `OC8051_MOVX_AP : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2496,7 +2516,6 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DPTR;
         end
       `OC8051_MUL : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2515,7 +2534,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ORL_D : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2534,7 +2553,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ORL_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2553,7 +2572,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ORL_AD : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2572,7 +2591,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ORL_CD : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2591,7 +2610,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ORL_B : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2610,7 +2629,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_ORL_NB : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2629,7 +2648,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_POP : begin
           ram_rd_sel = `OC8051_RRS_SP;
@@ -2648,7 +2667,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_PUSH : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2667,7 +2686,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_RET : begin
           ram_rd_sel = `OC8051_RRS_SP;
@@ -2686,7 +2705,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_RETI : begin
           ram_rd_sel = `OC8051_RRS_SP;
@@ -2705,7 +2724,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_RL : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2724,7 +2743,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_RLC : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2743,7 +2762,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_RR : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2762,7 +2781,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_RRC : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2781,7 +2800,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_SETB_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2800,7 +2819,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_SETB_B : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2819,7 +2838,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b1;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_SJMP : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2838,7 +2857,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_SUBB_D : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2857,7 +2876,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_SUBB_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2876,7 +2895,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_SWAP : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2895,7 +2914,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_Y;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_XCH_D : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2914,7 +2933,7 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_Y;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_XRL_D : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2933,7 +2952,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_XRL_C : begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -2952,7 +2971,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_XRL_AD : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2971,7 +2990,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       `OC8051_XRL_CD : begin
           ram_rd_sel = `OC8051_RRS_D;
@@ -2990,7 +3009,7 @@ begin
           rmw = `OC8051_RMW_Y;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
         end
       default: begin
           ram_rd_sel = `OC8051_RRS_DC;
@@ -3009,12 +3028,13 @@ begin
           rmw = `OC8051_RMW_N;        bit_addr = 1'b0;
           wad2 = `OC8051_WAD_N;
           rom_addr_sel = `OC8051_RAS_PC;
-          ext_addr_sel = `OC8051_EAS_DC;
+          
        end
 
     endcase
     end
     endcase
+  end
 end
 
 //
@@ -3069,24 +3089,95 @@ end
 
 //
 //in case of reti
-always @(posedge clk)
-  if (op==`OC8051_RETI) reti <= #1 1'b1;
+always @(posedge clk or posedge rst)
+  if (rst) reti <= #1 1'b0;
+  else if (op==`OC8051_RETI) reti <= #1 1'b1;
   else reti <= #1 1'b0;
 
 //
 //in case of writing to external ram
-always @(op_in or rst or rd)
+always @(op_in or rd)
 begin
-  if (rst)
-    write_x = 1'b0;
-  else if (rd)
+  if (rd)
   begin
     casex (op_in)
-      `OC8051_MOVX_AI : write_x = 1'b1;
-      `OC8051_MOVX_AP : write_x = 1'b1;
-      default : write_x = 1'b0;
+      `OC8051_MOVX_AI : begin 
+        stb = 1'b0;
+        write_x = 1'b1;
+      end
+      `OC8051_MOVX_AP : begin
+        stb = 1'b0;
+        write_x = 1'b1;
+      end
+      `OC8051_MOVX_IA : begin 
+        stb = 1'b1;
+        write_x = 1'b0;
+      end
+      `OC8051_MOVX_PA : begin
+        stb = 1'b1;
+        write_x = 1'b0;
+      end
+      default : begin
+        stb = 1'b0;
+        write_x = 1'b0;
+      end
     endcase
-  end else write_x = 1'b0;
+  end else begin
+    write_x = 1'b0;
+    stb =1'b0;
+  end
+end
+
+always @(op_in)
+begin
+  casex (op_in)
+    `OC8051_MOVX_AI : begin 
+      ext_addr_sel = `OC8051_EAS_RI;
+      wr_xaddr = 1'b1;
+    end
+    `OC8051_MOVX_AP : begin
+      ext_addr_sel =  `OC8051_EAS_DPTR;
+      wr_xaddr = 1'b1;
+    end
+    `OC8051_MOVX_IA : begin 
+      ext_addr_sel = `OC8051_EAS_RI;
+      wr_xaddr = 1'b1;
+    end
+    `OC8051_MOVX_PA : begin
+      ext_addr_sel = `OC8051_EAS_DPTR;
+      wr_xaddr = 1'b1;
+    end
+    default: begin
+      wr_xaddr = 1'b0;
+      ext_addr_sel = `OC8051_EAS_DPTR;
+    end
+  endcase
+end
+
+    
+
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    stbw <= #1 1'b0;
+  end else 
+    stbw <= #1 write_x;
+end
+
+
+always @(posedge clk or posedge rst)
+begin
+  if (rst) begin
+    stb_buff <= #1 1'b0;
+    we_buff <= #1 1'b0;
+  end else if (ack_i) begin
+    stb_buff <= #1 1'b0;
+    we_buff <= #1 1'b0;
+  end else if (stb || stbw) begin
+    stb_buff <= #1 1'b1;
+  end else if (write_x) begin
+    we_buff <= #1 1'b1;
+  end
 end
 
 
