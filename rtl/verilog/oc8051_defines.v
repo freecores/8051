@@ -45,6 +45,10 @@
 // ver: 1
 //
 
+//
+// oc8051 cache
+//
+`define OC8051_CACHE
 
 //
 // operation codes for alu

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2002/10/23 16:55:36  simont
+// fix bugs in instruction interface
+//
 //
 
 // synopsys translate_off
@@ -84,52 +87,72 @@ input ack_i;
 input [31:0] dat_i;
 output stb_o, cyc_o;
 output [15:0] adr_o;
-reg [15:0] adr_o;
+//reg [15:0] adr_o;
 reg stb_o, cyc_o;
+
+parameter ADR_WIDTH = 6; // cache address wihth
+parameter LINE_WIDTH = 2; // line address width (2 => 4x32)
+parameter BL_WIDTH = ADR_WIDTH - LINE_WIDTH; // block address width
+parameter BL_NUM = 15; // number of blocks (2^BL_WIDTH-1)
+parameter CACHE_RAM = 64; // cache ram x 32 (2^ADR_WIDTH)
 
 //
 // internal buffers adn wires
 //
-// con_buf control buffer
+// con_buf control buffer, contains upper addresses [15:ADDR_WIDTH1] in cache
+reg [13-ADR_WIDTH:0] con_buf [BL_NUM:0];
+// viald[x]=1 if block x is vaild;
+reg [BL_NUM:0] vaild;
 // con0, con2 contain temporal control information of current address and corrent address+2
-reg [7:0] con_buf [15:0];
-reg [15:0] vaild;
-reg [8:0] con0, con2;
-reg [7:0] cadr0, cadr2;
+// part of con_buf memory
+reg [14-ADR_WIDTH:0] con0, con2;
+//current upper address,
+reg [13-ADR_WIDTH:0] cadr0, cadr2;
 reg stb_b;
+// byte_select in 32 bit line (adr_i[1:0])
 reg [1:0] byte_sel;
-reg [1:0] cyc;
+// read cycle
+reg [LINE_WIDTH-1:0] cyc;
+// data input from cache ram
 reg [31:0] data1_i;
+// temporaly data from ram
 reg [15:0] tmp_data1;
 reg wr1, wr1_t, stb_it;
 
 wire [31:0] data0, data1_o;
 wire cy, cy1;
-wire [3:0] adr_i2;
+wire [BL_WIDTH-1:0] adr_i2;
 wire hit, hit_l, hit_h;
-wire [5:0] adr_r, addr1;
-reg [5:0] adr_w;
+wire [ADR_WIDTH-1:0] adr_r, addr1;
+reg [ADR_WIDTH-1:0] adr_w;
 reg [15:0] mis_adr;
 wire [15:0] data1;
-wire [1:0] adr_r1;
+wire [LINE_WIDTH-1:0] adr_r1;
 
-assign cy = &adr_i[3:1];
-assign {cy1, adr_i2} = {1'b0, adr_i[7:4]}+{4'b0000, cy};
+
+assign cy = &adr_i[LINE_WIDTH+1:1];
+assign {cy1, adr_i2} = {1'b0, adr_i[ADR_WIDTH+1:LINE_WIDTH+2]}+cy;
 assign hit_l =(con0=={cadr0,1'b1});
 assign hit_h =(con2=={cadr2,1'b1});
 assign hit = hit_l && hit_h;
 
-assign adr_r = adr_i[7:2] + {5'b00000, adr_i[1]};
+assign adr_r = adr_i[ADR_WIDTH+1:2] + adr_i[1];
 assign addr1 = wr1 ? adr_w : adr_r;
-assign adr_r1 = adr_r[1:0] + 2'b01;
+assign adr_r1 = adr_r[LINE_WIDTH-1:0] + 2'b01;
 //assign ack_o = hit;
 assign ack_o = hit && stb_it;
 
 assign data1 = wr1_t ? tmp_data1 : data1_o[31:16];
 
-oc8051_cache_ram oc8051_cache_ram1(.clk(clk), .rst(rst), .addr0(adr_i[7:2]), 
-       .addr1(addr1), .data0(data0), .data1_o(data1_o), .data1_i(data1_i), 
+assign adr_o = {mis_adr[15:LINE_WIDTH+2], cyc, 2'b00};
+
+
+oc8051_cache_ram oc8051_cache_ram1(.clk(clk), .rst(rst), .addr0(adr_i[ADR_WIDTH+1:2]),
+       .addr1(addr1), .data0(data0), .data1_o(data1_o), .data1_i(data1_i),
        .wr1(wr1));
+
+defparam oc8051_cache_ram1.ADR_WIDTH = ADR_WIDTH;
+defparam oc8051_cache_ram1.CACHE_RAM = CACHE_RAM;
 
 always @(stb_b or data0 or data1 or byte_sel)
 begin
@@ -140,7 +163,7 @@ begin
       2'b10: dat_o = {data0[15:0], data1};
       default: dat_o = {data0[7:0], data1, 8'h00};
     endcase
-  end else begin 
+  end else begin
     dat_o = 32'h0;
   end
 end
@@ -151,7 +174,7 @@ begin
     con0 <= #1 9'h0;
     con2 <= #1 9'h0;
   end else begin
-    con0 <= #1 {con_buf[adr_i[7:4]], vaild[adr_i[7:4]]};
+    con0 <= #1 {con_buf[adr_i[ADR_WIDTH+1:LINE_WIDTH+2]], vaild[adr_i[ADR_WIDTH+1:LINE_WIDTH+2]]};
     con2 <= #1 {con_buf[adr_i2], vaild[adr_i2]};
   end
 end
@@ -162,8 +185,8 @@ begin
     cadr0 <= #1 8'h00;
     cadr2 <= #1 8'h00;
   end else begin
-    cadr0 <= #1 adr_i[15:8];
-    cadr2 <= #1 adr_i[15:8]+{7'h0, cy1};
+    cadr0 <= #1 adr_i[15:ADR_WIDTH+2];
+    cadr2 <= #1 adr_i[15:ADR_WIDTH+2]+ cy1;
   end
 end
 
@@ -171,7 +194,7 @@ always @(posedge clk or posedge rst)
 begin
   if (rst) begin
     stb_b <= #1 1'b0;
-    byte_sel <= #1 1'b0;
+    byte_sel <= #1 2'b00;
   end else begin
     stb_b <= #1 stb_i;
     byte_sel <= #1 adr_i[1:0];
@@ -182,7 +205,6 @@ always @(posedge clk or posedge rst)
 begin
   if (rst) begin
     cyc <= #1 2'b00;
-    adr_o <= #1 16'd0;
     cyc_o <= #1 1'b0;
     stb_o <= #1 1'b0;
     data1_i<= #1 32'd0;
@@ -190,8 +212,7 @@ begin
     adr_w <= #1 6'd0;
     vaild <= #1 16'd0;
   end if (stb_b && !hit && !stb_o && !wr1) begin
-    cyc <= #1 2'b00;
-    adr_o <= #1 {mis_adr[15:4], 4'b0000};
+    cyc <= #1 'd0;
     cyc_o <= #1 1'b1;
     stb_o <= #1 1'b1;
     data1_i<= #1 32'h0;
@@ -199,40 +220,45 @@ begin
   end if (stb_o && ack_i) begin
     data1_i<= #1 dat_i;
     wr1 <= #1 1'b1;
-    adr_w <= #1 adr_o[7:2];
-    case (cyc)
+    adr_w <= #1 adr_o[ADR_WIDTH+1:2];
+    if (&cyc) begin
+        cyc <= #1 2'b00;
+        cyc_o <= #1 1'b0;
+        stb_o <= #1 1'b0;
+        con_buf[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 mis_adr[15:ADR_WIDTH+2];
+        vaild[mis_adr[ADR_WIDTH+1:LINE_WIDTH+2]] <= #1 1'b1;
+    end else begin
+        cyc <= #1 cyc + 1'b1;
+        cyc_o <= #1 1'b1;
+        stb_o <= #1 1'b1;
+    end
+
+
+/*    case (cyc)
       2'b00: begin
         cyc <= #1 2'b01;
-        adr_o <= #1 {mis_adr[15:4], 4'b0100};
         cyc_o <= #1 1'b1;
         stb_o <= #1 1'b1;
       end
       2'b01: begin
         cyc <= #1 2'b10;
-        adr_o <= #1 {mis_adr[15:4], 4'b1000};
         cyc_o <= #1 1'b1;
         stb_o <= #1 1'b1;
       end
       2'b10: begin
         cyc <= #1 2'b11;
-        adr_o <= #1 {mis_adr[15:4], 4'b1100};
         cyc_o <= #1 1'b1;
         stb_o <= #1 1'b1;
       end
       default: begin
         cyc <= #1 2'b00;
-        adr_o <= #1 {mis_adr[15:4], 4'b0000};
         cyc_o <= #1 1'b0;
         stb_o <= #1 1'b0;
         con_buf[mis_adr[7:4]] <= #1 mis_adr[15:8];
         vaild[mis_adr[7:4]] <= #1 1'b1;
       end
-    endcase
-/*  end else if (wr1 && (cyc==2'b00)) begin
-    vaild[mis_adr[7:4]] <= #1 1'b1;
-    wr1 <= #1 1'b0;*/
+    endcase*/
   end else begin
-    adr_o <= #1 {mis_adr[15:4], cyc, 2'b00};
     wr1 <= #1 1'b0;
   end
 end
@@ -240,22 +266,22 @@ end
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    mis_adr <= #1 16'h0000;
+    mis_adr <= #1 'd0;
   else if (!hit_l)
     mis_adr <= #1 adr_i;
   else if (!hit_h)
-    mis_adr <= #1 adr_i+{16'd2};
-end 
+    mis_adr <= #1 adr_i+'d2;
+end
 
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    tmp_data1 <= #1 16'd0;
+    tmp_data1 <= #1 'd0;
   else if (!hit_h && wr1 && (cyc==adr_r1))
     tmp_data1 <= #1 dat_i[31:16];
   else if (!hit_l && hit_h && wr1)
     tmp_data1 <= #1 data1_o[31:16];
-end 
+end
 
 always @(posedge clk or posedge rst)
 begin
@@ -264,7 +290,7 @@ begin
     stb_it <= #1 1'b0;
   end else begin
     wr1_t <= #1 wr1;
-    stb_it <= #1 stb_i; 
+    stb_it <= #1 stb_i;
   end
 end
 
