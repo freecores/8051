@@ -86,8 +86,8 @@ foreach internal_test ($internal_tests)
           @ all_testsi += 1;
 	endif
   mv ../out/ncsim.out ../out/${internal_test}.out
-  mv verilog.dump ../out/wave/${internal_test}.dump
-  mv log_file ../out/wb/${internal_test}
+
+
 end
 
 echo ""
@@ -120,7 +120,7 @@ foreach external_test ($external_tests)
           @ all_testsx += 1;
 	endif
   mv ../out/ncsim.out ../out/x_${external_test}.out
-  mv log_file ../out/wb/x_${external_test}
+
 end
 
 	echo ""
