@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2002/10/17 18:50:00  simont
+// cahnge interface to instruction rom
+//
 // Revision 1.4  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -58,7 +61,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_op_select (clk, rst, intr, rd, ea, ea_int, int_v, op1_i, op2_i, op3_i, op1_x, op2_x, op3_x, op1_out, op2_out, op2_direct, op3_out, ack, istb, istb_o, iack_i);
+module oc8051_op_select (clk, rst, intr, rd, ea, ea_int, int_v, op1_i, op2_i, op3_i, op1_x, op2_x, op3_x, op1_out, op2_out, op2_direct, op3_out, ack, istb, istb_o, iack_i, nop);
 //
 // clk          (in)  clock
 // intr          (in)  interrupt [pin]
@@ -73,10 +76,11 @@ module oc8051_op_select (clk, rst, intr, rd, ea, ea_int, int_v, op1_i, op2_i, op
 // istb         (in)  strobe from decoder
 // istb_o       (out) strobe to external instruction rom
 // iack_i       (in)  acknowlage from external instruction rom
+// nop          (in)  add nops
 //
 
 
-input clk, intr, rd, ea, ea_int, rst, istb, iack_i;
+input clk, intr, rd, ea, ea_int, rst, istb, iack_i, nop;
 input [7:0] op1_i, op2_i, op3_i, op1_x, op2_x, op3_x, int_v;
 output ack, istb_o;
 output [7:0] op1_out, op3_out, op2_out, op2_direct;
@@ -108,9 +112,9 @@ assign op2_out = rd ? op2_o : op2_buff;
 assign op2_direct = rd ? op2_direct_in : op2_direct_buff;
 
 
-always @(op1_x or op2_x or op3_x or istb or iack_i)
+always @(op1_x or op2_x or op3_x or nop or iack_i)
 begin
-  if (istb && iack_i) begin
+  if (nop && iack_i) begin
     op1_xt = op1_x;
     op2_xt = op2_x;
     op3_xt = op3_x;
@@ -123,8 +127,8 @@ end
 
 //
 // in case of interrupts
-always @(op1 or op2 or op3 or int_ack or int_vec_buff) begin
-  if (int_ack) begin
+always @(op1 or op2 or op3 or int_ack or int_vec_buff or iack_i or sel) begin
+  if (int_ack && (iack_i || sel)) begin
     op1_o = `OC8051_LCALL;
     op2_o = 8'h00;
     op3_o = int_vec_buff;
@@ -160,7 +164,7 @@ always @(posedge clk or posedge rst)
  end else if (intr) begin
    int_ack <= #1 1'b1;
    int_vec_buff <= #1 int_v;
- end else if (rd) int_ack <= #1 1'b0;
+ end else if (rd && (sel || iack_i)) int_ack <= #1 1'b0;
 
 always @(posedge clk or posedge rst)
   if (rst) int_ack_buff <= #1 1'b0;

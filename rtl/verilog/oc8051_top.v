@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.14  2002/10/17 18:50:00  simont
+// cahnge interface to instruction rom
+//
 // Revision 1.13  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -187,7 +190,7 @@ wire [2:0] op1_r;
 // eq           result (from comp1 to decoder)
 // wad2, wad2_r write to accumulator from destination 2
 wire [1:0] comp_sel;
-wire eq, wad2, wad2_r;
+wire eq, wad2, wad2_r, nop;
 
 
 //
@@ -198,7 +201,7 @@ wire bit_addr, bit_data, bit_out, bit_addr_r;
 
 //
 // p     parity from accumulator to psw
-wire p;
+wire p, pc_wait;
 wire b_bit, acc_bit, psw_bit, int_bit, port_bit, uart_bit;
 
 
@@ -235,17 +238,20 @@ oc8051_reg8 oc8051_reg8_rd_ram (.clk(clk), .rst(rst), .din(rd_addr), .dout(rd_ad
 //program counter
 oc8051_pc oc8051_pc1(.rst(rst), .clk(clk), .pc_out(pc), .alu({des2,des1}),
        .pc_wr_sel(pc_wr_sel), .op1(op1_n), .op2(op2_n), .op3(op3_n), .wr(pc_wr),
-       .rd((rd && !(istb_o && !iack_i))), .intr(intr));
+       .rd((pc_wait && !(istb_o && !iack_i))), .intr(intr));
 
 //
 // decoder
-oc8051_decoder oc8051_decoder1(.clk(clk), .rst(rst), .op_in(op1_n), .ram_rd_sel(ram_rd_sel),
-		 .ram_wr_sel(ram_wr_sel), .bit_addr(bit_addr), .src_sel1(src_sel1), .wr_xaddr(wr_xaddr),
-		 .src_sel2(src_sel2), .src_sel3(src_sel3), .alu_op(alu_op), .psw_set(psw_set),
-		 .imm_sel(imm_sel), .cy_sel(cy_sel), .wr(wr), .pc_wr(pc_wr), .pc_sel(pc_wr_sel),
-		 .comp_sel(comp_sel), .eq(eq), .rom_addr_sel(rom_addr_sel), .ext_addr_sel(ext_addr_sel),
-		.wad2(wad2), .rd(rd), .we_o(we_o), .reti(reti), .rmw(rmw), .stb_o(stb_o), .ack_i(ack_i),
-    .istb(istb), .ea(ea && ea_int), .iack(iack_i));
+oc8051_decoder oc8051_decoder1(.clk(clk), .rst(rst), .op_in(op1_n), 
+     .ram_rd_sel(ram_rd_sel), .ram_wr_sel(ram_wr_sel), .bit_addr(bit_addr), 
+     .src_sel1(src_sel1), .wr_xaddr(wr_xaddr), .src_sel2(src_sel2), 
+     .src_sel3(src_sel3), .alu_op(alu_op), .psw_set(psw_set),
+     .imm_sel(imm_sel), .cy_sel(cy_sel), .wr(wr), .pc_wr(pc_wr), 
+     .pc_sel(pc_wr_sel), .comp_sel(comp_sel), .eq(eq), 
+     .rom_addr_sel(rom_addr_sel), .ext_addr_sel(ext_addr_sel),
+		 .wad2(wad2), .rd(rd), .we_o(we_o), .reti(reti), .rmw(rmw), 
+     .stb_o(stb_o), .ack_i(ack_i), .istb(istb), .ea(ea && ea_int),
+     .iack(iack_i), .pc_wait(pc_wait), .nop(nop));
 
 
 
@@ -367,8 +373,8 @@ oc8051_ports oc8051_ports1(.clk(clk), .rst(rst), .bit_in(desCy), .data_in(des1),
 oc8051_op_select oc8051_op_select1(.clk(clk), .rst(rst), .ea(ea), .ea_int(ea_int), .op1_i(op1_i),
 		.op2_i(op2_i), .op3_i(op3_i), .op1_x(op1), .op2_x(op2), .op3_x(op3),
 		.op1_out(op1_n), .op2_out(op2_n), .op2_direct(op2_dr), .op3_out(op3_n),
-		.intr(intr), .int_v(int_src), .rd(rd), .ack(ack), .istb(istb), .istb_o(istb_o), 
-    .iack_i(iack_i));
+		.intr(intr), .int_v(int_src), .rd(rd), .ack(ack), .istb(istb), 
+    .istb_o(istb_o), .iack_i(iack_i), .nop(nop));
 
 //
 // serial interface
