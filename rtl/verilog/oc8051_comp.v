@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2003/04/02 11:26:21  simont
+// updating...
+//
 // Revision 1.5  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -57,7 +60,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_comp (sel, b_in, cy, acc, des, eq);
+module oc8051_comp (sel, b_in, cy, acc, des, /*comp_wait, */eq);
 //
 // sel          (in)  select whithc sourses to compare (look defines.v) [oc8051_decoder.comp_sel]
 // b_in         (in)  bit in - output from bit addressable memory space [oc8051_ram_sel.bit_out]
@@ -71,20 +74,24 @@ module oc8051_comp (sel, b_in, cy, acc, des, eq);
 
 
 input [1:0] sel;
-input b_in, cy;
+input b_in, cy/*, comp_wait*/;
 input [7:0] acc, des;
 
 output eq;
-reg eq;
+
+reg eq_r;
+
+assign eq = eq_r;// & comp_wait;
+
 
 always @(sel or b_in or cy or acc or des)
 begin
   case (sel)
-    `OC8051_CSS_AZ : eq = (acc == 8'h00);
-    `OC8051_CSS_DES : eq = (des == 8'h00);
-    `OC8051_CSS_CY : eq = cy;
-    `OC8051_CSS_BIT : eq = b_in;
-    default: eq = 1'bx;
+    `OC8051_CSS_AZ  : eq_r = (acc == 8'h00);
+    `OC8051_CSS_DES : eq_r = (des == 8'h00);
+    `OC8051_CSS_CY  : eq_r = cy;
+    `OC8051_CSS_BIT : eq_r = b_in;
+    default:          eq_r = 1'bx;
   endcase
 end
 

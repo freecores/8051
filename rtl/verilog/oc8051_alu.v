@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.11  2003/04/14 14:29:42  simont
+// fiz bug iv pcs operation.
+//
 // Revision 1.10  2003/01/13 14:14:40  simont
 // replace some modules
 //
@@ -62,7 +65,7 @@
 
 
 
-module oc8051_alu (clk, rst, op_code, rd, src1, src2, src3, srcCy, srcAc, bit_in, des1, des2, des1_r, desCy,
+module oc8051_alu (clk, rst, op_code, src1, src2, src3, srcCy, srcAc, bit_in, des1, des2, desCy,
                    desAc, desOv);
 //
 // op_code      (in)  operation code [oc8051_decoder.alu_op -r]
@@ -73,27 +76,22 @@ module oc8051_alu (clk, rst, op_code, rd, src1, src2, src3, srcCy, srcAc, bit_in
 // srcAc        (in)  auxiliary carry input [oc8051_psw.data_out[6] ]
 // bit_in       (in)  bit input, used for logic operatins on bits [oc8051_ram_sel.bit_out]
 // des1         (out)
-// des1_r       (out)
 // des2         (out)
 // desCy        (out) carry output [oc8051_ram_top.bit_data_in, oc8051_acc.bit_in, oc8051_b_register.bit_in, oc8051_psw.cy_in, oc8051_ports.bit_in]
 // desAc        (out) auxiliary carry output [oc8051_psw.ac_in]
 // desOv        (out) Overflow output [oc8051_psw.ov_in]
 //
 
-input srcCy, srcAc, bit_in, clk, rst, rd;
+input srcCy, srcAc, bit_in, clk, rst;
 input [3:0] op_code;
 input [7:0] src1, src2, src3;
 output desCy, desAc, desOv;
 output [7:0] des1, des2;
-output [7:0] des1_r;
 
 reg desCy, desAc, desOv;
 reg [7:0] des1, des2;
 
-reg [7:0] des1_r;
 
-
-reg rd_r;
 //
 //add
 //
@@ -312,7 +310,7 @@ begin
       enable_div = 1'b0;
     end
 //operation pcs Add
-    `OC8051_ALU_PCS: begin
+/*    `OC8051_ALU_PCS: begin
       if (src1[7]) begin
         {desCy, des1} = {1'b0, src2} + {1'b0, src1};
         des2 = {1'b0, src3} - {8'h0, !desCy};
@@ -322,7 +320,7 @@ begin
       desOv = 1'b0;
       enable_mul = 1'b0;
       enable_div = 1'b0;
-    end
+    end*/
 //operation exchange
 //if carry = 0 exchange low order digit
     `OC8051_ALU_XCH: begin
@@ -351,19 +349,5 @@ begin
     end
   endcase
 end
-
-always @(posedge clk or posedge rst)
-  if (rst) begin
-    des1_r <= #1 8'h0;
-  end else if (rd_r) begin
-    des1_r <= #1 des1;
-  end
-
-always @(posedge clk or posedge rst)
-  if (rst) begin
-    rd_r <= #1 8'h0;
-  end else begin
-    rd_r <= #1 rd;
-  end
 
 endmodule

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.10  2003/04/10 12:43:19  simont
+// defines for pherypherals added
+//
 // Revision 1.9  2003/04/09 16:24:03  simont
 // change wr_sft to 2 bit wire.
 //
@@ -92,6 +95,8 @@ module oc8051_sfr (rst, clk,
        desAc, desOv, 
        srcAc, cy,
        psw_set, rmw,
+       comp_sel,
+       comp_wait,
 
 `ifdef OC8051_PORTS
 
@@ -152,7 +157,8 @@ input       int_ack,
             reti,
 	    wr_bit;
 input [1:0] psw_set,
-            wr_sfr;
+            wr_sfr,
+	    comp_sel;
 input [2:0] ram_rd_sel,
             ram_wr_sel;
 input [7:0] adr0, 	//address 0 input
@@ -164,7 +170,8 @@ output       bit_out,
              intr,
              srcAc,
 	     cy,
-	     wait_data;
+	     wait_data,
+	     comp_wait;
 output [1:0] bank_sel;
 output [7:0] dat0,	//data output
 	     int_src,
@@ -526,6 +533,21 @@ always @(posedge clk or posedge rst)
     wr_bit_r <= #1 wr_bit;
   end
 
+assign comp_wait = !(
+                    ((comp_sel==`OC8051_CSS_AZ) &
+		       ((wr_sfr==`OC8051_WRS_ACC1) |
+		        (wr_sfr==`OC8051_WRS_ACC2) |
+			((adr1==`OC8051_SFR_ACC) & we & !wr_bit_r) |
+			((adr1[7:3]==`OC8051_SFR_B_ACC) & we & wr_bit_r))) |
+		    ((comp_sel==`OC8051_CSS_CY) &
+		       ((|psw_set) |
+			((adr1==`OC8051_SFR_PSW) & we & !wr_bit_r) |
+			((adr1[7:3]==`OC8051_SFR_B_PSW) & we & wr_bit_r))) |
+		    ((comp_sel==`OC8051_CSS_BIT) &
+		       ((adr1[7:3]==adr0[7:3]) & (~&adr1[2:0]) &  we & !wr_bit_r) |
+		       ((adr1==adr0) & adr1[7] & we & !wr_bit_r)));
+
+
 
 //
 //set output in case of address (byte)
@@ -543,8 +565,9 @@ begin
       (adr1[7] & (adr1==adr0) & we & !wr_bit_r)) & !wait_data) begin	//write and read same address
     wait_data <= #1 1'b1;
 
-  end else if (
-      (((wr_sfr==`OC8051_WRS_ACC2) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
+  end else if ((
+      ((|psw_set) & (adr0==`OC8051_SFR_PSW)) |
+      ((wr_sfr==`OC8051_WRS_ACC2) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
       ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_HI))	//write to dph
       ) & !wait_data) begin
     wait_data <= #1 1'b1;

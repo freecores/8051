@@ -376,6 +376,8 @@
 
 `define OC8051_RRS_B    3'b100 // b register
 `define OC8051_RRS_DPTR 3'b101 // data pointer
+`define OC8051_RRS_PSW  3'b110 // program status word
+`define OC8051_RRS_ACC  3'b111 // acc
 
 `define OC8051_RRS_DC 3'b000 // don't c
 
@@ -398,9 +400,11 @@
 `define OC8051_PIS_DC  3'b000 // dont c
 `define OC8051_PIS_AL  3'b000 // alu low
 `define OC8051_PIS_AH  3'b001 // alu high
-`define OC8051_PIS_ALU 3'b010 // alu {des1, des2}
-`define OC8051_PIS_I11 3'b011 // 11 bit immediate
-`define OC8051_PIS_I16 3'b100 // 16 bit immediate
+`define OC8051_PIS_SO1 3'b010 // relative address, op1
+`define OC8051_PIS_SO2 3'b011 // relative address, op2
+`define OC8051_PIS_I11 3'b100 // 11 bit immediate
+`define OC8051_PIS_I16 3'b101 // 16 bit immediate
+`define OC8051_PIS_ALU 3'b110 // alu destination {des2, des1}
 
 //
 // compare source select
@@ -409,7 +413,7 @@
 `define OC8051_CSS_DES 2'b01 // eq = destination == zero
 `define OC8051_CSS_CY  2'b10 // eq = cy
 `define OC8051_CSS_BIT 2'b11 // eq = b_in
-`define OC8051_CSS_DC  2'b00 // don't care
+`define OC8051_CSS_DC  2'b01 // don't care
 
 
 //

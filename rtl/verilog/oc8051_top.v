@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.24  2003/04/11 10:05:59  simont
+// deifne OC8051_ROM added
+//
 // Revision 1.23  2003/04/10 12:43:19  simont
 // defines for pherypherals added
 //
@@ -98,7 +101,7 @@ module oc8051_top (wb_rst_i, wb_clk_i,
 		wbd_dat_o,
 		wbd_adr_o, 
 		wbd_we_o, 
-		wbd_ack_i, 
+		wbd_ack_i,
 		wbd_stb_o, 
 		wbd_cyc_o, 
 		wbd_err_i,
@@ -277,8 +280,7 @@ wire [7:0]  src1,	//alu sources 1
             src2,	//alu sources 2
             src3,	//alu sources 3
 	    des1,	//alu destination 1
-	    des2,	//alu destinations 2
-	    des1_r;	//destination 1 registerd (to comp1)
+	    des2;	//alu destinations 2
 wire        desCy,	//carry out
             desAc,
 	    desOv,	//overflow
@@ -299,7 +301,8 @@ wire        eq,		//result (from comp1 to decoder)
             srcAc,
 	    cy,
 	    rd_ind,
-	    wr_ind;
+	    wr_ind,
+	    comp_wait;
 wire [2:0]  op1_cur;
 
 wire        bit_addr,	//bit addresable instruction
@@ -353,15 +356,13 @@ oc8051_decoder oc8051_decoder1(.clk(wb_clk_i),
 oc8051_alu oc8051_alu1(.rst(wb_rst_i), 
                        .clk(wb_clk_i), 
 		       .op_code(alu_op),
-		       .rd(rd),
-		       .src1(src1), 
+		       .src1(src1),
 		       .src2(src2), 
 		       .src3(src3), 
 		       .srcCy(alu_cy), 
 		       .srcAc(srcAc),
-		       .des1(des1), 
-		       .des2(des2), 
-		       .des1_r(des1_r), 
+		       .des1(des1),
+		       .des2(des2),
 		       .desCy(desCy),
 		       .desAc(desAc), 
 		       .desOv(desOv), 
@@ -406,11 +407,13 @@ oc8051_alu_src_sel oc8051_alu_src_sel1(.clk(wb_clk_i),
 //
 //
 oc8051_comp oc8051_comp1(.sel(comp_sel),
-                         .eq(eq), 
-			 .b_in(bit_out), 
-			 .cy(cy), 
-			 .acc(acc), 
-			 .des(des1_r));
+                         .eq(eq),
+			 .b_in(bit_out),
+			 .cy(cy),
+			 .acc(acc),
+			 .des(des1)
+//			 .comp_wait(comp_wait)
+			 );
 
 
 //
@@ -463,7 +466,7 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i),
 		       .wr_bit_i(bit_addr), 
 		       .wr_bit_o(bit_addr_o), 
 		       .wr_dat(wr_dat),
-		       .des1(des1), 
+		       .des1(des1),
 		       .des2(des2),
 		       .rd_addr(rd_addr), 
 		       .wr_addr(wr_addr),
@@ -521,7 +524,7 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i),
 
 //pc
                        .pc_wr_sel(pc_wr_sel), 
-		       .pc_wr(pc_wr), 
+		       .pc_wr(pc_wr & comp_wait),
 		       .pc(pc),
 
 // sfr's
@@ -551,6 +554,8 @@ oc8051_sfr oc8051_sfr1(.rst(wb_rst_i),
 		       .ram_rd_sel(ram_rd_sel), 
 		       .ram_wr_sel(ram_wr_sel),
 		       .wr_sfr(wr_sfr),
+		       .comp_sel(comp_sel),
+		       .comp_wait(comp_wait),
 // acc
 		       .acc(acc),
 // sp

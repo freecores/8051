@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2003/04/16 10:04:09  simont
+// chance idat_ir to 24 bit wide
+//
 // Revision 1.3  2003/04/11 10:05:08  simont
 // Change pc add value from 23'h to 16'h
 //
@@ -262,6 +265,8 @@ begin
 
       `OC8051_RRS_B : rd_addr = `OC8051_SFR_B;
       `OC8051_RRS_DPTR : rd_addr = `OC8051_SFR_DPTR_LO;
+      `OC8051_RRS_PSW  : rd_addr = `OC8051_SFR_PSW;
+      `OC8051_RRS_ACC  : rd_addr = `OC8051_SFR_ACC;
       default : rd_addr = 2'bxx;
     endcase
 
@@ -597,6 +602,20 @@ always @(posedge clk or posedge rst)
   end else if (pc_wait)
     int_buff <= #1 1'b0;
 
+wire [7:0]  pcs_source;
+reg  [15:0] pcs_result;
+reg         pcs_cy;
+
+assign pcs_source = pc_wr_sel[0] ? op3_out : op2_out;
+
+always @(pcs_source or pc or pcs_cy)
+begin
+  if (pcs_source[7]) begin
+    {pcs_cy, pcs_result[7:0]} = {1'b0, pc[7:0]} + {1'b0, pcs_source};
+    pcs_result[15:8] = pc[15:8] - {7'h0, !pcs_cy};
+  end else pcs_result = pc + {8'h00, pcs_source};
+end
+
 
 always @(posedge clk or posedge rst)
 begin
@@ -612,6 +631,8 @@ begin
         `OC8051_PIS_AH:  pc_buf[15:8]  <= #1 alu[7:0];
         `OC8051_PIS_I11: pc_buf[10:0]  <= #1 {op1_out[7:5], op2_out};
         `OC8051_PIS_I16: pc_buf        <= #1 {op2_out, op3_out};
+        `OC8051_PIS_SO1: pc_buf        <= #1 pcs_result;
+        `OC8051_PIS_SO2: pc_buf        <= #1 pcs_result;
       endcase
     end else
 //
