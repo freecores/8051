@@ -46,6 +46,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.8  2003/04/07 14:58:02  simont
+// change sfr's interface.
+//
 // Revision 1.7  2003/03/28 17:45:57  simont
 // change module name.
 //
@@ -101,14 +104,14 @@ reg tcon_tf1, tcon_tf0, tcon_ie1, tcon_ie0;
 // int_dept
 wire [2:0] isrc_cur;
 reg [2:0] isrc [1:0];
-reg int_dept;
-wire int_dept_1;
+reg [1:0] int_dept;
+wire [1:0] int_dept_1;
 reg int_proc;
 reg [1:0] int_lev [1:0];
 wire cur_lev;
 
 assign isrc_cur = int_proc ? isrc[int_dept_1] : 2'h0;
-assign int_dept_1 = int_dept - 1'b1;
+assign int_dept_1 = int_dept - 2'b01;
 assign cur_lev = int_lev[int_dept_1];
 
 //
@@ -274,15 +277,15 @@ end
 // interrupt processing
 always @(posedge clk or posedge rst)
 begin
- if (rst) begin
-   int_vec <= #1 8'h00;
-   int_dept <= #1 1'b0;
-   isrc[0] <= #1 3'h0;
-   isrc[1] <= #1 3'h0;
-   int_proc <= #1 1'b0;
-   int_lev[0] <= #1 1'b0;
-   int_lev[1] <= #1 1'b0;
- end else if (reti) begin  // return from interrupt
+  if (rst) begin
+    int_vec <= #1 8'h00;
+    int_dept <= #1 2'b0;
+    isrc[0] <= #1 3'h0;
+    isrc[1] <= #1 3'h0;
+    int_proc <= #1 1'b0;
+    int_lev[0] <= #1 1'b0;
+    int_lev[1] <= #1 1'b0;
+  end else if (reti & int_proc) begin  // return from interrupt
    if (int_dept==2'b01)
      int_proc <= #1 1'b0;
    int_dept <= #1 int_dept - 2'b01;
@@ -313,7 +316,7 @@ begin
  end else if ((ie[7]) & !int_proc & il0) begin  // interrupt on level 0
    int_proc <= #1 1'b1;
    int_lev[int_dept] <= #1 `OC8051_ILEV_L0;
-   int_dept <= #1 int_dept + 2'b01;
+   int_dept <= #1 2'b01;
    if (int_l0[0]) begin
      int_vec <= #1 `OC8051_INT_X0;
      isrc[int_dept] <= #1 `OC8051_ISRC_IE0;
