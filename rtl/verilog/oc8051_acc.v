@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.11  2003/04/09 15:49:42  simont
+// Register oc8051_sfr dato output, add signal wait_data.
+//
 // Revision 1.10  2003/04/07 14:58:02  simont
 // change sfr's interface.
 //
@@ -73,7 +76,7 @@ module oc8051_acc (clk, rst,
 
 
 input clk, rst, wr, wr_bit, bit_in;
-input [2:0] wr_sfr;
+input [1:0] wr_sfr;
 input [7:0] wr_addr, data_in, data2_in;
 
 output p;
@@ -88,7 +91,7 @@ wire wr_acc, wr2_acc, wr_bit_acc;
 assign p = ^acc;
 
 assign wr_acc     = (wr_sfr==`OC8051_WRS_ACC1) | (wr & !wr_bit & (wr_addr==`OC8051_SFR_ACC));
-assign wr2_acc    = (wr_sfr==`OC8051_WRS_ACC2) | (wr_sfr==`OC8051_WRS_BA);
+assign wr2_acc    = (wr_sfr==`OC8051_WRS_ACC2);
 assign wr_bit_acc = (wr & wr_bit & (wr_addr[7:3]==`OC8051_SFR_B_ACC));
 //
 //writing to acc

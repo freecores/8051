@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2003/01/13 14:14:40  simont
+// replace some modules
+//
 // Revision 1.2  2002/09/30 17:33:59  simont
 // prepared header
 //
@@ -72,7 +75,7 @@ module oc8051_dptr(clk, rst, addr, data_in, data2_in, wr, wr_sfr, wr_bit, data_h
 
 
 input clk, rst, wr, wr_bit;
-input [2:0] wr_sfr;
+input [1:0] wr_sfr;
 input [7:0] addr, data_in, data2_in;
 
 output [7:0] data_hi, data_lo;

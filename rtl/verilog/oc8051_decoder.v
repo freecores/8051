@@ -45,6 +45,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.15  2003/04/09 15:49:42  simont
+// Register oc8051_sfr dato output, add signal wait_data.
+//
 // Revision 1.14  2003/01/13 14:14:40  simont
 // replace some modules
 //
@@ -102,16 +105,16 @@ input clk, rst, eq, mem_wait, wait_data;
 input [7:0] op_in;
 
 output wr_o, bit_addr, pc_wr, rmw, istb, src_sel3;
-output [1:0] psw_set, cy_sel, comp_sel;
-output [2:0] mem_act, src_sel1, src_sel2, ram_rd_sel_o, ram_wr_sel_o, pc_sel, wr_sfr_o, op1_c;
+output [1:0] psw_set, cy_sel, wr_sfr_o, comp_sel;
+output [2:0] mem_act, src_sel1, src_sel2, ram_rd_sel_o, ram_wr_sel_o, pc_sel, op1_c;
 output [3:0] alu_op_o;
 output rd;
 
 reg rmw;
 reg src_sel3, wr,  bit_addr, pc_wr;
-reg [1:0] comp_sel, psw_set, cy_sel;
+reg [1:0] comp_sel, psw_set, cy_sel, wr_sfr;
 reg [3:0] alu_op;
-reg [2:0] src_sel2, mem_act, src_sel1, ram_wr_sel, ram_rd_sel, pc_sel, wr_sfr;
+reg [2:0] src_sel2, mem_act, src_sel1, ram_wr_sel, ram_rd_sel, pc_sel;
 
 //
 // state        if 2'b00 then normal execution, sle instructin that need more than one clock
@@ -1625,26 +1628,26 @@ begin
           wr_sfr <= #1 `OC8051_WRS_N;
         end
       `OC8051_DIV : begin
-          ram_wr_sel <= #1 `OC8051_RWS_DC;
+          ram_wr_sel <= #1 `OC8051_RWS_B;
           src_sel1 <= #1 `OC8051_AS1_ACC;
           src_sel2 <= #1 `OC8051_AS2_RAM;
           alu_op <= #1 `OC8051_ALU_DIV;
-          wr <= #1 1'b0;
+          wr <= #1 1'b1;
           psw_set <= #1 `OC8051_PS_OV;
           cy_sel <= #1 `OC8051_CY_0;
           src_sel3 <= #1 `OC8051_AS3_DC;
-          wr_sfr <= #1 `OC8051_WRS_BA;
+          wr_sfr <= #1 `OC8051_WRS_ACC2;
         end
       `OC8051_MUL : begin
-          ram_wr_sel <= #1 `OC8051_RWS_DC;
+          ram_wr_sel <= #1 `OC8051_RWS_B;
           src_sel1 <= #1 `OC8051_AS1_ACC;
           src_sel2 <= #1 `OC8051_AS2_RAM;
           alu_op <= #1 `OC8051_ALU_MUL;
-          wr <= #1 1'b0;
+          wr <= #1 1'b1;
           psw_set <= #1 `OC8051_PS_OV;
           cy_sel <= #1 `OC8051_CY_0;
           src_sel3 <= #1 `OC8051_AS3_DC;
-          wr_sfr <= #1 `OC8051_WRS_BA;
+          wr_sfr <= #1 `OC8051_WRS_ACC2;
         end
       default begin
           ram_wr_sel <= #1 `OC8051_RWS_DC;

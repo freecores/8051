@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.8  2003/04/09 15:49:42  simont
+// Register oc8051_sfr dato output, add signal wait_data.
+//
 // Revision 1.7  2003/04/07 14:58:02  simont
 // change sfr's interface.
 //
@@ -155,8 +158,8 @@ module oc8051_sfr (rst, clk,
 
 input rst, clk, we, bit_in, desAc, desOv, rmw, rxd, t2, t2ex;
 input int_ack, int0, int1, reti, wr_bit, t0, t1;
-input [1:0] psw_set;
-input [2:0] ram_rd_sel, ram_wr_sel, wr_sfr;
+input [1:0] psw_set, wr_sfr;
+input [2:0] ram_rd_sel, ram_wr_sel;
 input [7:0] adr0, adr1, dat1, dat2, p0_in, p1_in, p2_in, p3_in;
 
 output bit_out, txd, intr, srcAc, cy, wait_data;
@@ -212,7 +215,7 @@ oc8051_acc oc8051_acc1(.clk(clk), .rst(rst), .bit_in(bit_in), .data_in(dat1),
 // B
 oc8051_b_register oc8051_b_register (.clk(clk), .rst(rst), .bit_in(bit_in),
            .data_in(dat1), .wr(we), .wr_bit(wr_bit_r), .wr_addr(adr1),
-           .data_out(b_reg), .wr_sfr(wr_sfr));
+           .data_out(b_reg));
 
 //
 //stack pointer
@@ -399,15 +402,16 @@ begin
   end else if (
       (((wr_sfr==`OC8051_WRS_ACC1) & (adr0==`OC8051_SFR_ACC)) | 		//write to acc
       ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) |	//write to dpl
-      ((wr_sfr==`OC8051_WRS_BA)   & (adr0==`OC8051_SFR_B)) |		//write to b
+//      ((wr_sfr==`OC8051_WRS_BA)   & (adr0==`OC8051_SFR_B)) |		//write to b
       (adr1[7] & (adr1==adr0) & we & !wr_bit_r)) & !wait_data) begin				//write and read same address
 //    dat0 <= #1 dat1;
     wait_data <= #1 1'b1;
 
   end else if (
       (((wr_sfr==`OC8051_WRS_ACC2) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
-      ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_HI)) |	//write to dph
-      ((wr_sfr==`OC8051_WRS_BA)   & (adr0==`OC8051_SFR_ACC))) & !wait_data) begin	//write to b
+      ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_HI))	//write to dph
+//      ((wr_sfr==`OC8051_WRS_BA)   & (adr0==`OC8051_SFR_ACC))
+      ) & !wait_data) begin	//write to b
 //    dat0 <= #1 dat2;
     wait_data <= #1 1'b1;
 
@@ -457,8 +461,9 @@ begin
     bit_out <= #1 1'h0;
   else if (
           ((adr1[7:3]==adr0[7:3]) & (~&adr1[2:0]) &  we & !wr_bit_r) |
-          ((wr_sfr==`OC8051_WRS_ACC1) & (adr0[7:3]==`OC8051_SFR_B_ACC)) | 	//write to acc
-          ((wr_sfr==`OC8051_WRS_BA)   & (adr0[7:3]==`OC8051_SFR_B_B)))		//write to b
+          ((wr_sfr==`OC8051_WRS_ACC1) & (adr0[7:3]==`OC8051_SFR_B_ACC)) 	//write to acc
+//          ((wr_sfr==`OC8051_WRS_BA)   & (adr0[7:3]==`OC8051_SFR_B_B))
+	  )		//write to b
 
     bit_out <= #1 dat1[adr0[2:0]];
   else if ((adr1==adr0) & we & wr_bit_r)

@@ -339,11 +339,10 @@
 //
 //write sfr
 //
-`define OC8051_WRS_N 3'b000     //no
-`define OC8051_WRS_ACC1 3'b001  // acc destination 1
-`define OC8051_WRS_ACC2 3'b010  // acc destination 2
-`define OC8051_WRS_DPTR 3'b011  // data pointer
-`define OC8051_WRS_BA 3'b100  // a, b register
+`define OC8051_WRS_N    2'b00  //no
+`define OC8051_WRS_ACC1 2'b01  // acc destination 1
+`define OC8051_WRS_ACC2 2'b10  // acc destination 2
+`define OC8051_WRS_DPTR 2'b11  // data pointer
 
 
 //
@@ -370,6 +369,7 @@
 `define OC8051_RWS_SP 3'b011 // stack pointer
 `define OC8051_RWS_D3 3'b101 // direct address (op3)
 `define OC8051_RWS_D1 3'b110 // direct address (op1)
+`define OC8051_RWS_B  3'b111 // b register
 `define OC8051_RWS_DC 3'b000 //
 
 //

@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.8  2003/04/07 14:58:02  simont
+// change sfr's interface.
+//
 // Revision 1.7  2003/01/13 14:14:40  simont
 // replace some modules
 //
@@ -60,11 +63,10 @@
 
 
 module oc8051_b_register (clk, rst, bit_in, data_in, wr, wr_bit,
-              wr_addr, data_out, wr_sfr);
+              wr_addr, data_out);
 
 
 input clk, rst, wr, wr_bit, bit_in;
-input [2:0] wr_sfr;
 input [7:0] wr_addr, data_in;
 
 output [7:0] data_out;
@@ -78,8 +80,6 @@ always @(posedge clk or posedge rst)
 begin
   if (rst)
     data_out <= #1 `OC8051_RST_B;
-  else if (wr_sfr==`OC8051_WRS_BA)
-    data_out <= #1 data_in;
   else if (wr) begin
     if (!wr_bit) begin
       if (wr_addr==`OC8051_SFR_B)

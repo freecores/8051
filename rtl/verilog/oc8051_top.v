@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.21  2003/04/09 15:49:42  simont
+// Register oc8051_sfr dato output, add signal wait_data.
+//
 // Revision 1.20  2003/04/03 19:13:28  simont
 // Include instruction cache.
 //
@@ -149,7 +152,8 @@ assign wbd_cyc_o = wbd_stb_o;
 // ram_wr_sel    ram write (internal)
 // src_sel1, src_sel2    from decoder to register
 wire src_sel3;
-wire [2:0] ram_rd_sel, ram_wr_sel, wr_sfr;
+wire [1:0] wr_sfr;
+wire [2:0] ram_rd_sel, ram_wr_sel;
 wire [2:0] src_sel2, src_sel1;
 
 //
@@ -352,7 +356,8 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i), .rst(wb_rst_i),
 
 oc8051_sfr oc8051_sfr1(.rst(wb_rst_i), .clk(wb_clk_i), .adr0(rd_addr[7:0]), .adr1(wr_addr[7:0]),
        .dat0(sfr_out), .dat1(wr_dat), .dat2(des2), .we(wr_o && !wr_ind), .bit_in(desCy),
-       .bit_out(sfr_bit), .wr_bit(bit_addr_o), .ram_rd_sel(ram_rd_sel), .ram_wr_sel(ram_wr_sel), .wr_sfr(wr_sfr),
+       .bit_out(sfr_bit), .wr_bit(bit_addr_o), .ram_rd_sel(ram_rd_sel), .ram_wr_sel(ram_wr_sel),
+       .wr_sfr(wr_sfr),
 // acc
        .acc(acc),
 // sp

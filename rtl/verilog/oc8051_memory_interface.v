@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2003/01/13 14:13:12  simont
+// initial import
+//
 //
 
 // synopsys translate_off
@@ -265,10 +268,11 @@ always @(wr_sel or sp_w or rn_r or imm_r or ri_r or imm2_r or op1_r or dadr_o[15
 begin
     case (wr_sel)
       `OC8051_RWS_RN : wr_addr = {3'h0, rn_r};
-      `OC8051_RWS_I : wr_addr = ri_r;
-      `OC8051_RWS_D : wr_addr = imm_r;
+      `OC8051_RWS_I  : wr_addr = ri_r;
+      `OC8051_RWS_D  : wr_addr = imm_r;
       `OC8051_RWS_SP : wr_addr = sp_w;
       `OC8051_RWS_D3 : wr_addr = imm2_r;
+      `OC8051_RWS_B  : wr_addr = `OC8051_SFR_B;
       default : wr_addr = 2'bxx;
     endcase
 end
