@@ -105,14 +105,17 @@ begin
   begin
     case (scon[7:6])
       2'b00: begin //mode 0
-        if (tr_count==4'd8)
-	begin
-	  trans <= #1 1'b0;
-	  txd <= #1 1'b1;
-	end else begin
-	  txd <= #1 sbuf_txd[tr_count];
-	  tr_count <= #1 tr_count + 4'b1;
-	end
+        if (smod_cnt_t == 6'd12) begin
+          if (tr_count==4'd8)
+          begin
+	          trans <= #1 1'b0;
+	          txd <= #1 1'b1;
+	        end else begin
+      	    txd <= #1 sbuf_txd[tr_count];
+	          tr_count <= #1 tr_count + 4'b1;
+	        end
+          smod_cnt_t <= #1 6'h0;
+	      end else smod_cnt_t <= #1 smod_cnt_t + 6'h01;
       end
       2'b01: begin // mode 1
         if ((t1_ow) & !(t1_ow_buf))
@@ -213,15 +216,18 @@ begin
   end else if (receive) begin
     case (scon[7:6])
       2'b00: begin // mode 0
-        if (re_count==4'd8) begin
-	  receive <= #1 1'b0;
-	  r_int <= #1 1'b1;
-	  sbuf_rxd <= #1 sbuf_rxd_tmp[8:1];
-	end else begin
-          sbuf_rxd_tmp[re_count + 4'd1] <= #1 rxd;
-	  r_int <= #1 1'b0;
-	end
-        re_count <= #1 re_count + 4'd1;
+        if (smod_cnt_r==6'd12) begin
+          if (re_count==4'd8) begin
+	          receive <= #1 1'b0;
+	          r_int <= #1 1'b1;
+	          sbuf_rxd <= #1 sbuf_rxd_tmp[8:1];
+  	      end else begin
+            sbuf_rxd_tmp[re_count + 4'd1] <= #1 rxd;
+	          r_int <= #1 1'b0;
+	        end
+          re_count <= #1 re_count + 4'd1;
+          smod_cnt_r <= #1 6'h00;
+        end else smod_cnt_r <= #1 smod_cnt_r + 6'h01;
       end
       2'b01: begin // mode 1
         if ((t1_ow) & !(t1_ow_buf))
@@ -289,6 +295,7 @@ begin
       2'b00: begin
         if ((scon[4]) && !(scon[0]) && !(r_int)) begin
           receive <= #1 1'b1;
+          smod_cnt_r <= #1 6'h6;
         end
       end 
       2'b10: begin
