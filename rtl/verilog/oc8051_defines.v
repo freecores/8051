@@ -49,7 +49,7 @@
 // oc8051 memory
 //
 //`define OC8051_CACHE
-`define OC8051_XILINX
+`define OC8051_XILINX_ROM
 
 //
 // operation codes for alu
@@ -112,7 +112,6 @@
 `define OC8051_SFR_RCAP2L 8'hca // timer 2 capture low
 
 `define OC8051_SFR_T2CON 8'hc8 // timer 2 control register
-`define OC8051_SFR_T2MOD 8'hc9 // timer 2 mode control
 `define OC8051_SFR_TH2 8'hcd // timer 2 high
 `define OC8051_SFR_TL2 8'hcc // timer 2 low
 
