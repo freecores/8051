@@ -1,13 +1,17 @@
 #!/bin/csh -f
 
+rm cds.lib hdl.var RUN_NC
+rm nc*
+rm -r INCA_libs
+
 set failedi = 0;
 set failedx = 0;
 set all_testsi = 0;
 set all_testsx = 0;
 
 
-set internal_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m timer_test counter_test timer2_test interrupt_test serial_test r_bank)
-set external_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m interrupt_test r_bank xrom_test)
+set internal_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m timer_test counter_test timer2_test interrupt_test interrupt_test2 serial_test r_bank mx_test wdog1 wdog2 wdog3 pca_test)
+set external_tests=(testall lcall negcnt gcd int2bin cast divmul fib sort sqroot div16u test_xram xram_m interrupt_test interrupt_test2 r_bank xrom_test mx_test wdog1 wdog2 wdog3)
 
 # Prepare all .args files
 iteration:
@@ -62,7 +66,7 @@ echo "\t@@@"
 echo "\t@@@ Tesing programs from internal rom"
 echo "\t@@@"
 
-cp ../oc8051_eai.in ../oc8051_ea.in
+cp ../oc8051mx_eai.in ../oc8051mx_ea.in
 set i = 0;
 foreach internal_test ($internal_tests)
 	@ i += 1;
@@ -71,8 +75,8 @@ foreach internal_test ($internal_tests)
 	echo "\t### Running test ${i}: ${internal_test}"
 	echo "\t###"
 
-	cp ../../../asm/in/${internal_test}.in ../../../asm/in/oc8051_rom.in
-	cp ../../../asm/vec/${internal_test}.vec ../../../asm/vec/oc8051_test.vec
+	cp ../../../bench/in/${internal_test}.in ../../../bench/in/oc8051mx_rom.in
+	cp ../../../bench/vec/${internal_test}.vec ../../../bench/vec/oc8051mx_test.vec
 	ncsim -NOCOPYRIGHT -f ncsim.args > ../out/ncsim.out
 	if ($status != 0) then
 	  cat ../out/ncsim.out
@@ -86,8 +90,7 @@ foreach internal_test ($internal_tests)
           @ all_testsi += 1;
 	endif
   mv ../out/ncsim.out ../out/${internal_test}.out
-
-
+  mv log_file ../out/wb/${internal_test}
 end
 
 echo ""
@@ -95,7 +98,7 @@ echo "\t@@@"
 echo "\t@@@ tesing programs from external rom"
 echo "\t@@@"
 
-cp ../oc8051_eax.in ../oc8051_ea.in
+cp ../oc8051mx_eax.in ../oc8051mx_ea.in
 set i = 0;
 foreach external_test ($external_tests)
 	@ i += 1;
@@ -103,10 +106,10 @@ foreach external_test ($external_tests)
 	echo "\t###"
 	echo "\t### Running test ${i}: ${external_test}"
 	echo "\t###"
-	
-  cp ../../../asm/in/${external_test}.in ../../../asm/in/oc8051_xrom.in
-	cp ../../../asm/vec/${external_test}.vec ../../../asm/vec/oc8051_test.vec
-  cp ../oc8051_eax.in ../oc8051_ea.in
+
+	cp ../../../bench/in/${external_test}.in ../../../bench/in/oc8051mx_xrom.in
+	cp ../../../bench/vec/${external_test}.vec ../../../bench/vec/oc8051mx_test.vec
+	cp ../oc8051mx_eax.in ../oc8051mx_ea.in
 	ncsim -NOCOPYRIGHT -f ncsim.args > ../out/ncsim.out
 	if ($status != 0) then
 	  cat ../out/ncsim.out
@@ -120,7 +123,7 @@ foreach external_test ($external_tests)
           @ all_testsx += 1;
 	endif
   mv ../out/ncsim.out ../out/x_${external_test}.out
-
+  mv log_file ../out/wb/x_${external_test}
 end
 
 	echo ""
