@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2003/04/11 10:05:08  simont
+// Change pc add value from 23'h to 16'h
+//
 // Revision 1.2  2003/04/09 16:24:03  simont
 // change wr_sft to 2 bit wire.
 //
@@ -318,7 +321,7 @@ begin
   end else if (iack_i) begin
     istb_t <= #1 1'b0;
     imem_wait <= #1 1'b0;
-    idat_ir <= #1 idat_i [31:8];
+    idat_ir <= #1 idat_i [23:0];
   end else if (ea_rom_sel && imem_wait) begin
     imem_wait <= #1 1'b0;
   end else if (ea_rom_sel && !imem_wait && istb_t) begin
@@ -408,13 +411,13 @@ assign op2_out = (rd) ? op2_o : op2_buff;
 always @(idat_i or iack_i or idat_ir or rd)
 begin
   if (iack_i) begin
-    op1_xt = idat_i[31:24];
-    op2_xt = idat_i[23:16];
-    op3_xt = idat_i[15:8];
+    op1_xt = idat_i[7:0];
+    op2_xt = idat_i[15:8];
+    op3_xt = idat_i[23:16];
   end else if (!rd) begin
-    op1_xt = idat_ir[23:16];
+    op1_xt = idat_ir[7:0];
     op2_xt = idat_ir[15:8];
-    op3_xt = idat_ir[7:0];
+    op3_xt = idat_ir[23:16];
   end else begin
     op1_xt = 8'h00;
     op2_xt = 8'h00;
