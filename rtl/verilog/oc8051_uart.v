@@ -44,6 +44,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.12  2003/04/07 14:58:02  simont
+// change sfr's interface.
+//
 // Revision 1.11  2003/04/07 13:29:16  simont
 // change uart to meet timing.
 //
@@ -111,7 +114,7 @@ reg [3:0]  tr_count,
            re_count;
 reg [7:0]  sbuf_rxd;
 reg [11:0] sbuf_rxd_tmp;
-reg [12:0] sbuf_txd;
+reg [10:0] sbuf_txd;
 
 assign sbuf = sbuf_rxd;
 assign intr = scon[1] | scon [0];
