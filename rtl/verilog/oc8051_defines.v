@@ -61,7 +61,7 @@
 //
 // oc8051 ITERNAL ROM
 //
-//`define OC8051_ROM
+`define OC8051_ROM
 
 
 //
@@ -69,6 +69,7 @@
 //
 //`define OC8051_CACHE
 `define OC8051_XILINX_ROM
+//`define OC8051_XILINX_RAMB
 
 //
 // operation codes for alu
